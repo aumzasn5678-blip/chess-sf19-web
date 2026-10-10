@@ -134,6 +134,11 @@ button.rec-on{background:linear-gradient(180deg,#f4b258,#cf8d2c)!important;color
 .prof.on[data-prof="normal"]{background:#3b82f6!important;color:#04122e;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.45),0 0 12px rgba(59,130,246,.5)}
 .prof.on[data-prof="deep"]{background:#a855f7!important;color:#1e0533;border-color:#a855f7;box-shadow:0 0 0 2px rgba(168,85,247,.45),0 0 12px rgba(168,85,247,.5)}
 
+/* ปุ่มเลือกภาษา ไทย/English — เลือก=สีค้าง (ไทย=แดง #e5534b · English=น้ำเงิน #3b82f6) · ไม่เลือก=เทาจาง */
+.lang{font-weight:700;background:transparent!important;color:var(--dim);border-color:var(--line);transition:background .15s,color .15s,border-color .15s,box-shadow .15s}
+.lang.on[data-lang="th"]{background:#e5534b!important;color:#fff;border-color:#e5534b;box-shadow:0 0 0 2px rgba(229,83,75,.45),0 0 12px rgba(229,83,75,.5)}
+.lang.on[data-lang="en"]{background:#3b82f6!important;color:#04122e;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.45),0 0 12px rgba(59,130,246,.5)}
+
 /* ปุ่มสลับ (อนิเมชัน/ซ่อนการชี้นำ) — เปิด=เขียว · ปิด=แดง (สไตล์เดียวกับปุ่มรัน) */
 .togg.on3{background:linear-gradient(180deg,#4ec46f,#34a55b)!important;color:#04170b!important;border-color:#2f8f4e!important;box-shadow:0 5px 16px rgba(78,196,111,.3)!important}
 .togg.off3{background:linear-gradient(180deg,#f0675e,#cf3b33)!important;color:#fff!important;border-color:#a52f28!important;box-shadow:0 5px 16px rgba(229,83,75,.3)!important}
@@ -242,7 +247,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
 <div id="bigover" onclick="this.classList.remove('show')"><div class="box" id="bigbox"></div></div>
   <header>
     <h1>♞ Chess AI - <span class="dim">Stockfish 19</span></h1>
-    <div class="sub" id="sub">กำลังโหลดเอนจิน…</div>
+    <div class="sub" id="sub" data-i18n="stLoading">กำลังโหลดเอนจิน…</div>
   </header>
 
   <div id="boardWrap"><div id="board"></div><svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div>
@@ -257,23 +262,23 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
   <div id="notice"></div>
 
   <div class="row">
-    <button id="bStart" class="sm" title="ไปจุดเริ่มต้น" style="flex:0 0 18%">⏮</button>
-    <button id="bBack" class="sm">↶ ย้อนกลับ</button>
-    <button id="bFwd" class="sm">↷ ไปข้างหน้า</button>
-    <button id="bEnd" class="sm" title="ไปตาสุดท้าย" style="flex:0 0 18%">⏭</button>
+    <button id="bStart" class="sm" title="ไปจุดเริ่มต้น" data-i18n-title="tStart" style="flex:0 0 18%">⏮</button>
+    <button id="bBack" class="sm" data-i18n="bBack">↶ ย้อนกลับ</button>
+    <button id="bFwd" class="sm" data-i18n="bFwd">↷ ไปข้างหน้า</button>
+    <button id="bEnd" class="sm" title="ไปตาสุดท้าย" data-i18n-title="tEnd" style="flex:0 0 18%">⏭</button>
   </div>
   <div class="row">
-    <button id="bUndo" class="sm" title="ย้อนกลับเกมก่อนหน้า" aria-label="ย้อนกลับเกมก่อนหน้า" style="flex:0 0 7.5%" disabled>&#9664;&#xfe0e;</button>
-    <button id="bNewGame" class="sm" style="flex:0 0 30%">เริ่มเกมใหม่</button>
+    <button id="bUndo" class="sm" title="ย้อนกลับเกมก่อนหน้า" data-i18n-title="tUndo" data-i18n-aria="tUndo" aria-label="ย้อนกลับเกมก่อนหน้า" style="flex:0 0 7.5%" disabled>&#9664;&#xfe0e;</button>
+    <button id="bNewGame" class="sm" data-i18n="bNewGame" style="flex:0 0 30%">เริ่มเกมใหม่</button>
     <button id="bRun" class="pri">▶ รัน</button>
-    <button id="bFlip" class="sm" style="flex:0 0 21.5%">⇅ สลับฝั่ง</button>
-    <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" style="flex:0 0 16%">ธีม</button>
+    <button id="bFlip" class="sm" data-i18n="bFlip" style="flex:0 0 21.5%">⇅ สลับฝั่ง</button>
+    <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" data-i18n-title="tTheme" data-i18n="bTheme" style="flex:0 0 16%">ธีม</button>
   </div>
   <div id="confirmNew" class="card">
     <div class="inner">
-      <span style="flex:1">เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)</span>
-      <button id="bNewYes" class="sm pri" style="flex:0 0 28%">ยืนยัน</button>
-      <button id="bNewNo" class="sm" style="flex:0 0 24%">ยกเลิก</button>
+      <span style="flex:1" data-i18n="confirmMsg">เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)</span>
+      <button id="bNewYes" class="sm pri" data-i18n="yes" style="flex:0 0 28%">ยืนยัน</button>
+      <button id="bNewNo" class="sm" data-i18n="no" style="flex:0 0 24%">ยกเลิก</button>
     </div>
   </div>
 
@@ -282,28 +287,28 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
   <div id="status"></div>
 
   <details id="settings">
-    <summary>⚙ ตั้งค่า</summary>
+    <summary data-i18n="sumSettings">⚙ ตั้งค่า</summary>
     <div class="card">
       <div class="row">
-        <label style="min-width:64px">โปรไฟล์</label>
+        <label style="min-width:64px" data-i18n="lblProfile">โปรไฟล์</label>
         <div id="profbtns" style="display:flex;gap:6px;flex:1">
-          <button class="sm prof" data-prof="quick">⚡ คิดแบบเร็ว</button>
-          <button class="sm prof" data-prof="normal">⚖️ คิดแบบปกติ</button>
-          <button class="sm prof" data-prof="deep">🧠 คิดแบบลึก</button>
+          <button class="sm prof" data-prof="quick" data-i18n="profQuick">⚡ คิดแบบเร็ว</button>
+          <button class="sm prof" data-prof="normal" data-i18n="profNormal">⚖️ คิดแบบปกติ</button>
+          <button class="sm prof" data-prof="deep" data-i18n="profDeep">🧠 คิดแบบลึก</button>
         </div>
       </div>
       <div class="tiny" id="profv">โปรไฟล์: คิดแบบปกติ</div>
-      <div class="tiny" id="profhint">ความลึก (depth) = จำนวนชั้นที่เอนจินคิดล่วงหน้า · 1 ชั้น ≈ ครึ่งตา ⇒ ยิ่งลึกยิ่งแม่นแต่ยิ่งคิดนานขึ้น · <span class="rec">แนะนำ 20</span> สำหรับเล่นกับคน</div>
+      <div class="tiny" id="profhint" data-i18n-html="profHintHtml">ความลึก (depth) = จำนวนชั้นที่เอนจินคิดล่วงหน้า · 1 ชั้น ≈ ครึ่งตา ⇒ ยิ่งลึกยิ่งแม่นแต่ยิ่งคิดนานขึ้น · <span class="rec">แนะนำ 20</span> สำหรับเล่นกับคน</div>
 
       <div class="row" style="margin-top:10px">
-        <label style="min-width:64px">ความลึก</label>
+        <label style="min-width:64px" data-i18n="lblDepth">ความลึก</label>
         <input type="range" id="depth" min="1" max="30" value="20">
         <span id="depthv" style="min-width:36px;text-align:right;font-size:.93rem;color:var(--txt);font-weight:600">20</span>
       </div>
-      <div class="tiny" id="depthhint">ช่วงความลึก → เวลาคิดโดยประมาณ (วินาที) | 1–5 ≈1วิ | 6–10 ≈3วิ | 11–15 ≈6วิ | 16–20 ≈10วิ | 21–25 ≈18วิ | 26–30 ≈30วิ | <span class="rec">แนะนำ 20</span></div>
+      <div class="tiny" id="depthhint" data-i18n-html="depthHintHtml">ช่วงความลึก → เวลาคิดโดยประมาณ (วินาที) | 1–5 ≈1วิ | 6–10 ≈3วิ | 11–15 ≈6วิ | 16–20 ≈10วิ | 21–25 ≈18วิ | 26–30 ≈30วิ | <span class="rec">แนะนำ 20</span></div>
 
       <div class="row">
-        <label style="min-width:64px">ตัวเลือก</label>
+        <label style="min-width:64px" data-i18n="lblNpv">ตัวเลือก</label>
         <div id="npvbtns" style="display:flex;gap:6px;flex:1">
           <button class="sm npv" data-npv="1">1</button>
           <button class="sm npv" data-npv="2">2</button>
@@ -314,40 +319,48 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
       </div>
 
       <div class="row">
-        <label style="min-width:64px;font-size:12px;line-height:1.25">ขนาดของธีม, ปุ่ม</label>
+        <label style="min-width:64px;font-size:12px;line-height:1.25" data-i18n="lblSize">ขนาดของธีม, ปุ่ม</label>
         <div id="sizebtns" style="display:flex;gap:6px;flex:1">
-          <button class="sm size" data-size="small">เล็ก</button>
-          <button class="sm size on" data-size="medium">กลาง</button>
-          <button class="sm size" data-size="large">ใหญ่</button>
+          <button class="sm size" data-size="small" data-i18n="sizeSmall">เล็ก</button>
+          <button class="sm size on" data-size="medium" data-i18n="sizeMedium">กลาง</button>
+          <button class="sm size" data-size="large" data-i18n="sizeLarge">ใหญ่</button>
         </div>
       </div>
 
       <div class="row">
-        <label style="min-width:64px">ELO</label>
+        <label style="min-width:64px" data-i18n="lblElo">ELO</label>
         <input type="range" id="elo" min="1320" max="3190" step="10" value="3190" style="flex:1">
         <span id="elov" style="min-width:96px;text-align:right;font-size:.86rem">3190 (เต็ม)</span>
       </div>
 
+      <div class="row" style="margin-top:10px;align-items:center">
+        <label style="min-width:64px;font-size:12px;line-height:1.25" data-i18n="lblLang">ภาษา / Language</label>
+        <div id="langbtns" style="display:flex;gap:6px;flex:1">
+          <button class="sm lang on" data-lang="th">ไทย</button>
+          <button class="sm lang" data-lang="en">English</button>
+        </div>
+      </div>
+
       <div class="row"><button id="animBtn" class="sm togg">อนิเมชันหมาก: เปิด</button></div>
       <div class="row"><button id="hideBtn" class="sm togg">ซ่อนการชี้นำ: ปิด</button></div>
-      <div class="tiny">กด ▶ รัน = วิเคราะห์ตำแหน่งปัจจุบัน (กดอีกครั้ง = หยุด) · แตะช่องปลายลูกศร = เดินตามนั้นทันที<br>
+      <div class="tiny" data-i18n-html="footerHint">กด ▶ รัน = วิเคราะห์ตำแหน่งปัจจุบัน (กดอีกครั้ง = หยุด) · แตะช่องปลายลูกศร = เดินตามนั้นทันที<br>
       แตะหมาก = เลือก · จุดฟ้า = ที่เดินได้ · เข้าป้อม: แตะคิงแล้วแตะเรือ (กฎสากลเต็มรูปแบบ)</div>
     </div>
   </details>
 
   <details id="posPanel">
-    <summary>📋 ตำแหน่ง &amp; คัดลอก</summary>
+    <summary data-i18n="sumPos">📋 ตำแหน่ง &amp; คัดลอก</summary>
     <div class="card">
       <div class="row">
-        <input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้งตำแหน่ง">
-        <button id="bPaste" class="sm posbtn" style="flex:0 0 24%">วาง</button>
+        <input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้งตำแหน่ง" data-i18n-ph="fenPh">
+        <button id="bPaste" class="sm posbtn" data-i18n="bPaste" style="flex:0 0 24%">วาง</button>
       </div>
       <div class="row">
-        <button id="bSet" class="sm posbtn">ตั้งตำแหน่ง</button>
-        <button id="bCopy" class="sm posbtn">คัดลอก PGN</button>
-        <button id="bCopyFen" class="sm posbtn">คัดลอก FEN</button>
+        <button id="bSet" class="sm posbtn" data-i18n="bSet">ตั้งตำแหน่ง</button>
+        <button id="bCopy" class="sm posbtn" data-i18n="bCopy">คัดลอก PGN</button>
+        <button id="bCopyFen" class="sm posbtn" data-i18n="bCopyFen">คัดลอก FEN</button>
       </div>
-      <div class="tiny" id="fenhint"><b>FEN</b> = รหัสตำแหน่งกระดานปัจจุบัน (ใช้แชร์/วางต่อในโปรแกรมหมากรุกอื่น)<br><b>PGN</b> = บันทึกการเดินทั้งเกม (เอาไปให้คนอื่น/โปรแกรมวิเคราะห์ต่อได้)</div>
+      <div class="tiny" id="fenhint" data-i18n-html="fenHintHtml"><b>FEN</b> = รหัสตำแหน่งกระดานปัจจุบัน (ใช้แชร์/วางต่อในโปรแกรมหมากรุกอื่น)<br><b>PGN</b> = บันทึกการเดินทั้งเกม (เอาไปให้คนอื่น/โปรแกรมวิเคราะห์ต่อได้)</div>
     </div>
   </details>
 </div>
@@ -365,33 +378,149 @@ let fens=[game.fen()], ptr=0, ucis=[];   // ประวัติสำหรั
 let lines={}, job=0, busy=false, run=false, npvN=3, sugTo={};
 
 /* ---------- ค่าตั้ง (จำใน localStorage) ---------- */
-const LSK={depth:'chessDepth',npv:'chessNpv',elo:'chessElo',anim:'chessAnim',theme:'chessTheme',size:'chessSize',prof:'chessProf',hide:'chessHide'};
+const LSK={depth:'chessDepth',npv:'chessNpv',elo:'chessElo',anim:'chessAnim',theme:'chessTheme',size:'chessSize',prof:'chessProf',hide:'chessHide',lang:'chessLang'};
 function lsGet(k,d){ try{ const v=localStorage.getItem(k); return v===null?d:v; }catch(e){ return d; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 
+/* ---------- i18n (ไทย = ค่าเริ่มต้น · English) ---------- */
+let lang='th';
+const I18N={
+ th:{
+  stLoading:'กำลังโหลดเอนจิน…', stReady:'พร้อมใช้งาน',
+  stEngineFail:'โหลดเอนจินไม่ได้ (ต้องเปิดผ่าน http/https)',
+  bBack:'↶ ย้อนกลับ', bFwd:'↷ ไปข้างหน้า',
+  tStart:'ไปจุดเริ่มต้น', tEnd:'ไปตาสุดท้าย', tUndo:'ย้อนกลับเกมก่อนหน้า', tTheme:'เปลี่ยนธีมกระดานเร็ว',
+  bNewGame:'เริ่มเกมใหม่', bRun:'▶ รัน', bStop:'■ หยุด', bFlip:'⇅ สลับฝั่ง', bTheme:'ธีม',
+  confirmMsg:'เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)', yes:'ยืนยัน', no:'ยกเลิก',
+  sumSettings:'⚙ ตั้งค่า', sumPos:'📋 ตำแหน่ง & คัดลอก',
+  lblProfile:'โปรไฟล์', lblDepth:'ความลึก', lblNpv:'ตัวเลือก', lblSize:'ขนาดของธีม, ปุ่ม', lblElo:'ELO', lblLang:'ภาษา / Language',
+  profQuick:'⚡ คิดแบบเร็ว', profNormal:'⚖️ คิดแบบปกติ', profDeep:'🧠 คิดแบบลึก', profCustom:'กำหนดเอง',
+  sizeSmall:'เล็ก', sizeMedium:'กลาง', sizeLarge:'ใหญ่',
+  animOn:'อนิเมชันหมาก: เปิด', animOff:'อนิเมชันหมาก: ปิด',
+  hideOn:'ซ่อนการชี้นำ: เปิด', hideOff:'ซ่อนการชี้นำ: ปิด',
+  onWord:'เปิด', offWord:'ปิด',
+  bPaste:'วาง', bSet:'ตั้งตำแหน่ง', bCopy:'คัดลอก PGN', bCopyFen:'คัดลอก FEN',
+  fenPh:'วาง FEN แล้วกด ตั้งตำแหน่ง',
+  profHintHtml:'ความลึก (depth) = จำนวนชั้นที่เอนจินคิดล่วงหน้า · 1 ชั้น ≈ ครึ่งตา ⇒ ยิ่งลึกยิ่งแม่นแต่ยิ่งคิดนานขึ้น · <span class="rec">แนะนำ 20</span> สำหรับเล่นกับคน',
+  depthHintHtml:'ช่วงความลึก → เวลาคิดโดยประมาณ (วินาที) | 1–5 ≈1วิ | 6–10 ≈3วิ | 11–15 ≈6วิ | 16–20 ≈10วิ | 21–25 ≈18วิ | 26–30 ≈30วิ | <span class="rec">แนะนำ 20</span>',
+  footerHint:'กด ▶ รัน = วิเคราะห์ตำแหน่งปัจจุบัน (กดอีกครั้ง = หยุด) · แตะช่องปลายลูกศร = เดินตามนั้นทันที<br>แตะหมาก = เลือก · จุดฟ้า = ที่เดินได้ · เข้าป้อม: แตะคิงแล้วแตะเรือ (กฎสากลเต็มรูปแบบ)',
+  fenHintHtml:'<b>FEN</b> = รหัสตำแหน่งกระดานปัจจุบัน (ใช้แชร์/วางต่อในโปรแกรมหมากรุกอื่น)<br><b>PGN</b> = บันทึกการเดินทั้งเกม (เอาไปให้คนอื่น/โปรแกรมวิเคราะห์ต่อได้)',
+  eloFull:'{0} (เต็ม)', profPrefix:'โปรไฟล์: ',
+  depInfo:'ความลึก {0}/{1}', depThinking:' กำลังคิด…', depReady2:' · พร้อม', depLast:'ความลึกสุดท้าย {0}',
+  white:'ขาว', black:'ดำ', bottomSuffix:' (ล่าง)', best:'ดีสุด',
+  stDoneEval:'วิเคราะห์จบ · ลึก {0}', stDoneRun:'วิเคราะห์จบ · ลึก {0} · พร้อมคิดใหม่เมื่อเดินหมาก',
+  stThinking:'กำลังคิด… (ลึก {0} · เพดาน {1} วิ)', stStopped:'หยุดแล้ว',
+  stMoved:'เดินแล้ว — กด ▶ รัน เพื่อวิเคราะห์', stNav:'{0} {1}',
+  navStart:'ไปจุดเริ่มต้น ตา', navBack:'ย้อนไปตา', navFwd:'ไปข้างหน้า', navEnd:'ไปตาสุดท้าย ตา',
+  stNewGame:'เกมใหม่', stPrevGame:'กลับไปเกมก่อนหน้าแล้ว', stSetPos:'ตั้งตำแหน่งแล้ว ✓', stBadFen:'FEN/PGN ไม่ถูกต้อง',
+  stProfile:'โปรไฟล์ {0}: ลึก {1} · {2} ตัวเลือก', stNpv:'จำนวนตัวเลือก: {0} (กด ▶ รัน อีกครั้ง)', stCustom:'กำหนดเอง',
+  noticeResign:'⚠ เราใกล้ถูกรุกฆาต (M{0}) — แนะนำยอมแพ้',
+  noticeCheckBlock:'⚠ คิงเราติดรุกอยู่ — หาตัวมาบังหรือกินตัวรุกได้',
+  noticeCheckNoBlock:'⚠ คิงเราติดรุกอยู่ — หาตัวมาบังไม่ได้ ต้องขยับคิงรีบหนี',
+  toastPinned:'หมากตัวนี้ขยับไม่ได้ — ขยับแล้วคิงจะถูกรุก',
+  toastCastleNo:'เข้าป้อมตอนนี้ไม่ได้ — คิงหรือเรือเคยเดินไปแล้ว หรือมีตัวขวางอยู่',
+  toastSetOkInfo:'ตั้งตำแหน่งใหม่แล้ว — กด ▶ รัน เพื่อวิเคราะห์',
+  toastCopied:'คัดลอกแล้ว ✓', toastCopyFail:'คัดลอกอัตโนมัติไม่ได้ — ข้อความอยู่ในช่องตำแหน่ง',
+  toastPasted:'วางแล้ว ✓', promptFen:'วาง FEN / PGN ที่นี่:',
+  toastAnim:'อนิเมชันหมาก: {0}', toastHide:'ซ่อนการชี้นำ: {0}', toastTheme:'ธีม: {0}',
+  goOver:'เกมจบแล้ว', goMate:'รุกฆาต! {0} ชนะแล้ว', goStale:'เกมจบ — อับ (เสมอ)', goDraw:'เกมจบ — เสมอ',
+  mateWin:'รุกฆาต — ชนะแล้ว ✓', mateWinSub:'ฝั่งบน (คู่แข่ง) ถูกรุกฆาต · แตะเพื่อปิด',
+  mateLose:'โดนรุกฆาต — แพ้แล้ว ✗', mateLoseSub:'ฝั่งเรา (ล่าง) ถูกรุกฆาต · แตะเพื่อปิด',
+  logEmpty:'— ยังไม่มีการเดิน —',
+  themeNibble:'ขาว Nibbler', themeBw:'ขาว-ดำ', themeBrown:'น้ำตาลเดิม', themeGreen:'เขียว'
+ },
+ en:{
+  stLoading:'Loading engine…', stReady:'Ready',
+  stEngineFail:'Cannot load engine (must be opened via http/https)',
+  bBack:'↶ Back', bFwd:'↷ Forward',
+  tStart:'Go to start', tEnd:'Go to last move', tUndo:'Restore previous game', tTheme:'Quick change board theme',
+  bNewGame:'New Game', bRun:'▶ Run', bStop:'■ Stop', bFlip:'⇅ Flip', bTheme:'Theme',
+  confirmMsg:'Start a new game? (moves will be lost)', yes:'Confirm', no:'Cancel',
+  sumSettings:'⚙ Settings', sumPos:'📋 Position & Copy',
+  lblProfile:'Profile', lblDepth:'Depth', lblNpv:'Lines', lblSize:'Theme/Button size', lblElo:'ELO', lblLang:'Language / ภาษา',
+  profQuick:'⚡ Quick', profNormal:'⚖️ Normal', profDeep:'🧠 Deep', profCustom:'Custom',
+  sizeSmall:'Small', sizeMedium:'Medium', sizeLarge:'Large',
+  animOn:'Piece animation: On', animOff:'Piece animation: Off',
+  hideOn:'Hide hints: On', hideOff:'Hide hints: Off',
+  onWord:'On', offWord:'Off',
+  bPaste:'Paste', bSet:'Set position', bCopy:'Copy PGN', bCopyFen:'Copy FEN',
+  fenPh:'Paste FEN then press Set position',
+  profHintHtml:'Depth = how many plies the engine looks ahead · 1 ply ≈ half a move ⇒ deeper is more accurate but slower · <span class="rec">20 recommended</span> for playing humans',
+  depthHintHtml:'Depth range → approx think time (s) | 1–5 ≈1s | 6–10 ≈3s | 11–15 ≈6s | 16–20 ≈10s | 21–25 ≈18s | 26–30 ≈30s | <span class="rec">20 recommended</span>',
+  footerHint:'Press ▶ Run = analyse the current position (press again = stop) · tap an arrow\'s end square = play that move instantly<br>Tap a piece = select · blue dots = legal moves · Castling: tap the king then the rook (full FIDE rules)',
+  fenHintHtml:'<b>FEN</b> = a code for the current board position (share / paste into other chess apps)<br><b>PGN</b> = the full move record of the game (hand to others or an analysis tool)',
+  eloFull:'{0} (max)', profPrefix:'Profile: ',
+  depInfo:'Depth {0}/{1}', depThinking:' thinking…', depReady2:' · ready', depLast:'Last depth {0}',
+  white:'White', black:'Black', bottomSuffix:' (bottom)', best:'Best',
+  stDoneEval:'Analysis done · depth {0}', stDoneRun:'Analysis done · depth {0} · will re-analyse after a move',
+  stThinking:'Thinking… (depth {0} · cap {1}s)', stStopped:'Stopped',
+  stMoved:'Moved — press ▶ Run to analyse', stNav:'{0} {1}',
+  navStart:'Go to start, move', navBack:'Back to move', navFwd:'Forward to move', navEnd:'Go to last move',
+  stNewGame:'New game', stPrevGame:'Restored previous game', stSetPos:'Position set ✓', stBadFen:'Invalid FEN/PGN',
+  stProfile:'Profile {0}: depth {1} · {2} lines', stNpv:'Lines: {0} (press ▶ Run again)', stCustom:'Custom',
+  noticeResign:'⚠ We are close to being checkmated (M{0}) — resignation advised',
+  noticeCheckBlock:'⚠ Our king is in check — we can block or capture the attacker',
+  noticeCheckNoBlock:'⚠ Our king is in check — cannot block, the king must move to escape',
+  toastPinned:'This piece cannot move — moving it would expose the king',
+  toastCastleNo:'Cannot castle now — the king or rook has already moved, or a piece is in the way',
+  toastSetOkInfo:'New position set — press ▶ Run to analyse',
+  toastCopied:'Copied ✓', toastCopyFail:'Auto-copy failed — the text is in the position field',
+  toastPasted:'Pasted ✓', promptFen:'Paste FEN / PGN here:',
+  toastAnim:'Piece animation: {0}', toastHide:'Hide hints: {0}', toastTheme:'Theme: {0}',
+  goOver:'Game over', goMate:'Checkmate! {0} wins', goStale:'Game over — stalemate (draw)', goDraw:'Game over — draw',
+  mateWin:'Checkmate — You win ✓', mateWinSub:'The top side (opponent) is checkmated · tap to close',
+  mateLose:'Checkmated — You lose ✗', mateLoseSub:'Our side (bottom) is checkmated · tap to close',
+  logEmpty:'— no moves yet —',
+  themeNibble:'White Nibbler', themeBw:'White/Black', themeBrown:'Classic Brown', themeGreen:'Green'
+ }
+};
+function t(key){ const d=(I18N[lang]&&I18N[lang][key]); let s=(d!=null?d:(I18N.th[key]!=null?I18N.th[key]:key));
+  if(arguments.length>1){ for(let i=1;i<arguments.length;i++){ s=s.split('{'+ (i-1) +'}').join(String(arguments[i])); } }
+  return s; }
+let lastSub=null, lastStatus=null, lastEval={cp:0,mate:null};
+function setSub(key){ lastSub={key:key,args:Array.prototype.slice.call(arguments,1)}; subEl.textContent=t.apply(null,[key].concat(lastSub.args)); }
+function setStatus(key){ lastStatus={key:key,args:Array.prototype.slice.call(arguments,1)}; statusEl.textContent=t.apply(null,[key].concat(lastStatus.args)); }
+function applyLang(){
+  const L=(lang==='en')?'en':'th';
+  document.documentElement.lang=L;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML=t(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{ el.title=t(el.dataset.i18nTitle); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>{ el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder=t(el.dataset.i18nPh); });
+  document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('on', b.dataset.lang===L));
+  const br=$('bRun'); if(br) br.textContent=(run||busy)?t('bStop'):t('bRun');
+  refreshAnimBtn(); refreshHideBtn(); refreshEloUI(); updateProfUI(); updateDepthInfo();
+  if(lastSub) setSub.apply(null,[lastSub.key].concat(lastSub.args));
+  if(lastStatus) setStatus.apply(null,[lastStatus.key].concat(lastStatus.args));
+  renderLog(); setEval(lastEval.cp, lastEval.mate); renderPV(); checkGameEnd();
+}
+function setLang(l){ lang=(l==='en')?'en':'th'; lsSet(LSK.lang, lang); applyLang(); }
+document.querySelectorAll('.lang').forEach(b=>{ b.onclick=()=>{ setLang(b.dataset.lang); }; });
+
 /* ---------- โปรไฟล์วิเคราะห์ / ขนาด / ธีม ---------- */
-const PROFILES={ quick:{d:12,n:1,cap:3000,label:'คิดแบบเร็ว'}, normal:{d:20,n:3,cap:10000,label:'คิดแบบปกติ'}, deep:{d:28,n:3,cap:25000,label:'คิดแบบลึก'} };
+const PROFILES={ quick:{d:12,n:1,cap:3000,label:'profQuick'}, normal:{d:20,n:3,cap:10000,label:'profNormal'}, deep:{d:28,n:3,cap:25000,label:'profDeep'} };
 let profName='normal', profCap=10000;
 const SIZES={ small:{max:'330px',fs:'13px'}, medium:{max:'420px',fs:'14px'}, large:{max:'520px',fs:'16px'} };
 let sizeName='medium';
 const THEMES={ nibble:{lt:'#f2f3f4',dk:'#c8cbcd'}, bw:{lt:'#ffffff',dk:'#9aa0a6'}, brown:{lt:'#f0d9b5',dk:'#b58863'}, green:{lt:'#edeed1',dk:'#779556'} };
 const THEME_ORDER=['nibble','bw','brown','green'];              // ลำดับปุ่มเปลี่ยนธีมเร็ว
-const THEME_LABEL={ nibble:'ขาว Nibbler', bw:'ขาว-ดำ', brown:'น้ำตาลเดิม', green:'เขียว' };
+const THEME_LABEL={ nibble:'themeNibble', bw:'themeBw', brown:'themeBrown', green:'themeGreen' };
 let themeName='nibble';
 let hideHints=false;
 
 /* ---------- เอนจิน (1 เธรด + บิลด์เบา ⇒ เครื่องไม่ร้อน) ---------- */
 let engine=null, ready=false, searching=false, startTimer=null;
 function startEngine(){
-  try{ engine=new Worker('lib/stockfish.js'); }catch(e){ subEl.textContent='โหลดเอนจินไม่ได้ (ต้องเปิดผ่าน http/https)'; return; }
+  try{ engine=new Worker('lib/stockfish.js'); }catch(e){ setSub('stEngineFail'); return; }
   engine.onmessage = ev =>{
     const line = typeof ev.data==='string' ? ev.data : (ev.data&&ev.data.text)||'';
-    if(line==='uciok'){ ready=true; subEl.textContent='พร้อมใช้งาน'; applyElo(); return; }
+    if(line==='uciok'){ ready=true; setSub('stReady'); applyElo(); return; }
     if(line.startsWith('info ')) parseInfo(line);
     if(line.startsWith('bestmove')){
       if(!searching) return;                    // ผลของงานเก่า (หลัง stop) — ทิ้ง
       searching=false;
-      renderPV(); statusEl.textContent='วิเคราะห์จบ · ลึก '+maxDepth()+(run?' · พร้อมคิดใหม่เมื่อเดินหมาก':'');
+      renderPV(); setStatus(run?'stDoneRun':'stDoneEval', maxDepth());
     }
   };
   engine.postMessage('uci');
@@ -417,8 +546,8 @@ function paintSoon(){
 function updateDepthInfo(){
   const cur=maxDepth(), tgt=+$('depth').value;
   const el=$('depthinfo'); if(!el) return;
-  if(run||busy){ el.textContent = 'ความลึก '+cur+'/'+tgt+(searching?' กำลังคิด…':' · พร้อม'); }
-  else el.textContent = cur? ('ความลึกสุดท้าย '+cur) : '\u00a0';
+  if(run||busy){ el.textContent = t('depInfo', cur, tgt) + (searching? t('depThinking') : t('depReady2')); }
+  else el.textContent = cur? t('depLast', cur) : '\u00a0';
 }
 let sugRank={}, sqTagTxt={}, mateThreat=false, prevThreat=false;   // อันดับ+คะแนนบนช่อง · ธงเตือนใกล้โดนรุกฆาต
 function markTargets(){
@@ -488,9 +617,9 @@ function runAnalysis(){
     engine.postMessage('position fen '+fens[ptr]);
     const cap = (profCap!=null) ? profCap : autoTime(d);         // โปรไฟล์มีเพดานเวลา · กำหนดเองใช้ตามความลึก
     engine.postMessage('go depth '+d+' movetime '+cap);
-    statusEl.textContent='กำลังคิด… (ลึก '+d+' · เพดาน '+(cap/1000).toFixed(1)+' วิ)';
+    setStatus('stThinking', d, (cap/1000).toFixed(1));
   }, 120);
-  $('bRun').classList.add('on'); $('bRun').textContent='■ หยุด'; renderPV();
+  $('bRun').classList.add('on'); $('bRun').textContent=t('bStop'); renderPV();
 }
 function stopAnalysis(){
   if(startTimer){ clearTimeout(startTimer); startTimer=null; }
@@ -498,7 +627,7 @@ function stopAnalysis(){
   searching=false; busy=false; run=false;
   arrowsEl.innerHTML=''; sugTo={};              // เอาลูกศร/กรอบเป้าหมายออกเมื่อไม่ได้กดรัน
   render(); updateDepthInfo();
-  $('bRun').classList.remove('on'); $('bRun').textContent='▶ รัน'; statusEl.textContent='หยุดแล้ว';
+  $('bRun').classList.remove('on'); $('bRun').textContent=t('bRun'); setStatus('stStopped');
 }
 /* หยุดทันทีเมื่อออกจากแอพ (สลับแท็บ/ย่อ/ปิดหน้า) — ไม่กินแบตเบื้องหลัง */
 function hardStop(){
@@ -506,7 +635,7 @@ function hardStop(){
   if(startTimer){ clearTimeout(startTimer); startTimer=null; }
   if(paintTimer){ clearTimeout(paintTimer); paintTimer=null; }
   searching=false; busy=false; run=false;
-  const b=$('bRun'); if(b){ b.classList.remove('on'); b.textContent='▶ รัน'; }
+  const b=$('bRun'); if(b){ b.classList.remove('on'); b.textContent=t('bRun'); }
 }
 document.addEventListener('visibilitychange', ()=>{ if(document.hidden) hardStop(); });
 window.addEventListener('pagehide', hardStop);
@@ -527,8 +656,9 @@ function setEval(cp, mate){          // cp = มุมมองขาว (centip
   evalFill.style.background = bottomWhite ? 'rgba(255,255,255,.95)' : 'rgba(5,6,8,.95)';
   evalNum.textContent = mate!=null ? ((mate>0?'+':'-')+'M'+Math.abs(mate)) : ((val>0?'+':'')+(val/100).toFixed(1));
   evalNum.style.color = '#fff';                         // แคปซูลพื้นดำ ⇒ ตัวอักษรขาว อ่านชัดเสมอ
-  const bl = bottom==='w' ? 'ขาว' : 'ดำ', ot = bottom==='w' ? 'ดำ' : 'ขาว';
-  evalTag.textContent = bl + ' (ล่าง)'; evalTagR.textContent = ot;
+  lastEval={cp:cp, mate:mate};
+  const bl = bottom==='w' ? t('white') : t('black'), ot = bottom==='w' ? t('black') : t('white');
+  evalTag.textContent = bl + t('bottomSuffix'); evalTagR.textContent = ot;
   evalTag.style.color = '#f4f8fc'; evalTagR.style.color = '#f4f8fc';   // แคปซูลพื้นดำ อ่านได้เสมอ
 }
 
@@ -560,7 +690,7 @@ function renderPV(){
     // ป้ายบนช่องเป้าหมาย (.sqtag) = 'ส่วนต่างเทียบเส้นที่ดีที่สุด' (หน่วยตัวเบี้ย, มุมมองฝ่ายที่กำลังเดิน)
     // อันดับ 1 = 'ดีสุด' (ไม่มีตัวเลข) · อันดับ 2-5 = ค่าติดลบ 2 ตำแหน่งเทียบอันดับ 1 · เส้น mate คง M ไว้
     let tagTxt;
-    if(idx===0){ bestShownCp = shownCp; tagTxt = 'ดีสุด'; }
+    if(idx===0){ bestShownCp = shownCp; tagTxt = t('best'); }
     else if(shownMate!=null){ tagTxt = ((shownMate>0?'+':'-')+'M'+Math.abs(shownMate)); }
     else { const dcp = (shownCp - bestShownCp)/100;
       tagTxt = (Math.abs(dcp)<0.005) ? '0.00' : (dcp>0? '+'+dcp.toFixed(2) : dcp.toFixed(2)); }
@@ -584,13 +714,12 @@ function renderPV(){
       noticeRed = noticeGreen = noticeGrey = noticeYellow = '';
       const mResign = (bottomMate!=null && bottomMate<0);      // อีกฝั่งขึ้น M ใส่เรา = แนะนำยอมแพ้
       if(mResign)
-        noticeGrey = '⚠ เราใกล้ถูกรุกฆาต (M'+Math.abs(bottomMate)+') — แนะนำยอมแพ้';
+        noticeGrey = t('noticeResign', Math.abs(bottomMate));
       if(!mResign && sideToMove===bb){
         const gNow=new Chess(fens[ptr]);
         if(gNow.inCheck()){
           const canB = canBlockCheck(gNow);
-          noticeRed = ''; noticeYellow =
-            '⚠ คิงเราติดรุกอยู่ — ' + (canB ? 'หาตัวมาบังหรือกินตัวรุกได้' : 'หาตัวมาบังไม่ได้ ต้องขยับคิงรีบหนี');
+          noticeRed = ''; noticeYellow = canB ? t('noticeCheckBlock') : t('noticeCheckNoBlock');
           if(!canB) { noticeRed = noticeYellow; noticeYellow=''; }
         }
       }
@@ -682,8 +811,8 @@ function checkGameEnd(){               // รุกฆาต: เด้งกล
   const loser = g.turn();                                 // ฝั่งที่เดินไม่ได้ = ฝั่งที่แพ้
   const weWon = (loser !== bottomColor());
   box.className = 'box ' + (weWon ? 'win' : 'lose');
-  if(weWon) box.innerHTML = 'รุกฆาต — ชนะแล้ว ✓<span class="sm2">ฝั่งบน (คู่แข่ง) ถูกรุกฆาต · แตะเพื่อปิด</span>';
-  else      box.innerHTML = 'โดนรุกฆาต — แพ้แล้ว ✗<span class="sm2">ฝั่งเรา (ล่าง) ถูกรุกฆาต · แตะเพื่อปิด</span>';
+  if(weWon) box.innerHTML = t('mateWin')+'<span class="sm2">'+t('mateWinSub')+'</span>';
+  else      box.innerHTML = t('mateLose')+'<span class="sm2">'+t('mateLoseSub')+'</span>';
   over.classList.add('show');
 }
 function renderLog(){
@@ -694,7 +823,7 @@ function renderLog(){
   }
   let s='';
   sans.forEach((h,i)=>{ s += (i%2===0 ? '<b>'+(i/2+1)+'.</b> ' : ''); s += h+' '; });
-  logEl.innerHTML = s || '<span style="opacity:.6">— ยังไม่มีการเดิน —</span>';
+  logEl.innerHTML = s || ('<span style="opacity:.6">'+t('logEmpty')+'</span>');
   logEl.scrollTop = logEl.scrollHeight;      // ขึ้นบรรทัดใหม่แล้วเลื่อน 'ลง' แนวตั้งไปท้ายสุด
 }
 function boardWithoutPiece(fenBoard, sq){
@@ -734,15 +863,15 @@ function onSquare(sq){
   const p=g.get(sq);
   if(game_over(g)){ return; }
   if(p && p.type!=='k' && p.color===g.turn() && isPinned(g, sq)){
-    toast('หมากตัวนี้ขยับไม่ได้ — ขยับแล้วคิงจะถูกรุก');
+    toast(t('toastPinned'));
     return;
   }
   if(sel){
     const sp=g.get(sel);
     if(sp&&sp.type==='k'&&p&&p.type==='r'&&p.color===sp.color&&p.color===g.turn()){
-      const t=legal.find(m=>(m.flags.includes('k')&&sq==='h'+sel[1])||(m.flags.includes('q')&&sq==='a'+sel[1]));
-      if(t){ playUci(sel+t.to); return; }
-      toast('เข้าป้อมตอนนี้ไม่ได้ — คิงหรือเรือเคยเดินไปแล้ว หรือมีตัวขวางอยู่'); return;
+      const cm=legal.find(m=>(m.flags.includes('k')&&sq==='h'+sel[1])||(m.flags.includes('q')&&sq==='a'+sel[1]));
+      if(cm){ playUci(sel+cm.to); return; }
+      toast(t('toastCastleNo')); return;
     }
   }
   if(p&&p.color!==g.turn()&&!sel&&!sugTo[sq]){
@@ -756,10 +885,10 @@ function onSquare(sq){
 }
 function game_over(g){                       // จบเกมแล้ว? (รุกฆาต/อับ/เสมอ)
   if(!g.isGameOver()) return false;
-  let m='เกมจบแล้ว';
-  if(g.isCheckmate()) m='รุกฆาต! '+(g.turn()==='w'?'ดำ':'ขาว')+' ชนะแล้ว';
-  else if(g.isStalemate()) m='เกมจบ — อับ (เสมอ)';
-  else if(g.isDraw()) m='เกมจบ — เสมอ';
+  let m=t('goOver');
+  if(g.isCheckmate()) m=t('goMate', g.turn()==='w'?t('black'):t('white'));
+  else if(g.isStalemate()) m=t('goStale');
+  else if(g.isDraw()) m=t('goDraw');
   toast(m);
   return true;
 }
@@ -802,7 +931,7 @@ function playUci(uci){
   sel=null; legal=[];
   render(); renderPV(); updateTurnBtn();
   if(run) runAnalysis();                                  // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง
-  else statusEl.textContent='เดินแล้ว — กด ▶ รัน เพื่อวิเคราะห์';
+  else setStatus('stMoved');
 }
 
 /* ---------- ปุ่มเดิน/กด ---------- */
@@ -810,13 +939,13 @@ function navTo(newPtr, label){
   if(newPtr===ptr) { return; }
   ptr=newPtr; sel=null; legal=[]; lines={}; sugTo={};
   render(); renderPV(); updateTurnBtn();
-  if(run) runAnalysis(); else statusEl.textContent=label+' '+ptr;
+  if(run) runAnalysis(); else setStatus('stNav', t(label), ptr);
 }
 $('bRun').onclick=()=>{ if(run||busy) stopAnalysis(); else runAnalysis(); };
-$('bStart').onclick=()=>navTo(0, 'ไปจุดเริ่มต้น ตา');
-$('bBack').onclick=()=>{ if(ptr>0) navTo(ptr-1, 'ย้อนไปตา'); };
-$('bFwd').onclick=()=>{ if(ptr<fens.length-1) navTo(ptr+1, 'ไปข้างหน้า'); };
-$('bEnd').onclick=()=>navTo(fens.length-1, 'ไปตาสุดท้าย ตา');
+$('bStart').onclick=()=>navTo(0, 'navStart');
+$('bBack').onclick=()=>{ if(ptr>0) navTo(ptr-1, 'navBack'); };
+$('bFwd').onclick=()=>{ if(ptr<fens.length-1) navTo(ptr+1, 'navFwd'); };
+$('bEnd').onclick=()=>navTo(fens.length-1, 'navEnd');
 $('bFlip').onclick=()=>{ flipped=!flipped; render(); renderPV(); };
 $('bNewGame').onclick=()=>{ $('confirmNew').style.display='block'; };
 $('bNewNo').onclick=()=>{ $('confirmNew').style.display='none'; };
@@ -829,7 +958,7 @@ function snapshotGame(){
 function startNewGame(){
   prevGame = snapshotGame();               // เก็บเกมเดิมไว้ก่อนรีเซ็ต (ครั้งล่าสุดเท่านั้น)
   game=new Chess(); fens=[game.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
-  flipped=false; render(); renderPV(); updateTurnBtn(); statusEl.textContent='เกมใหม่';
+  flipped=false; render(); renderPV(); updateTurnBtn(); setStatus('stNewGame');
   updateUndoBtn();
   if(run) runAnalysis();
 }
@@ -842,7 +971,7 @@ $('bUndo').onclick=()=>{                    // ย้อนกลับไปเ
   prevGame = null;
   game = new Chess(fens[ptr]);
   render(); renderPV(); updateTurnBtn(); updateUndoBtn();
-  statusEl.textContent='กลับไปเกมก่อนหน้าแล้ว';
+  statusEl.textContent=t('stPrevGame');
   if(run) runAnalysis();
 };
 function updateTurnBtn(){ const el=$('bTurn'); if(!el) return; const t=new Chess(fens[ptr]).turn(); el.textContent='ตา: '+(t==='w'?'ขาว':'ดำ'); }
@@ -851,19 +980,19 @@ $('bSet').onclick=()=>{
   try{ const g=new Chess(); if(v.includes('/')) g.load(v); else g.loadPgn(v);
     fens=[g.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
     render(); renderPV(); updateTurnBtn();
-    statusEl.textContent='ตั้งตำแหน่งแล้ว ✓';
-    if(run) runAnalysis(); else toast('ตั้งตำแหน่งใหม่แล้ว — กด ▶ รัน เพื่อวิเคราะห์', true);
-  }catch(e){ statusEl.textContent='FEN/PGN ไม่ถูกต้อง'; toast('FEN/PGN ไม่ถูกต้อง'); }
+    setStatus('stSetPos');
+    if(run) runAnalysis(); else toast(t('toastSetOkInfo'), true);
+  }catch(e){ setStatus('stBadFen'); toast(t('stBadFen')); }
 };
 async function copyText(txt){
-  try{ await navigator.clipboard.writeText(txt); toast('คัดลอกแล้ว ✓', true); return true; }
-  catch(e){ $('fen').value=txt; toast('คัดลอกอัตโนมัติไม่ได้ — ข้อความอยู่ในช่องตำแหน่ง', true); return false; }
+  try{ await navigator.clipboard.writeText(txt); toast(t('toastCopied'), true); return true; }
+  catch(e){ $('fen').value=txt; toast(t('toastCopyFail'), true); return false; }
 }
 $('bCopy').onclick=()=>{ const txt=new Chess(fens[ptr]).pgn()||fens[ptr]; copyText(txt); };
 $('bCopyFen').onclick=()=>{ copyText(fens[ptr]); };
 $('bPaste').onclick=async()=>{
-  try{ const t=await navigator.clipboard.readText(); if(t){ $('fen').value=t.trim(); toast('วางแล้ว ✓', true); } }
-  catch(e){ const t=prompt('วาง FEN / PGN ที่นี่:'); if(t) $('fen').value=t.trim(); }
+  try{ const txt=await navigator.clipboard.readText(); if(txt){ $('fen').value=txt.trim(); toast(t('toastPasted'), true); } }
+  catch(e){ const txt=prompt(t('promptFen')); if(txt) $('fen').value=txt.trim(); }
 };
 /* ไฮไลท์ปุ่มที่คลิกล่าสุดในหมวด PGN/FEN (ขอบเรืองทองย้ายตามปุ่มล่าสุดเสมอ) */
 document.querySelectorAll('.posbtn').forEach(b=>{
@@ -886,7 +1015,7 @@ function setNpvVis(v){
   if(engine) engine.postMessage('setoption name MultiPV value '+npvN);
 }
 function updateProfUI(){
-  const el=$('profv'); if(el) el.textContent='โปรไฟล์: '+(profName==='custom'?'กำหนดเอง':PROFILES[profName].label);
+  const el=$('profv'); if(el) el.textContent=t('profPrefix')+(profName==='custom'? t('profCustom') : t(PROFILES[profName].label));
   document.querySelectorAll('.prof').forEach(b=>b.classList.toggle('on', b.dataset.prof===profName));
 }
 function applyProfile(name){
@@ -898,7 +1027,7 @@ function applyProfile(name){
 }
 document.querySelectorAll('.prof').forEach(b=>{
   b.onclick=()=>{ applyProfile(b.dataset.prof); if(busy) stopAnalysis();
-    const p=PROFILES[profName]; statusEl.textContent = p? ('โปรไฟล์ '+p.label+': ลึก '+p.d+' · '+p.n+' ตัวเลือก') : 'กำหนดเอง'; };
+    const p=PROFILES[profName]; if(p) setStatus('stProfile', t(p.label), p.d, p.n); else setStatus('stCustom'); };
 });
 $('depth').oninput=()=>{
   profName='custom'; profCap=null; updateProfUI(); lsSet(LSK.prof,'custom');
@@ -911,7 +1040,7 @@ document.querySelectorAll('.npv').forEach(b=>{
     profName='custom'; profCap=null; updateProfUI();       // ปรับเอง = กำหนดเอง
     lsSet(LSK.npv, npvN); lsSet(LSK.prof,'custom');
     if(busy) stopAnalysis();
-    statusEl.textContent='จำนวนตัวเลือก: '+npvN+' (กด ▶ รัน อีกครั้ง)';
+    setStatus('stNpv', npvN);
   };
 });
 
@@ -939,7 +1068,7 @@ $('bTheme').onclick=()=>{                            // ปุ่มเปลี
   const i=THEME_ORDER.indexOf(themeName);
   const next=THEME_ORDER[(i+1)%THEME_ORDER.length];
   applyTheme(next);
-  toast('ธีม: '+THEME_LABEL[next], true);
+  toast(t('toastTheme', t(THEME_LABEL[next])), true);
 };
 
 /* ---------- ELO / อนิเมชัน / ซ่อนการชี้นำ ---------- */
@@ -955,23 +1084,23 @@ function applyElo(){
 }
 function refreshEloUI(){
   if($('elo')) $('elo').value=eloN;
-  if($('elov')) $('elov').textContent = (eloN>=3190 ? eloN+' (เต็ม)' : String(eloN));
+  if($('elov')) $('elov').textContent = (eloN>=3190 ? t('eloFull', eloN) : String(eloN));
 }
 $('elo').oninput=()=>{
   eloN=+$('elo').value; refreshEloUI(); lsSet(LSK.elo, eloN);
   applyElo(); if(busy) stopAnalysis();
 };
 let animOn = true;
-function refreshAnimBtn(){ const b=$('animBtn'); if(b){ b.textContent='อนิเมชันหมาก: '+(animOn?'เปิด':'ปิด');
+function refreshAnimBtn(){ const b=$('animBtn'); if(b){ b.textContent=t(animOn?'animOn':'animOff');
   b.classList.toggle('on3', animOn); b.classList.toggle('off3', !animOn); } }
-$('animBtn').onclick=()=>{ animOn=!animOn; lsSet(LSK.anim, animOn?'1':'0'); refreshAnimBtn(); toast('อนิเมชันหมาก: '+(animOn?'เปิด':'ปิด'), true); };
-function refreshHideBtn(){ const b=$('hideBtn'); if(b){ b.textContent='ซ่อนการชี้นำ: '+(hideHints?'เปิด':'ปิด');
+$('animBtn').onclick=()=>{ animOn=!animOn; lsSet(LSK.anim, animOn?'1':'0'); refreshAnimBtn(); toast(t('toastAnim', t(animOn?'onWord':'offWord')), true); };
+function refreshHideBtn(){ const b=$('hideBtn'); if(b){ b.textContent=t(hideHints?'hideOn':'hideOff');
     b.classList.toggle('on3', hideHints); b.classList.toggle('off3', !hideHints); }
   document.body.classList.toggle('hidehints', hideHints); }         // ซ่อนตัวเลขพิกัดบนกระดานด้วย
 $('hideBtn').onclick=()=>{ hideHints=!hideHints; lsSet(LSK.hide, hideHints?'1':'0'); refreshHideBtn();
   render();                                                        // วาดใหม่เพื่อตัด/คืนตัวเลขพิกัด
   drawArrows(Object.keys(lines).map(Number).sort((a,b)=>a-b).slice(0,5)); markTargets();
-  toast('ซ่อนการชี้นำ: '+(hideHints?'เปิด':'ปิด'), true); };
+  toast(t('toastHide', t(hideHints?'onWord':'offWord')), true); };
 
 /* ---------- คีย์บอร์ด (e.code — ใช้ได้กับคีย์บอร์ดไทย) ---------- */
 document.addEventListener('keydown', (e)=>{
@@ -994,6 +1123,7 @@ document.addEventListener('keydown', (e)=>{
 
 /* ---------- โหลดค่าตั้งที่จำไว้ ---------- */
 (function loadSettings(){
+  lang = lsGet(LSK.lang, 'th') === 'en' ? 'en' : 'th';
   eloN = +lsGet(LSK.elo, 3190);
   animOn = lsGet(LSK.anim, '1') !== '0';
   hideHints = lsGet(LSK.hide, '0') === '1';
@@ -1013,7 +1143,7 @@ document.addEventListener('keydown', (e)=>{
   updateProfUI();
 })();
 
-startEngine(); render(); renderPV(); updateTurnBtn(); setEval(0,null);
+startEngine(); render(); renderPV(); updateTurnBtn(); setEval(0,null); applyLang();
 </script>
 </body>
 </html>
