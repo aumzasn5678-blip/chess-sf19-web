@@ -373,8 +373,6 @@ function renderPV(){
       const mResign = (bottomMate!=null && bottomMate<0);      // อีกฝั่งขึ้น M ใส่เรา = แนะนำยอมแพ้ (ให้ความสำคัญสูงสุด)
       if(mResign)
         noticeGrey = 'อีกฝั่งขึ้น M ได้แล้ว (M'+Math.abs(bottomMate)+') — เล่นไม่คุ้มแล้ว แนะนำยอมแพ้';
-      else if(bottomCp <= -500)
-        noticeGrey = 'เสียเปรียบ '+(bottomCp/100).toFixed(1)+' — เล่นไม่คุ้มแล้ว แนะนำยอมแพ้';
       if(!mResign && !noticeRed && !noticeYellow && sideToMove===bb){
         const gNow=new Chess(fens[ptr]);
         if(gNow.inCheck()){
@@ -471,6 +469,33 @@ function renderLog(){
   logEl.innerHTML = s || '<span style="opacity:.6">— ยังไม่มีการเดิน —</span>';
   logEl.scrollLeft = logEl.scrollWidth;
 }
+function boardWithoutPiece(fenBoard, sq){
+  try{
+    const rows = fenBoard.split('/').map((r, ri)=>{
+      const rank = 8 - ri;
+      const out=[]; let col=0;
+      for(const ch of r){
+        if(/\d/.test(ch)){ out.push(ch); col += +ch; continue; }
+        const cell = 'abcdefgh'[col] + rank;
+        if(cell === sq){ out.push('1'); }               // ลบหมากตัวนั้น
+        else out.push(ch);
+        col++;
+      }
+      return out.join('').replace(/1{2,}/g, m => String(m.length));   // ยุบเลข 1 ติดกัน
+    });
+    return rows.join('/');
+  }catch(e){ return fenBoard; }
+}
+function isPinned(g, sq){                        // หมากที่ขยับไม่ได้เพราะคิงจะถูกรุก
+  const p=g.get(sq);
+  if(!p || p.type==='k') return false;
+  if(g.moves({square:sq, verbose:true}).length) return false;      // มีตาที่เดินได้ = ไม่ใช่
+  const parts=g.fen().split(' ');
+  try{
+    const c=new Chess(boardWithoutPiece(parts[0], sq)+' '+p.color+' - - 0 1');
+    return c.inCheck();                       // ลบตัวนี้แล้ว คิงฝั่งนั้นถูกรุก = ขยับไม่ได้
+  }catch(e){ return false; }
+}
 function toast(msg, info){
   const el=$('toast'); if(!el) return;
   el.textContent=msg; el.classList.toggle('info', !!info); el.classList.add('show');
@@ -482,6 +507,11 @@ function onSquare(sq){
   if(game_over(g)){ return; }
   // แตะช่องปลายทางของคำแนะนำ = เดินทันที (ไม่ต้องเลือกหมากก่อน)
   if(!sel && sugTo[sq]){ playUci(sugTo[sq]); return; }
+  // หมากที่ขยับไม่ได้เพราะคิงจะถูกรุก (ใช้ได้ทั้งฝั่งเราและฝั่งตรงข้าม)
+  if(p && p.type!=='k' && isPinned(g, sq)){
+    toast('หมากตัวนี้ขยับไม่ได้ — ขยับแล้วคิงจะถูกรุก');
+    return;
+  }
   if(sel){
     const sp=g.get(sel);
     if(sp&&sp.type==='k'&&p&&p.type==='r'&&p.color===sp.color&&p.color===g.turn()){
