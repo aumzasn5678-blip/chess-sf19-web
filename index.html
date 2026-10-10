@@ -89,6 +89,15 @@ button.sm{font-size:13px;padding:10px 4px}
 #depth::-moz-range-progress{height:9px;border-radius:5px;background:#4ec46f}
 #depth::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#f3f6f9;border:3px solid #4ec46f}
 
+/* สีปุ่มให้สื่อความหมาย (รัน=เขียว · หยุด=แดง · ย้อน/ไป=น้ำเงิน · กลับหัว/อื่น=เทา · เริ่มใหม่=เหลือง) */
+#bRun{background:#2f9e5b;border-color:#268049;color:#eafff2}
+#bRun.on{background:#c0392b;border-color:#a32e22;color:#fff}
+#bBack,#bFwd{background:#2b6cb0;border-color:#245c96;color:#eaf3ff}
+#bFlip{background:#4a5262;border-color:#3b4250;color:#e9edf2}
+#bNewGame{background:#b7791f;border-color:#96620f;color:#fff6e6}
+#bSet,#bCopy,#bNewNo{background:#4a5262;border-color:#3b4250}
+.npv.on{background:#f0a04b;color:#20140a;border-color:#c8813a}
+
 #pv{margin-top:8px;display:flex;flex-direction:column;gap:5px}
 .pvrow{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);
  border-radius:9px;padding:8px 10px;font-size:14px}
@@ -193,6 +202,8 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
     <summary>⚙ ตั้งค่า (ใส่ตำแหน่งเอง · เกมใหม่)</summary>
     <div class="card">
       <div class="row"><input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้ง"></div>
+      <div class="row"><label style="min-width:70px">อนิเมชันหมาก</label>
+        <select id="animSel"><option value="1" selected>เปิด</option><option value="0">ปิด</option></select></div>
       <div class="row">
         <button id="bSet" class="sm">ตั้งตำแหน่ง</button>
         <button id="bNew" class="sm" style="display:none">เกมใหม่</button>
@@ -563,7 +574,7 @@ function onSquare(sq){
       toast('เข้าป้อมตอนนี้ไม่ได้ — คิงหรือเรือเคยเดินไปแล้ว หรือมีตัวขวางอยู่'); return;
     }
   }
-  if(p&&p.color!==g.turn()&&!sel){
+  if(p&&p.color!==g.turn()&&!sel&&!sugTo[sq]){
     // แตะหมากอีกฝั่ง = สลับตาให้ทันที แล้วเลือกตัวนั้นเลย (คุมเองทั้งหมด ไม่ต้องกดปุ่มสลับฝั่ง)
     const f=g.fen().split(' '); f[1]=p.color; f[3]='-';
     try{
@@ -595,6 +606,7 @@ function game_over(g){                       // จบเกมแล้ว? (�
   return true;
 }
 function animateMove(from,to){
+  if(!animOn) { return; }                                  // ปิดอนิเมชันไว้ = ข้าม
   const g=new Chess(fens[ptr]); const p=g.get(from); if(!p) return;
   const wrap=document.getElementById('boardWrap');
   const a=sqCenter(from), b=sqCenter(to), W=wrap.clientWidth || 360;
@@ -670,6 +682,9 @@ document.addEventListener('keydown', (e)=>{
   else if(k==='f' || k==='F'){ e.preventDefault(); $('bFlip').onclick(); }
   else if(k==='n' || k==='N'){ e.preventDefault(); $('bNewGame').onclick(); }
 });
+let animOn = true; try{ animOn = (localStorage.getItem('chessAnim') !== '0'); }catch(e){}   // อนิเมชันหมาก (จำค่าไว้)
+$('animSel').value = animOn ? '1' : '0';
+$('animSel').onchange = ()=>{ animOn = ($('animSel').value === '1'); try{ localStorage.setItem('chessAnim', animOn?'1':'0'); }catch(e){} };
 document.querySelectorAll('.npv').forEach(b=>{
   b.onclick=()=>{
     npvN = +b.dataset.npv;
