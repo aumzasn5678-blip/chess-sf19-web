@@ -71,6 +71,18 @@ body.hidehints .coord{display:none}          /* โหมดซ่อนกา�
  pointer-events:none;transition:transform .17s ease-out;will-change:transform;
  filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
 
+/* แถบเลือกตัวหมากโปรโมท — พื้นสี accent ของธีมกระดาน · รูปหมาก 4 ตัว (ควีน/เรือ/บิชอป/ม้า) */
+#promo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;display:none;
+ gap:9px;padding:10px 12px;border-radius:16px;border:2px solid rgba(255,255,255,.42);
+ background:var(--acc,#4ec46f);box-shadow:0 10px 30px rgba(0,0,0,.55);max-width:92%}
+#promo.show{display:flex}
+#promo button{flex:0 0 auto;width:58px;height:58px;padding:5px;border-radius:12px;min-width:0;
+ background:rgba(255,255,255,.92);border:2px solid rgba(0,0,0,.22);box-shadow:0 2px 6px rgba(0,0,0,.35);
+ transition:transform .08s,filter .15s}
+#promo button:active{transform:scale(.93)}
+#promo button img{width:100%;height:100%;object-fit:contain;pointer-events:none;display:block}
+@media (max-width:360px){#promo{gap:6px;padding:8px 10px}#promo button{width:50px;height:50px}}
+
 /* หลอดคะแนน: ครึ่งซ้าย = สีของฝั่งด้านล่าง (สลับอัตโนมัติเมื่อกลับหัว) */
 #evalwrap{position:relative;height:26px;margin-top:8px;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#20242a}
 #evalhalf{position:absolute;inset:0}
@@ -250,7 +262,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
     <div class="sub" id="sub"></div>
   </header>
 
-  <div id="boardWrap"><div id="board"></div><svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div>
+  <div id="boardWrap"><div id="board"></div><svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg><div id="promo" role="group" aria-label="Promotion"></div></div>
 
   <div id="evalwrap">
     <div id="evalhalf"></div><div id="evalfill"></div><div id="evalmid"></div>
@@ -388,6 +400,7 @@ const I18N={
  th:{
   stReady:'พร้อมใช้งาน',
   langTh:'ไทย', langEn:'English',
+  promoQ:'ควีน', promoR:'เรือ', promoB:'บิชอป', promoN:'ม้า',
   stEngineFail:'โหลดเอนจินไม่ได้ (ต้องเปิดผ่าน http/https)',
   bBack:'↶ ย้อนกลับ', bFwd:'↷ ไปข้างหน้า',
   tStart:'ไปจุดเริ่มต้น', tEnd:'ไปตาสุดท้าย', tUndo:'ย้อนกลับเกมก่อนหน้า', tTheme:'เปลี่ยนธีมกระดานเร็ว',
@@ -433,6 +446,7 @@ const I18N={
  en:{
   stReady:'Ready',
   langTh:'Thai', langEn:'English',
+  promoQ:'Queen', promoR:'Rook', promoB:'Bishop', promoN:'Knight',
   stEngineFail:'Cannot load engine (must be opened via http/https)',
   bBack:'↶ Back', bFwd:'↷ Forward',
   tStart:'Go to start', tEnd:'Go to last move', tUndo:'Restore previous game', tTheme:'Quick change board theme',
@@ -496,6 +510,7 @@ function applyLang(){
   if(lastSub) setSub.apply(null,[lastSub.key].concat(lastSub.args));
   if(lastStatus) setStatus.apply(null,[lastStatus.key].concat(lastStatus.args));
   renderLog(); setEval(lastEval.cp, lastEval.mate); renderPV(); checkGameEnd();
+  if(promoPending) openPromo(promoPending.from, promoPending.to);   // อัปเดต label/aria ของแถบโปรโมทตามภาษา
 }
 function setLang(l){ lang=(l==='en')?'en':'th'; lsSet(LSK.lang, lang); applyLang(); }
 document.querySelectorAll('.lang').forEach(b=>{ b.onclick=()=>{ setLang(b.dataset.lang); }; });
@@ -818,13 +833,20 @@ function checkGameEnd(){               // รุกฆาต: เด้งกล
   over.classList.add('show');
 }
 function renderLog(){
-  const g=new Chess(); const sans=[];                      // เล่นซ้ำจากเริ่ม เพื่อแปลงเป็น SAN
+  const rootFen = fens[0] || new Chess().fen();
+  const g=new Chess(rootFen); const sans=[];               // เล่นซ้ำจากตำแหน่งตั้งต้นของสายปัจจุบัน (รองรับตำแหน่งที่โหลดจาก FEN ด้วย)
   for(let i=0;i<ptr;i++){
     try{ const m=g.move({from:ucis[i].slice(0,2),to:ucis[i].slice(2,4),promotion:ucis[i][4]||'q'}); if(!m) break; sans.push(m.san); }
     catch(e){ break; }
   }
+  const rp=rootFen.split(' '); let turn=rp[1]==='b'?'b':'w', num=parseInt(rp[5],10)||1;
   let s='';
-  sans.forEach((h,i)=>{ s += (i%2===0 ? '<b>'+(i/2+1)+'.</b> ' : ''); s += h+' '; });
+  sans.forEach(h=>{
+    if(turn==='w') s += '<b>'+num+'.</b> '+h+' ';        // ตาขาว = ขึ้นเลขตาใหม่
+    else s += h+' ';                                     // ตาดำ = ต่อท้าย
+    if(turn==='b') num++;
+    turn = (turn==='w') ? 'b' : 'w';
+  });
   logEl.innerHTML = s || ('<span style="opacity:.6">'+t('logEmpty')+'</span>');
   logEl.scrollTop = logEl.scrollHeight;      // ขึ้นบรรทัดใหม่แล้วเลื่อน 'ลง' แนวตั้งไปท้ายสุด
 }
@@ -861,6 +883,7 @@ function toast(msg, info){
   clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'), 1900);
 }
 function onSquare(sq){
+  if(promoPending) return;                       // กำลังเลือกตัวหมากโปรโมท — ล็อกกระดานชั่วคราว
   const g=new Chess(fens[ptr]);
   const p=g.get(sq);
   if(game_over(g)){ return; }
@@ -881,8 +904,8 @@ function onSquare(sq){
     return;
   }
   if(p&&p.color===g.turn()){ sel=sq; legal=g.moves({square:sq,verbose:true}); render(); markTargets(); return; }
-  if(sel&&legal.some(m=>m.to===sq)){ playUci(sel+sq); return; }
-  if(sugTo[sq]){ playUci(sugTo[sq]); return; }   // แตะช่องที่ลูกศรแนะนำ = เดินตามคำแนะนำที่ดีที่สุดทันที
+  if(sel&&legal.some(m=>m.to===sq)){ maybePromo(sel, sq); return; }
+  if(sugTo[sq]){ maybePromo(sugTo[sq].slice(0,2), sugTo[sq].slice(2,4)); return; }   // แตะช่องที่ลูกศรแนะนำ = เดินทันที (ถ้าโปรโมทให้เลือกเอง)
   sel=null; legal=[]; render(); markTargets();   // แตะช่องที่ไปไม่ได้ = แค่ยกเลิกการเลือก
 }
 function game_over(g){                       // จบเกมแล้ว? (รุกฆาต/อับ/เสมอ)
@@ -922,6 +945,33 @@ function clearHints(){
   renderPV();                                      // ว่าง ⇒ แผงคำแนะนำ + ป้ายคะแนน/กรอบเป้าหมายหายทันที
   markTargets();
 }
+/* ---------- เลือกตัวหมากโปรโมท (เบี้ยถึงแถวสุดท้าย = ให้ผู้ใช้เลือกเอง) ---------- */
+let promoPending=null;
+const PROMO_ORDER=['q','r','b','n'];                  // ควีน · เรือ · บิชอป · ม้า
+function promoLabel(p){ return t('promo'+p.toUpperCase()); }
+function isPromoMove(from,to){
+  try{ return new Chess(fens[ptr]).moves({square:from,verbose:true}).some(m=>m.to===to && m.flags.indexOf('p')>=0); }
+  catch(e){ return false; }
+}
+function openPromo(from,to){
+  const bar=$('promo'); if(!bar) return;
+  promoPending={from:from, to:to, color:new Chess(fens[ptr]).turn()};
+  bar.innerHTML='';
+  PROMO_ORDER.forEach(p=>{
+    const label=promoLabel(p);
+    const b=document.createElement('button'); b.type='button'; b.dataset.piece=p;
+    b.setAttribute('aria-label', label); b.title=label;
+    const im=document.createElement('img'); im.alt='';
+    im.src='pieces/'+(promoPending.color==='b'?'_':'')+p.toUpperCase()+'.png';
+    b.appendChild(im); b.onclick=()=>finishPromo(p);
+    bar.appendChild(b);
+  });
+  bar.classList.add('show');
+}
+function closePromo(){ const bar=$('promo'); if(bar){ bar.classList.remove('show'); bar.innerHTML=''; } promoPending=null; }
+function finishPromo(p){ const pp=promoPending; if(!pp) return; const from=pp.from, to=pp.to; closePromo(); playUci(from+to+p); }
+function maybePromo(from,to){ if(isPromoMove(from,to)) openPromo(from,to); else playUci(from+to); }
+
 function playUci(uci){
   const g=new Chess(fens[ptr]);
   const m=g.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]||'q'});
@@ -1110,6 +1160,13 @@ document.addEventListener('keydown', (e)=>{
   if(tg==='INPUT' || tg==='TEXTAREA') return;          // ไม่แย่งตอนพิมพ์
   const c = e.code || '';
   const k = e.key || '';
+  // แถบเลือกตัวหมากโปรโมท: กด q/r/b/n เพื่อเลือก (ESC = ยกเลิก ไม่เดิน)
+  if(promoPending){
+    const pk=(e.key||'').toLowerCase();
+    if(pk==='q'||pk==='r'||pk==='b'||pk==='n'){ e.preventDefault(); finishPromo(pk); return; }
+    if(c==='Escape'||k==='Escape'||k==='Esc'){ e.preventDefault(); closePromo(); sel=null; legal=[]; render(); markTargets(); return; }
+    return;                                    // ระหว่างเลือก: กันคีย์อื่น (เช่น n = เกมใหม่) ทำงาน
+  }
   // กล่องยืนยัน 'เริ่มเกมใหม่': Enter = ยืนยัน · ESC = ยกเลิก (เฉพาะตอนกล่องเปิด)
   const cn=$('confirmNew');
   if(cn && getComputedStyle(cn).display!=='none'){
