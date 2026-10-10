@@ -204,6 +204,9 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
       <div class="row"><input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้ง"></div>
       <div class="row"><label style="min-width:70px">อนิเมชันหมาก</label>
         <select id="animSel"><option value="1" selected>เปิด</option><option value="0">ปิด</option></select></div>
+      <div class="row"><label style="min-width:70px">ELO</label>
+        <input type="range" id="elo" min="1320" max="3190" step="10" value="3190" style="flex:1">
+        <span id="elov" style="min-width:96px;text-align:right;font-size:12px">3190 (เต็ม)</span></div>
       <div class="row">
         <button id="bSet" class="sm">ตั้งตำแหน่ง</button>
         <button id="bNew" class="sm" style="display:none">เกมใหม่</button>
@@ -328,6 +331,7 @@ function runAnalysis(){
   engine.postMessage('stop');                                    // เผื่อมีงานค้าง — รอให้จบก่อน
   startTimer = setTimeout(()=>{ if(id!==job) return;
     searching=true;
+    applyElo();                                                  // ส่งเพดาน ELO ก่อนเริ่มคิด
     engine.postMessage('setoption name MultiPV value '+npvN);
     engine.postMessage('position fen '+fens[ptr]);
     engine.postMessage('go depth '+d+' movetime '+autoTime(d));
@@ -685,6 +689,21 @@ document.addEventListener('keydown', (e)=>{
 let animOn = true; try{ animOn = (localStorage.getItem('chessAnim') !== '0'); }catch(e){}   // อนิเมชันหมาก (จำค่าไว้)
 $('animSel').value = animOn ? '1' : '0';
 $('animSel').onchange = ()=>{ animOn = ($('animSel').value === '1'); try{ localStorage.setItem('chessAnim', animOn?'1':'0'); }catch(e){} };
+let eloN = 3190;                                            // เพดานความแรง (1320-3190 ตามลิมิต Stockfish)
+function applyElo(){
+  if(!engine || !ready) return;
+  if(eloN < 3190){
+    engine.postMessage('setoption name UCI_LimitStrength value true');
+    engine.postMessage('setoption name UCI_Elo value '+eloN);
+  } else {
+    engine.postMessage('setoption name UCI_LimitStrength value false');
+  }
+}
+$('elo').oninput=()=>{
+  eloN = +$('elo').value;
+  $('elov').textContent = (eloN>=3190 ? eloN+' (เต็ม)' : String(eloN));
+  applyElo(); if(busy) stopAnalysis();
+};
 document.querySelectorAll('.npv').forEach(b=>{
   b.onclick=()=>{
     npvN = +b.dataset.npv;
