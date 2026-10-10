@@ -252,8 +252,20 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
  line-height:1.45;margin-top:6px;box-sizing:border-box;white-space:pre-wrap;word-break:break-word}
 .tiny,.hint{color:var(--dim);font-size:.79rem;line-height:1.5;margin-top:6px}
 .rec{color:#4ec46f;font-weight:700}
-#confirmNew{display:none;border-color:#f5d327}
-#confirmNew .inner{display:flex;align-items:center;gap:8px;font-size:.93rem;font-weight:600}
+/* ---------- กล่องยืนยัน 'เริ่มเกมใหม่' — overlay ลอย (fixed) ในโซนระหว่างหลอด HP กับแถวปุ่มหลัก
+   ขอบบนถูกล็อกด้วย JS ไม่ให้สูงกว่าขอบล่างของหลอด HP (ไม่บังกระดาน) และไม่ดันเนื้อหา (fixed = หลุด flow) ---------- */
+#confirmNew{position:fixed;left:50%;transform:translateX(-50%);top:0;z-index:130;display:none;
+  width:min(calc(var(--boardmax,420px) + 2px),calc(100vw - 22px));
+  background:linear-gradient(180deg,var(--panel2) 0%,var(--panel) 100%);
+  border:2px solid #e5534b;border-radius:14px;padding:11px 12px;
+  box-shadow:0 0 0 3px rgba(229,83,75,.22),0 0 22px rgba(229,83,75,.4),0 14px 36px rgba(0,0,0,.6)}
+#confirmNew .cmsg{font-size:.95rem;font-weight:600;line-height:1.3;text-align:center;color:var(--txt);margin-bottom:9px;white-space:normal}
+#confirmNew .cbtns{display:flex;gap:8px}
+#confirmNew .cbtns button{flex:1;padding:9px 4px;border-radius:11px;font-size:.95rem}
+#bNewYes{background:linear-gradient(180deg,#4ec46f,#2f8f4e)!important;color:#04170b!important;border-color:#2f8f4e!important;box-shadow:0 4px 14px rgba(78,196,111,.4)!important}
+#bNewYes:active{filter:brightness(.93)}
+#bNewNo{background:linear-gradient(180deg,#e5534b,#d13f36)!important;color:#fff!important;border-color:#b23a30!important;box-shadow:0 4px 14px rgba(229,83,75,.4)!important}
+#bNewNo:active{filter:brightness(.93)}
 
 /* ---------- ไอคอนเกรดการเดิน (chess.com style) บนช่องปลายทาง ---------- */
 .gradico{position:absolute;right:1px;bottom:1px;width:21px;height:21px;z-index:4;pointer-events:none;
@@ -517,11 +529,11 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <div class="tiny" data-i18n-html="legendNote">หมายเหตุ: ไอคอน Brilliant และ Book เป็นการประเมินแบบ "ใกล้เคียง" (approximate)</div>
     </div>
   </details>
-  <div id="confirmNew" class="card">
-    <div class="inner">
-      <span style="flex:1" data-i18n="confirmMsg">เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)</span>
-      <button id="bNewYes" class="sm pri" data-i18n="yes" style="flex:0 0 28%">ยืนยัน</button>
-      <button id="bNewNo" class="sm" data-i18n="no" style="flex:0 0 24%">ยกเลิก</button>
+  <div id="confirmNew" role="dialog" aria-labelledby="confirmNewMsg">
+    <div class="cmsg" id="confirmNewMsg" data-i18n="confirmMsg">เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)</div>
+    <div class="cbtns">
+      <button id="bNewYes" class="pri" data-i18n="yes">ยืนยัน</button>
+      <button id="bNewNo" data-i18n="no">ยกเลิก</button>
     </div>
   </div>
 
@@ -1509,7 +1521,24 @@ $('bBack').onclick=()=>{ if(ptr>0) navTo(ptr-1, 'navBack'); };
 $('bFwd').onclick=()=>{ if(ptr<fens.length-1) navTo(ptr+1, 'navFwd'); };
 $('bEnd').onclick=()=>navTo(fens.length-1, 'navEnd');
 $('bFlip').onclick=()=>{ flipped=!flipped; render(); renderPV(); saveGame(); };
-$('bNewGame').onclick=()=>{ $('confirmNew').style.display='block'; };
+/* ---------- กล่องยืนยัน 'เริ่มเกมใหม่' = overlay ลอย (fixed) ในโซนระหว่างหลอด HP กับแถวปุ่มหลัก ---------- */
+function positionConfirmNew(){                 // ล็อกขอบบน: ไม่สูงกว่าขอบล่างหลอด HP (ไม่บังกระดาน) และไม่เลยขึ้นไปทับแถว log
+  const cn=$('confirmNew'); if(!cn || cn.style.display==='none') return;
+  const ew=$('evalwrap'); if(!ew) return;
+  const log=$('log');
+  const gap=6;
+  const eb=ew.getBoundingClientRect().bottom;                       // ขอบล่างหลอด HP
+  const lt=log?log.getBoundingClientRect().top:window.innerHeight;  // ขอบบนแถว log
+  const h=cn.offsetHeight;
+  let top=eb+gap;                                                   // วางใต้หลอด HP ทันที
+  if(top+h>lt-4) top=Math.max(eb+gap, lt-4-h);                      // ถ้าจะเลย log → ขยับขึ้น แต่ยังคง >= eb+gap
+  if(top<4) top=4;
+  cn.style.top=Math.round(top)+'px';
+}
+function openConfirmNew(){ const cn=$('confirmNew'); if(!cn) return; cn.style.display='block'; positionConfirmNew(); }
+window.addEventListener('resize', positionConfirmNew, {passive:true});
+window.addEventListener('scroll', positionConfirmNew, {passive:true});
+$('bNewGame').onclick=()=>{ openConfirmNew(); };
 $('bNewNo').onclick=()=>{ $('confirmNew').style.display='none'; };
 let prevGame=null;                       // สถานะเกมก่อน 'เริ่มเกมใหม่' ล่าสุด (เก็บได้ครั้งเดียว — ใช้ ◀️ แล้วล้าง)
 function updateUndoBtn(){ const b=$('bUndo'); if(b) b.disabled = !prevGame; }
