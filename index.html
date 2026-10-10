@@ -280,12 +280,12 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
   border-radius:14px;overflow:hidden;border:1px solid #c9d3e0;box-shadow:0 10px 26px rgba(0,0,0,.42)}
 #editBoard{position:absolute;inset:0;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr)}
 #editTray{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:6px}
-#editTray .traybtn{flex:none;padding:4px;height:auto;aspect-ratio:1/1;border-radius:10px;background:var(--panel2);border:1px solid var(--line);min-width:0}
+#editTray .traybtn{flex:none;padding:4px;height:auto;aspect-ratio:1/1;border-radius:10px;background:var(--btnBg);border:1px solid var(--btnBd);min-width:0}
 #editTray .traybtn img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
 #editTray .traybtn.on{box-shadow:0 0 0 2px var(--acc),0 0 10px var(--accGlow);border-color:var(--acc)}
 #editTray .traybtn.erase{font-size:1.25rem;display:flex;align-items:center;justify-content:center;color:var(--dim)}
 #editTray .traybtn.erase.on{background:#e5534b;color:#fff;border-color:#a52f28;box-shadow:0 0 0 2px rgba(229,83,75,.5)}
-.esel{font-weight:700;background:transparent!important;color:var(--dim);border-color:var(--line)}
+.esel{font-weight:700;background:var(--btnBg)!important;color:var(--acc);border:1px solid var(--btnBd);box-shadow:0 2px 6px rgba(0,0,0,.28)}
 .esel.on{background:linear-gradient(180deg,var(--acc),var(--acc2))!important;color:var(--accInk);border-color:var(--acc2);box-shadow:0 0 0 2px var(--accGlow)}
 #editDel:disabled{opacity:.4}
 #editSelInfo{min-height:14px}
@@ -429,35 +429,19 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
     <button id="bFlip" class="sm" data-i18n="bFlip" style="flex:0 0 21.5%">⇅ สลับฝั่ง</button>
     <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" data-i18n-title="tTheme" data-i18n="bTheme" style="flex:0 0 16%">ธีม</button>
   </div>
-  <div class="row">
-    <button id="bEdit" class="sm editbtn" data-i18n="bEdit" style="flex:1">✎ แก้ไขกระดาน</button>
-  </div>
+  <div id="log"></div>
   <div class="row">
     <button id="bHist" class="sm histbtn" data-i18n="bHist" style="flex:1">🗂 ประวัติเกม</button>
     <button id="bSaveHist" class="sm savebtn" data-i18n="bSaveHist" style="flex:1">💾 บันทึกเกมนี้</button>
-  </div>
-  <div class="row">
     <button id="bStats" class="sm statbtn" data-i18n="bStats" style="flex:1">📊 สถิติเกม</button>
   </div>
-  <div id="installCard" class="card installCard" style="display:none">
-    <div class="cardtitle" data-i18n="bInstall">📲 ติดตั้งเป็นแอพ</div>
-    <div class="tiny" id="installBody"></div>
-    <div class="row"><button id="bInstall" class="sm pri" data-i18n="installBtn" style="display:none">ติดตั้งเลย</button></div>
+  <div class="row">
+    <button id="bEdit" class="sm editbtn" data-i18n="bEdit" style="flex:1">✎ แก้ไขกระดาน</button>
+    <button id="bSettings" class="sm setbtn" data-i18n="bSettings" style="flex:1" aria-expanded="false" aria-controls="settings">⚙ ตั้งค่า</button>
   </div>
-  <div id="confirmNew" class="card">
-    <div class="inner">
-      <span style="flex:1" data-i18n="confirmMsg">เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)</span>
-      <button id="bNewYes" class="sm pri" data-i18n="yes" style="flex:0 0 28%">ยืนยัน</button>
-      <button id="bNewNo" class="sm" data-i18n="no" style="flex:0 0 24%">ยกเลิก</button>
-    </div>
-  </div>
-
-  <div id="pv" style="display:none"></div>
-  <div id="log"></div>
-  <div id="status"></div>
 
   <details id="settings">
-    <summary data-i18n="sumSettings">⚙ ตั้งค่า</summary>
+    <summary data-i18n="sumSettings" style="display:none">⚙ ตั้งค่า</summary>
     <div class="card">
       <div class="row">
         <label style="min-width:64px" data-i18n="lblProfile">โปรไฟล์</label>
@@ -533,9 +517,20 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <div class="tiny" data-i18n-html="legendNote">หมายเหตุ: ไอคอน Brilliant และ Book เป็นการประเมินแบบ "ใกล้เคียง" (approximate)</div>
     </div>
   </details>
+  <div id="confirmNew" class="card">
+    <div class="inner">
+      <span style="flex:1" data-i18n="confirmMsg">เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)</span>
+      <button id="bNewYes" class="sm pri" data-i18n="yes" style="flex:0 0 28%">ยืนยัน</button>
+      <button id="bNewNo" class="sm" data-i18n="no" style="flex:0 0 24%">ยกเลิก</button>
+    </div>
+  </div>
+
+  <div id="pv" style="display:none"></div>
+  <div id="status"></div>
+
 
   <details id="posPanel">
-    <summary data-i18n="sumPos">📋 ตำแหน่ง &amp; คัดลอก</summary>
+    <summary data-i18n="sumPos">📋 นำเข้า/ส่งออก</summary>
     <div class="card">
       <div class="row">
         <input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้งตำแหน่ง" data-i18n-ph="fenPh">
@@ -558,6 +553,11 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <div class="tiny" id="fenhint" data-i18n-html="fenHintHtml"><b>FEN</b> = รหัสตำแหน่งกระดานปัจจุบัน (ใช้แชร์/วางต่อในโปรแกรมหมากรุกอื่น)<br><b>PGN</b> = บันทึกการเดินทั้งเกม (เอาไปให้คนอื่น/โปรแกรมวิเคราะห์ต่อได้)</div>
     </div>
   </details>
+  <div id="installCard" class="card installCard" style="display:none">
+    <div class="cardtitle" data-i18n="bInstall">📲 ติดตั้งเป็นแอพ</div>
+    <div class="tiny" id="installBody"></div>
+    <div class="row"><button id="bInstall" class="sm pri" data-i18n="installBtn" style="display:none">ติดตั้งเลย</button></div>
+  </div>
 </div>
 
 <div id="editView">
@@ -763,7 +763,7 @@ const I18N={
   tStart:'ไปจุดเริ่มต้น', tEnd:'ไปตาสุดท้าย', tUndo:'ย้อนกลับเกมก่อนหน้า', tTheme:'เปลี่ยนธีมกระดานเร็ว',
   bNewGame:'เริ่มเกมใหม่', bRun:'▶ รัน', bStop:'■ หยุด', bFlip:'⇅ สลับฝั่ง', bTheme:'ธีม',
   confirmMsg:'เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)', yes:'ยืนยัน', no:'ยกเลิก',
-  sumSettings:'⚙ ตั้งค่า', sumPos:'📋 ตำแหน่ง & คัดลอก',
+  sumSettings:'⚙ ตั้งค่า', sumPos:'📋 นำเข้า/ส่งออก',
   lblProfile:'โปรไฟล์', lblDepth:'ความลึก', lblNpv:'ตัวเลือก', lblSize:'ขนาดของธีม, ปุ่ม', lblElo:'ELO', lblLang:'ภาษา / Language',
   profQuick:'⚡ คิดแบบเร็ว', profNormal:'⚖️ คิดแบบปกติ', profDeep:'🧠 คิดแบบลึก', profCustom:'กำหนดเอง',
   sizeSmall:'เล็ก', sizeMedium:'กลาง', sizeLarge:'ใหญ่',
@@ -805,7 +805,7 @@ const I18N={
   pgnTitle:'นำเข้า PGN', pgnPh:'วาง PGN ที่นี่ (มีหรือไม่มี header ก็ได้)', bImportPgn:'นำเข้า PGN',
   pgnHintHtml:'วางบันทึกการเดิน (PGN) แล้วกด <b>นำเข้า PGN</b> เพื่อเปิดเกมนั้นมาวิเคราะห์ · รองรับทั้งแบบมี header และไม่มี · ถ้ามี FEN เริ่มต้นใน header จะใช้ด้วย',
   toastPgnImported:'นำเข้าสำเร็จ {0} ตา', toastPgnImportedN:'นำเข้าสำเร็จ {0} เกม (ข้าม {1})', toastPgnBad:'PGN ไม่ถูกต้อง',
-  bEdit:'✎ แก้ไขกระดาน',
+  bEdit:'✎ แก้ไขกระดาน', bSettings:'⚙ ตั้งค่า',
   legendTitle:'คำอธิบายไอคอนเกรดการเดิน',
   gBook:'Book — ตาอยู่ในตำราเปิดหมากมาตรฐาน',
   gBrilliant:'Brilliant (!!) — ตาดีที่สุด + เสียสละหมากอย่างชาญฉลาด',
@@ -866,7 +866,7 @@ const I18N={
   tStart:'Go to start', tEnd:'Go to last move', tUndo:'Restore previous game', tTheme:'Quick change board theme',
   bNewGame:'New Game', bRun:'▶ Run', bStop:'■ Stop', bFlip:'⇅ Flip', bTheme:'Theme',
   confirmMsg:'Start a new game? (moves will be lost)', yes:'Confirm', no:'Cancel',
-  sumSettings:'⚙ Settings', sumPos:'📋 Position & Copy',
+  sumSettings:'⚙ Settings', sumPos:'📋 Import/Export',
   lblProfile:'Profile', lblDepth:'Depth', lblNpv:'Lines', lblSize:'Theme/Button size', lblElo:'ELO', lblLang:'Language',
   profQuick:'⚡ Quick', profNormal:'⚖️ Normal', profDeep:'🧠 Deep', profCustom:'Custom',
   sizeSmall:'Small', sizeMedium:'Medium', sizeLarge:'Large',
@@ -908,7 +908,7 @@ const I18N={
   pgnTitle:'Import PGN', pgnPh:'Paste PGN here (with or without headers)', bImportPgn:'Import PGN',
   pgnHintHtml:'Paste a move record (PGN) then press <b>Import PGN</b> to load that game for analysis · supports with or without headers · a starting FEN in the header is used too',
   toastPgnImported:'Imported {0} moves', toastPgnImportedN:'Imported {0} games ({1} skipped)', toastPgnBad:'Invalid PGN',
-  bEdit:'✎ Edit board',
+  bEdit:'✎ Edit board', bSettings:'⚙ Settings',
   legendTitle:'Move-grade icon legend',
   gBook:'Book — the move follows standard opening theory',
   gBrilliant:'Brilliant (!!) — best move plus a sound sacrifice',
@@ -2575,6 +2575,8 @@ function wireHistReplay(){
   };
   // จอหลัก: สถิติเกมปัจจุบัน
   const bst=$('bStats'); if(bst) bst.onclick=()=>openStats(mainGameForStats());
+  // ปุ่ม ⚙ ตั้งค่า (อยู่ในแถวเดียวกับ แก้ไขกระดาน) เปิด/ปิดแผงตั้งค่า
+  const bset=$('bSettings'); if(bset) bset.onclick=()=>{ const sp=$('settings'); if(!sp) return; const o=!sp.open; sp.open=o; bset.classList.toggle('on', o); bset.setAttribute('aria-expanded', o?'true':'false'); };
   // ปุ่มปิดกล่องสถิติ
   const scl=$('statClose'); if(scl) scl.onclick=closeStats;
   const sv=$('statView'); if(sv) sv.onclick=(e)=>{ if(e.target===sv) closeStats(); };
