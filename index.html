@@ -496,13 +496,17 @@ $('bTurn').onclick=()=>{
   if(run) runAnalysis();
 };
 function updateTurnBtn(){ const t=new Chess(fens[ptr]).turn(); $('bTurn').textContent='ตา: '+(t==='w'?'ขาว':'ดำ'); }
-$('bNew').onclick=()=>{ game=new Chess(); fens=[game.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={};
-  flipped=false; render(); renderPV(); updateTurnBtn(); statusEl.textContent='เกมใหม่'; };
+$('bNew').onclick=()=>{ game=new Chess(); fens=[game.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
+  flipped=false; render(); renderPV(); updateTurnBtn(); statusEl.textContent='เกมใหม่';
+  if(run) runAnalysis(); };
 $('bSet').onclick=()=>{
   const v=$('fen').value.trim(); if(!v) return;
   try{ const g=new Chess(); if(v.includes('/')) g.load(v); else g.loadPgn(v);
-    fens=[g.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; render(); renderPV(); updateTurnBtn();
-    statusEl.textContent='ตั้งตำแหน่งแล้ว ✓'; }catch(e){ statusEl.textContent='FEN/PGN ไม่ถูกต้อง'; }
+    fens=[g.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
+    render(); renderPV(); updateTurnBtn();
+    statusEl.textContent='ตั้งตำแหน่งแล้ว ✓';
+    if(run) runAnalysis(); else toast('ตั้งตำแหน่งใหม่แล้ว — กด ▶ รัน เพื่อวิเคราะห์', true);
+  }catch(e){ statusEl.textContent='FEN/PGN ไม่ถูกต้อง'; toast('FEN/PGN ไม่ถูกต้อง'); }
 };
 $('bCopy').onclick=async()=>{
   const g=new Chess(); g.loadPgn(new Chess(fens[ptr]).pgn()||''); const txt=new Chess(fens[ptr]).pgn()||fens[ptr];
