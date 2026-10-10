@@ -314,13 +314,16 @@ function setEval(cp, mate){          // cp = มุมมองขาว (centip
   const whiteAdv = mate!=null ? (mate>0? 99 : -99) : cp;
   const val = bottom==='w' ? whiteAdv : -whiteAdv;      // + = ฝั่งล่างได้เปรียบ
   // ครึ่งซ้าย = สีฝั่งด้านล่าง ; ขวา = อีกฝั่ง (สลับอัตโนมัติเมื่อกลับหัว)
-  const leftIsWhite = bottom==='w';
-  evalHalf.style.background = leftIsWhite
-    ? 'linear-gradient(to right,#dfe6ee 0 50%,#1b1e23 50% 100%)'
-    : 'linear-gradient(to right,#1b1e23 0 50%,#dfe6ee 50% 100%)';
-  const pct = Math.max(2, Math.min(98, 50 + 48*Math.tanh(val/400)));   // หลอด HP ของฝั่งล่าง (เต็ม = ฝั่งล่างได้เปรียบสุด)
+  // หลอด: ครึ่งซ้าย = สีฝั่งด้านล่าง (ขาว/ดำเท่านั้น) · สีฝั่งที่ได้เปรียบกินเลยเส้นกลาง (เส้นกลางตรึงไว้)
+  const bottomWhite = (bottom==='w');
+  const W_='#f3f6f9', B_='#15181c';
+  evalHalf.style.background = 'linear-gradient(to right,' + (bottomWhite?W_:B_) + ' 0 50%,' + (bottomWhite?B_:W_) + ' 50% 100%)';
+  const pct = Math.max(2, Math.min(98, 50 + 48*Math.tanh(val/400)));   // % ของฝั่งล่าง
   evalFill.style.left = '0%';
   evalFill.style.width = pct + '%';
+  evalFill.style.background = bottomWhite ? 'rgba(255,255,255,.95)' : 'rgba(5,6,8,.95)';
+  evalTxt.style.color = '#fff';
+  evalTxt.style.textShadow = '0 1px 2px #000,0 0 4px #000';
   evalTxt.textContent = mate!=null ? ('#'+mate) : ((val>0?'+':'')+(val/100).toFixed(1));
   evalTxt.style.color = Math.abs(val)>150 ? '#fff' : '#e9edf2';
   const bl = bottom==='w' ? 'ขาว' : 'ดำ', ot = bottom==='w' ? 'ดำ' : 'ขาว';
@@ -526,11 +529,7 @@ function onSquare(sq){
   }
   if(p&&p.color===g.turn()){ sel=sq; legal=g.moves({square:sq,verbose:true}); render(); markTargets(); return; }
   if(sel&&legal.some(m=>m.to===sq)){ playUci(sel+sq); return; }
-  if(sel&&sq!==sel){
-    toast(g.inCheck() ? 'เดินนี้ไม่ได้ — ติดรุกอยู่ ต้องแก้การถูกรุกก่อน'
-                      : 'เดินนี้ไม่ได้ — หมากตัวนี้ไปช่องนั้นไม่ได้');
-  }
-  sel=null; legal=[]; render(); markTargets();
+  sel=null; legal=[]; render(); markTargets();   // แตะช่องที่ไปไม่ได้ = แค่ยกเลิกการเลือก (ไม่ล็อก ไม่ขึ้นเตือน)
 }
 function game_over(g){                       // จบเกมแล้ว? (รุกฆาต/อับ/เสมอ)
   if(!g.isGameOver()) return false;
