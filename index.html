@@ -61,8 +61,9 @@ button.on{background:var(--acc2);color:#08131f;border-color:#3d82c4}
 button.sm{font-size:13px;padding:10px 4px}
 
 #log{margin-top:8px;height:32px;line-height:30px;border:1px solid var(--line);border-radius:8px;
- background:var(--panel);padding:0 10px;overflow-x:auto;white-space:nowrap;font-size:13px;color:var(--dim);
- font-variant-numeric:tabular-nums}
+ background:var(--panel);padding:0 10px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;font-size:13px;color:var(--dim);
+ font-variant-numeric:tabular-nums;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+#log::-webkit-scrollbar{display:none;height:0;width:0}
 #log b{color:var(--txt);font-weight:600}
 
 #pv{margin-top:8px;display:flex;flex-direction:column;gap:5px}
