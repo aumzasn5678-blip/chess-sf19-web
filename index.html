@@ -265,7 +265,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
   <div class="row">
     <button id="bRun" class="pri">▶ รัน</button>
     <button id="bFlip" class="sm">⇅ สลับฝั่ง</button>
-    <button id="bUndo" class="sm" title="ย้อนกลับเกมก่อนหน้า (ใช้ได้ครั้งเดียวหลังเริ่มใหม่)" style="flex:0 0 6.5%" disabled>◀️</button>
+    <button id="bUndo" class="sm" title="ย้อนกลับเกมก่อนหน้า" aria-label="ย้อนกลับเกมก่อนหน้า" style="flex:0 0 6.5%" disabled>&#9664;&#xfe0e;</button>
     <button id="bNewGame" class="sm" style="flex:0 0 26%">เริ่มเกมใหม่</button>
     <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" style="flex:0 0 16%">ธีม</button>
   </div>
@@ -546,6 +546,7 @@ function renderPV(){
   pvEl.innerHTML=''; sugTo={}; sugRank={}; sqTagTxt={};
   if(!keys.length){ arrowsEl.innerHTML=''; updateDepthInfo(); updateNotices(); return; }
   const sideToMove = new Chess(fens[ptr]).turn();
+  let bestShownCp = 0;                             // คะแนนจริงของเส้นที่ดีสุด (อันดับ 1) รอบล่าสุด — ใช้คิดส่วนต่าง
   keys.forEach((k,idx)=>{
     const l=lines[k];
     let cp = l.kind==='cp' ? l.val : null, mate = l.kind==='mate' ? l.val : null;
@@ -556,8 +557,13 @@ function renderPV(){
     const shownMate = whiteMate==null? null : (bottom==='w'? whiteMate : -whiteMate);
     const txt = shownMate!=null ? ((shownMate>0?'+':'-')+'M'+Math.abs(shownMate))
                                 : ((shownCp>0?'+':'')+(shownCp/100).toFixed(2));
-    // ป้ายบนช่องเป้าหมาย (.sqtag) = 'คะแนนจริงของเส้นนั้น' (หน่วยตัวเบี้ย, มุมมองฝ่ายที่กำลังเดิน)
-    const tagTxt = txt;                                   // ใช้ค่าคะแนนจริงต่อเส้น (ไม่คิดส่วนต่างเทียบอันดับ 1)
+    // ป้ายบนช่องเป้าหมาย (.sqtag) = 'ส่วนต่างเทียบเส้นที่ดีที่สุด' (หน่วยตัวเบี้ย, มุมมองฝ่ายที่กำลังเดิน)
+    // อันดับ 1 = 'ดีสุด' (ไม่มีตัวเลข) · อันดับ 2-5 = ค่าติดลบ 2 ตำแหน่งเทียบอันดับ 1 · เส้น mate คง M ไว้
+    let tagTxt;
+    if(idx===0){ bestShownCp = shownCp; tagTxt = 'ดีสุด'; }
+    else if(shownMate!=null){ tagTxt = ((shownMate>0?'+':'-')+'M'+Math.abs(shownMate)); }
+    else { const dcp = (shownCp - bestShownCp)/100;
+      tagTxt = (Math.abs(dcp)<0.005) ? '0.00' : (dcp>0? '+'+dcp.toFixed(2) : dcp.toFixed(2)); }
     const sans = toSan(fens[ptr], l.pv);
     const row=document.createElement('div');
     row.className='pvrow'+(k===1?' best':'');
