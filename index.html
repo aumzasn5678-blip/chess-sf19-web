@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Chess Scan">
+<meta name="apple-mobile-web-app-title" content="Chess AI - Stockfish 19">
 <meta name="theme-color" content="#15181c">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
 <script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{})); }</script>
-<title>Chess Scan · SF19</title>
+<title>Chess AI · Stockfish 19</title>
 <style>
 :root{--bg:#15181c;--panel:#1e2228;--panel2:#262b33;--line:#39404a;--txt:#e9edf2;--dim:#98a2b3;
  --acc:#f0a04b;--acc2:#4ea1f0;--lt:#e8d3ae;--dk:#7a5a3c;--hint:rgba(78,161,240,.45);--ok:#57c785;--bad:#e05c5c}
@@ -137,6 +137,42 @@ label{color:var(--dim);font-size:12px;min-width:58px}
 select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
  border-radius:8px;padding:8px;font-size:13px;min-width:0}
 .tiny{font-size:11px;color:var(--dim);line-height:1.5;margin-top:6px}
+
+/* ================= MODERN UI (2026) ================= */
+:root{
+  --bg:#0e1116; --panel:#161b22; --panel2:#1d232c; --line:#2b333e; --txt:#eef2f7; --dim:#93a0b1;
+  --acc:#4ec46f; --acc2:#4ea1f0; --ok:#4ec46f; --bad:#e5534b;
+  --lt:#fbfcfd; --dk:#dde4ec; --hint:rgba(78,161,240,.5);
+}
+html,body{font-family:"Inter","Sarabun","Noto Sans Thai",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:radial-gradient(900px 500px at 50% -8%,#18212b 0%,var(--bg) 62%);-webkit-font-smoothing:antialiased;
+  max-width:520px;margin:0 auto;padding:0 10px 20px}
+h1{font-size:20px;font-weight:700;letter-spacing:.2px;margin:10px 0 2px;display:flex;align-items:center;gap:7px}
+h1 .dim{color:var(--dim);font-weight:500;font-size:15px}
+.sub{font-size:12px;color:var(--dim);margin-bottom:8px}
+.card,details{background:linear-gradient(180deg,var(--panel2) 0%,var(--panel) 100%);border:1px solid var(--line);
+  border-radius:15px;box-shadow:0 8px 22px rgba(0,0,0,.3)}
+#boardWrap{border-radius:16px;overflow:hidden;border:1px solid #c9d3e0;box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.sq.light{background:var(--lt)} .sq.dark{background:var(--dk)}
+.sq.sel{box-shadow:inset 0 0 0 4px rgba(78,196,111,.95)}
+#evaltag,#evaltagr{background:rgba(8,11,16,.8);color:#f4f8fc!important;padding:1px 8px;border-radius:999px;
+  font-size:10.5px;font-weight:600;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(3px);z-index:6}
+#evaltxt{z-index:7;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+button{border-radius:12px;font-weight:600;letter-spacing:.2px;transition:transform .08s,filter .15s,background .15s}
+button:active{transform:scale(.97)}
+button.pri{background:linear-gradient(180deg,#5bd07e,#34a55b);color:#04170b;border-color:#2f8b50;box-shadow:0 5px 16px rgba(78,196,111,.3)}
+button.on{background:linear-gradient(180deg,#f0675e,#cf3b33);color:#fff;border-color:#a52f28;box-shadow:0 5px 16px rgba(229,83,75,.3)}
+#bBack,#bFwd{background:linear-gradient(180deg,#5aabf7,#3a80c6);color:#04121f;border-color:#2f6aa6}
+#bFlip{background:var(--panel2);color:var(--dim)}
+#bNewGame{background:linear-gradient(180deg,#f4b258,#cf8d2c);color:#241704;border-color:#a97220}
+#animBtn,#bSet,#bCopy,#bNewYes,#bNewNo{background:var(--panel2)}
+.npv.on{background:linear-gradient(180deg,#f4b258,#cf8d2c)!important;color:#241704!important}
+details>summary{list-style:none;padding:12px 14px;font-weight:600;color:var(--dim);cursor:pointer;font-size:13.5px}
+details[open]>summary{color:var(--txt);border-bottom:1px solid var(--line)}
+details .card{background:transparent;border:0;box-shadow:none;border-radius:0}
+input[type=range]{height:30px}
+#log{background:#0f141b;border:1px solid var(--line);border-radius:12px}
+.tiny,.hint{color:var(--dim);font-size:11px}
 </style>
 </head>
 <body>
@@ -144,7 +180,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
 <div id="toast"></div>
 <div id="bigover" onclick="this.classList.remove('show')"><div class="box" id="bigbox"></div></div>
   <header>
-    <h1>♞ Chess Scan</h1>
+    <h1>♞ Chess AI - <span class="dim">Stockfish 19</span></h1>
     <div class="sub" id="sub">กำลังโหลดเอนจิน…</div>
   </header>
 
@@ -235,7 +271,7 @@ function startEngine(){
   try{ engine=new Worker('lib/stockfish.js'); }catch(e){ subEl.textContent='โหลดเอนจินไม่ได้ (ต้องเปิดผ่าน http/https)'; return; }
   engine.onmessage = ev =>{
     const line = typeof ev.data==='string' ? ev.data : (ev.data&&ev.data.text)||'';
-    if(line==='uciok'){ ready=true; subEl.textContent='SF19 พร้อม'; return; }
+    if(line==='uciok'){ ready=true; subEl.textContent='พร้อมใช้งาน'; return; }
     if(line.startsWith('info ')) parseInfo(line);
     if(line.startsWith('bestmove')){
       if(!searching) return;                    // ผลของงานเก่า (หลัง stop) — ทิ้ง
@@ -691,6 +727,13 @@ $('elo').oninput=()=>{
   $('elov').textContent = (eloN>=3190 ? eloN+' (เต็ม)' : String(eloN));
   applyElo(); if(busy) stopAnalysis();
 };
+// ย้ายชุดตั้งค่า (ความลึก · ตัวเลือกกี่ตัว) เข้าไปในแผง ⚙ ตั้งค่า ให้จอสะอาด
+try{
+  var _sum=document.querySelector('details>summary'); if(_sum) _sum.textContent='⚙ ตั้งค่า';
+  var _panel=document.querySelector('details .card');
+  var _dc=document.getElementById('depth'); if(_dc&&_panel) _panel.insertBefore(_dc.closest('.card'), _panel.firstChild);
+  var _nc=document.getElementById('npvbtns'); if(_nc&&_panel) _panel.insertBefore(_nc.closest('.card'), _panel.firstChild.nextSibling);
+}catch(e){}
 document.querySelectorAll('.npv').forEach(b=>{
   b.onclick=()=>{
     npvN = +b.dataset.npv;
