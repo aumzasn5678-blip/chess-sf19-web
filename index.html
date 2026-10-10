@@ -34,9 +34,13 @@ header .sub{font-size:11px;color:var(--dim);margin-left:auto;text-align:right}
 .sq.cap::after{content:"";position:absolute;inset:6%;border-radius:50%;border:5px solid var(--hint);z-index:4}
 .sq.last{box-shadow:inset 0 0 0 3px rgba(240,160,75,.5)}
 .sq.chk{background:#c0392b!important}
+.sq.tgt::before{content:"";position:absolute;inset:2px;border:2px dashed rgba(87,199,133,.85);border-radius:7px;z-index:2}
 .coord{position:absolute;font-size:9px;font-weight:700;color:rgba(0,0,0,.45)}
 .coord.f{left:3px;bottom:1px}.coord.r{right:3px;top:1px;color:rgba(255,255,255,.5)}
 #arrows{position:absolute;inset:0;pointer-events:none;z-index:3}
+#boardWrap .ghost{position:absolute;width:12.5%;height:12.5%;object-fit:contain;z-index:6;
+ pointer-events:none;transition:transform .17s ease-out;will-change:transform;
+ filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
 
 /* หลอดคะแนน: ครึ่งซ้าย = สีของฝั่งด้านล่าง (สลับอัตโนมัติเมื่อกลับหัว) */
 #evalwrap{position:relative;height:26px;margin-top:8px;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#20242a}
@@ -154,18 +158,21 @@ let game=new Chess();
 let flipped=false;                 // ⇅ กลับหัว (ไม่สลับเอง)
 let sel=null, legal=[];
 let fens=[game.fen()], ptr=0, ucis=[];   // ประวัติสำหรับย้อน/ไปข้างหน้า
-let lines={}, job=0, busy=false, run=false, npvN=3;
+let lines={}, job=0, busy=false, run=false, npvN=3, sugTo={};
 
 /* ---------- เอนจิน (1 เธรด + บิลด์เบา ⇒ เครื่องไม่ร้อน) ---------- */
-let engine=null, ready=false;
+let engine=null, ready=false, searching=false, startTimer=null;
 function startEngine(){
   try{ engine=new Worker('lib/stockfish.js'); }catch(e){ subEl.textContent='โหลดเอนจินไม่ได้ (ต้องเปิดผ่าน http/https)'; return; }
   engine.onmessage = ev =>{
     const line = typeof ev.data==='string' ? ev.data : (ev.data&&ev.data.text)||'';
     if(line==='uciok'){ ready=true; subEl.textContent='SF19 พร้อม'; return; }
     if(line.startsWith('info ')) parseInfo(line);
-    if(line.startsWith('bestmove')){ busy=false; run=false; $('bRun').classList.remove('on'); $('bRun').textContent='▶ รัน';
-      renderPV(); statusEl.textContent='วิเคราะห์จบ · ลึก '+maxDepth(); }
+    if(line.startsWith('bestmove')){
+      if(!searching) return;                    // ผลของงานเก่า (หลัง stop) — ทิ้ง
+      searching=false;
+      renderPV(); statusEl.textContent='วิเคราะห์จบ · ลึก '+maxDepth()+(run?' · พร้อมคิดใหม่เมื่อเดินหมาก':'');
+    }
   };
   engine.postMessage('uci');
   engine.postMessage('setoption name Threads value 1');
@@ -184,16 +191,23 @@ function runAnalysis(){
   if(!engine||!ready) return;
   lines={}; busy=true; run=true; const id=++job;
   const d=+$('depth').value;
-  engine.postMessage('stop');
-  engine.postMessage('setoption name MultiPV value '+npvN);
-  engine.postMessage('position fen '+fens[ptr]);
-  engine.postMessage('go depth '+d+' movetime '+autoTime(d));
-  $('bRun').classList.add('on'); $('bRun').textContent='■ หยุด';
-  statusEl.textContent='กำลังคิด… (ลึก '+d+' · เพดาน '+(autoTime(d)/1000).toFixed(1)+' วิ)'; renderPV();
-  setTimeout(()=>{ if(id===job&&busy){} },0);
+  searching=false; if(startTimer) clearTimeout(startTimer);
+  engine.postMessage('stop');                                    // เผื่อมีงานค้าง — รอให้จบก่อน
+  startTimer = setTimeout(()=>{ if(id!==job) return;
+    searching=true;
+    engine.postMessage('setoption name MultiPV value '+npvN);
+    engine.postMessage('position fen '+fens[ptr]);
+    engine.postMessage('go depth '+d+' movetime '+autoTime(d));
+    statusEl.textContent='กำลังคิด… (ลึก '+d+' · เพดาน '+(autoTime(d)/1000).toFixed(1)+' วิ)';
+  }, 120);
+  $('bRun').classList.add('on'); $('bRun').textContent='■ หยุด'; renderPV();
 }
 function stopAnalysis(){
-  if(!engine) return; engine.postMessage('stop'); run=false; busy=false;
+  if(startTimer){ clearTimeout(startTimer); startTimer=null; }
+  if(engine) engine.postMessage('stop');
+  searching=false; busy=false; run=false;
+  arrowsEl.innerHTML=''; sugTo={};              // เอาลูกศร/กรอบเป้าหมายออกเมื่อไม่ได้กดรัน
+  render();
   $('bRun').classList.remove('on'); $('bRun').textContent='▶ รัน'; statusEl.textContent='หยุดแล้ว';
 }
 
@@ -232,8 +246,8 @@ function toSan(fen, ucis){
 }
 function renderPV(){
   const keys=Object.keys(lines).map(Number).sort((a,b)=>a-b);
-  pvEl.innerHTML='';
-  if(!keys.length){ return; }
+  pvEl.innerHTML=''; sugTo={};
+  if(!keys.length){ arrowsEl.innerHTML=''; return; }
   const sideToMove = new Chess(fens[ptr]).turn();
   keys.forEach((k,idx)=>{
     const l=lines[k];
@@ -250,11 +264,12 @@ function renderPV(){
     row.innerHTML=`<span class="n">${k}</span><span class="mv">${sans[0]||'?'}</span>
       <span class="sc ${shownCp>=0?'pos':'neg'}">${txt}</span>
       <span class="ln">${sans.slice(1).join(' ')}</span>`;
-    if(l.pv[0]) row.onclick=()=>playUci(l.pv[0]);
+    if(l.pv[0]){ sugTo[l.pv[0].slice(2,4)] = l.pv[0]; row.onclick=()=>playUci(l.pv[0]); }
     pvEl.appendChild(row);
     if(k===1) setEval(whiteCp, whiteMate);
   });
   drawArrows(keys.slice(0,3));
+  render();                                  // วาดกรอบเป้าหมาย (จุดที่แตะแล้วเดินได้เลย)
 }
 
 /* ---------- ลูกศร ---------- */
@@ -297,6 +312,7 @@ function render(){
     if(last&&last.includes(sq)) d.classList.add('last');
     const mv=legal.find(m=>m.to===sq);
     if(mv) d.classList.add(mv.captured||mv.flags.includes('e')?'cap':'mv');
+    if(!sel && sugTo[sq]) d.classList.add('tgt');
     if(p){ const s=document.createElement('img'); s.className='pcimg'; s.alt='';
       s.src='pieces/'+(p.color==='b'?'_':'')+p.type.toUpperCase()+'.png'; d.appendChild(s); }
     if(r===7){ const c=document.createElement('span'); c.className='coord f'; c.textContent='abcdefgh'[file]; d.appendChild(c); }
@@ -321,6 +337,8 @@ function renderLog(){
 function onSquare(sq){
   const g=new Chess(fens[ptr]);
   const p=g.get(sq);
+  // แตะช่องปลายทางของคำแนะนำ = เดินทันที (ไม่ต้องเลือกหมากก่อน)
+  if(!sel && sugTo[sq]){ playUci(sugTo[sq]); return; }
   if(sel){
     const sp=g.get(sel);
     if(sp&&sp.type==='k'&&p&&p.type==='r'&&p.color===sp.color&&p.color===g.turn()){
@@ -332,16 +350,34 @@ function onSquare(sq){
   if(sel&&legal.some(m=>m.to===sq)){ playUci(sel+sq); return; }
   sel=null; legal=[]; render();
 }
+function animateMove(from,to){
+  const g=new Chess(fens[ptr]); const p=g.get(from); if(!p) return;
+  const wrap=document.getElementById('boardWrap');
+  const a=sqCenter(from), b=sqCenter(to), W=wrap.clientWidth || 360;
+  const img=document.createElement('img');
+  img.className='pcimg ghost'; img.alt='';
+  img.src='pieces/'+(p.color==='b'?'_':'')+p.type.toUpperCase()+'.png';
+  img.style.left=a.x+'%'; img.style.top=a.y+'%';
+  img.style.transform='translate(-50%,-50%)';
+  wrap.appendChild(img);
+  requestAnimationFrame(()=>{
+    img.style.transform='translate(-50%,-50%) translate('+((b.x-a.x)/100*W).toFixed(1)+'px,'+((b.y-a.y)/100*W).toFixed(1)+'px)';
+  });
+  const kill=()=>{ if(img.parentNode) img.parentNode.removeChild(img); };
+  img.addEventListener('transitionend',kill,{once:true});
+  setTimeout(kill,320);
+}
 function playUci(uci){
   const g=new Chess(fens[ptr]);
   const m=g.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]||'q'});
   if(!m) return;
+  animateMove(uci.slice(0,2), uci.slice(2,4));           // อนิเมชันเลื่อนหมาก (เบา ๆ)
   ucis = ucis.slice(0,ptr); fens = fens.slice(0,ptr+1);
   ucis.push(uci); fens.push(g.fen()); ptr=fens.length-1;
-  sel=null; legal=[]; lines={};
+  sel=null; legal=[]; lines={}; sugTo={};
   render(); renderPV(); updateTurnBtn();
-  if(busy) stopAnalysis();
-  statusEl.textContent='เดินแล้ว — กด ▶ รัน เพื่อวิเคราะห์';
+  if(run) runAnalysis();                                  // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง
+  else statusEl.textContent='เดินแล้ว — กด ▶ รัน เพื่อวิเคราะห์';
 }
 
 /* ---------- ปุ่ม ---------- */
