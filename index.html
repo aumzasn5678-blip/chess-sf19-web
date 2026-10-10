@@ -281,22 +281,36 @@ function sqCenter(sq){
 }
 function drawArrows(keys){
   arrowsEl.innerHTML='';
+  const NS='http://www.w3.org/2000/svg';
   const colors=['#4ec46f','#f5d327','#f08a1e'];   // 1=เขียว 2=เหลือง 3=ส้ม
-  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
-  colors.forEach((c,i)=>{ const m=document.createElementNS('http://www.w3.org/2000/svg','marker');
-    m.setAttribute('id','ah'+i); m.setAttribute('viewBox','0 0 10 10'); m.setAttribute('refX','7');
-    m.setAttribute('refY','5'); m.setAttribute('markerWidth','4'); m.setAttribute('markerHeight','4');
-    m.setAttribute('orient','auto');
-    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
-    p.setAttribute('d','M0,0 L10,5 L0,10 z'); p.setAttribute('fill',c); m.appendChild(p); defs.appendChild(m); });
-  arrowsEl.appendChild(defs);
+  const W=2.0, R=3.4;                             // ความหนาลำลูกศร (เท่ากันทุกเส้น) · รัศมีวงกลมหัวลูกศร
+  const items=[];
   keys.forEach((k,i)=>{ const l=lines[k]; if(!l||!l.pv[0]) return;
-    const a=sqCenter(l.pv[0].slice(0,2)), b=sqCenter(l.pv[0].slice(2,4));
-    const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
-    ln.setAttribute('x1',a.x); ln.setAttribute('y1',a.y); ln.setAttribute('x2',b.x); ln.setAttribute('y2',b.y);
-    ln.setAttribute('stroke',colors[i]); ln.setAttribute('stroke-width',2.2-i*0.5);
-    ln.setAttribute('stroke-linecap','round'); ln.setAttribute('opacity','.92');
-    ln.setAttribute('marker-end','url(#ah'+i+')'); arrowsEl.appendChild(ln); });
+    items.push({k:k, i:i, a:sqCenter(l.pv[0].slice(0,2)), b:sqCenter(l.pv[0].slice(2,4))}); });
+  // ชั้น 1: ลำลูกศร (เส้นตรงจากกลางช่องต้นทาง -> กลางช่องปลายทาง) — เหมือน Nibbler
+  items.forEach(o=>{
+    const ln=document.createElementNS(NS,'line');
+    ln.setAttribute('x1',o.a.x.toFixed(2)); ln.setAttribute('y1',o.a.y.toFixed(2));
+    ln.setAttribute('x2',o.b.x.toFixed(2)); ln.setAttribute('y2',o.b.y.toFixed(2));
+    ln.setAttribute('stroke',colors[o.i]); ln.setAttribute('stroke-width',W);
+    ln.setAttribute('stroke-linecap','round');
+    arrowsEl.appendChild(ln);
+  });
+  // ชั้น 2: วงกลมหัวลูกศร + เลขกำกับ (ดำ) — เหมือน Nibbler
+  items.forEach(o=>{
+    const c=document.createElementNS(NS,'circle');
+    c.setAttribute('cx',o.b.x.toFixed(2)); c.setAttribute('cy',o.b.y.toFixed(2)); c.setAttribute('r',R);
+    c.setAttribute('fill',colors[o.i]);
+    arrowsEl.appendChild(c);
+    const tx=document.createElementNS(NS,'text');
+    tx.setAttribute('x',o.b.x.toFixed(2)); tx.setAttribute('y',o.b.y.toFixed(2));
+    tx.setAttribute('text-anchor','middle'); tx.setAttribute('dominant-baseline','central');
+    tx.setAttribute('font-size','4.8'); tx.setAttribute('font-weight','700');
+    tx.setAttribute('font-family','-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif');
+    tx.setAttribute('fill','#0b0d10');
+    tx.textContent=o.k;
+    arrowsEl.appendChild(tx);
+  });
 }
 
 /* ---------- กระดาน ---------- */
