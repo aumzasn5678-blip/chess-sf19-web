@@ -116,6 +116,53 @@ body.theme-green{--acc:#4ec46f;--acc2:#34a55b;--accInk:#04170b;--accGlow:rgba(78
 body.theme-bw{--acc:#d7dde5;--acc2:#9aa7b4;--accInk:#0b0f14;--accGlow:rgba(215,221,229,.28);
      --btnBg:linear-gradient(180deg,#262c34,#1b2027);--btnBd:#3b434d;--btnAct:#333b45}
 
+/* ---------- พาเลตต์สีปุ่มเชิงความหมาย (semantic) — ดันออกจากธีมที่เลือกทั้ง 4 ธีม (ไม่ใช่สีตายตัว) ----------
+   เขียว=ยืนยัน/บวก · แดง=ลบ/อันตราย · เหลือง=แก้ไข · ส้ม=เตือน/ล้าง · teal=คัดลอก · ฟ้า=ข้อมูล/นำทาง */
+body{--cOk:#4ec46f;--cOk2:#2f8f4e;--cOkInk:#04170b;
+     --cBad:#e5534b;--cBad2:#d13f36;--cBadInk:#ffffff;
+     --cWarn:#f5d327;--cWarn2:#d4a90f;--cWarnInk:#241d00;
+     --cOrange:#f08a1e;--cOrange2:#c96e12;--cOrangeInk:#2a1400;
+     --cTeal:#2dd4bf;--cTeal2:#17a894;--cTealInk:#04211d;
+     --cInfo:#4ea1f0;--cInfo2:#2f7fd0;--cInfoInk:#04121f}
+body.theme-white{--cOk:#45c86d;--cOk2:#2e9450;--cOkInk:#04170b;
+     --cBad:#ef6157;--cBad2:#d4463d;--cBadInk:#ffffff;
+     --cWarn:#f8dc55;--cWarn2:#d8b41e;--cWarnInk:#241d00;
+     --cOrange:#f49a3c;--cOrange2:#d0781a;--cOrangeInk:#2a1400;
+     --cTeal:#3fd9c6;--cTeal2:#1aab99;--cTealInk:#04211d;
+     --cInfo:#4ea1f0;--cInfo2:#2f7fd0;--cInfoInk:#04121f}
+body.theme-brown{--cOk:#79c96a;--cOk2:#4f9a44;--cOkInk:#08170b;
+     --cBad:#e06a52;--cBad2:#bc4935;--cBadInk:#ffffff;
+     --cWarn:#edc14a;--cWarn2:#c99a24;--cWarnInk:#241a00;
+     --cOrange:#e39433;--cOrange2:#bd7319;--cOrangeInk:#2a1400;
+     --cTeal:#4fc9b0;--cTeal2:#2aa089;--cTealInk:#04211d;
+     --cInfo:#d9a25e;--cInfo2:#b5793a;--cInfoInk:#2a1a06}
+body.theme-green{--cOk:#4ec46f;--cOk2:#2f8f4e;--cOkInk:#04170b;
+     --cBad:#e5534b;--cBad2:#d13f36;--cBadInk:#ffffff;
+     --cWarn:#f5d327;--cWarn2:#d4a90f;--cWarnInk:#241d00;
+     --cOrange:#f08a1e;--cOrange2:#c96e12;--cOrangeInk:#2a1400;
+     --cTeal:#2dd4bf;--cTeal2:#17a894;--cTealInk:#04211d;
+     --cInfo:#4ea1f0;--cInfo2:#2f7fd0;--cInfoInk:#04121f}
+body.theme-bw{--cOk:#8fc7a3;--cOk2:#639078;--cOkInk:#08180e;
+     --cBad:#d98d86;--cBad2:#b06a63;--cBadInk:#2a0806;
+     --cWarn:#d8c98a;--cWarn2:#b0a365;--cWarnInk:#241d00;
+     --cOrange:#d9a878;--cOrange2:#b08355;--cOrangeInk:#2a1400;
+     --cTeal:#8fc9c2;--cTeal2:#639a94;--cTealInk:#041717;
+     --cInfo:#a9bccf;--cInfo2:#7d93a8;--cInfoInk:#0b0f14}
+/* คลาสสีปุ่มเชิงความหมาย — !important กันไม่ให้ตัวชี้อื่น (รวม hover) ทับสีความหมาย */
+.bOk,.bBad,.bWarn,.bOrange,.bTeal,.bInfo,.bNav{font-weight:700}
+.bOk{background:linear-gradient(180deg,var(--cOk),var(--cOk2))!important;color:var(--cOkInk)!important;border-color:var(--cOk2)!important;box-shadow:0 4px 13px rgba(0,0,0,.32)!important}
+.bBad{background:linear-gradient(180deg,var(--cBad),var(--cBad2))!important;color:var(--cBadInk)!important;border-color:var(--cBad2)!important;box-shadow:0 4px 13px rgba(0,0,0,.32)!important}
+.bWarn{background:linear-gradient(180deg,var(--cWarn),var(--cWarn2))!important;color:var(--cWarnInk)!important;border-color:var(--cWarn2)!important;box-shadow:0 4px 13px rgba(0,0,0,.32)!important}
+.bOrange{background:linear-gradient(180deg,var(--cOrange),var(--cOrange2))!important;color:var(--cOrangeInk)!important;border-color:var(--cOrange2)!important;box-shadow:0 4px 13px rgba(0,0,0,.32)!important}
+.bTeal{background:linear-gradient(180deg,var(--cTeal),var(--cTeal2))!important;color:var(--cTealInk)!important;border-color:var(--cTeal2)!important;box-shadow:0 4px 13px rgba(0,0,0,.32)!important}
+.bInfo{background:linear-gradient(180deg,var(--cInfo),var(--cInfo2))!important;color:var(--cInfoInk)!important;border-color:var(--cInfo2)!important;box-shadow:0 4px 13px rgba(0,0,0,.32)!important}
+/* ปุ่มนำทาง (กลับ/ปิด/เริ่ม-จบ) — โทน accent เข้าธีม แต่ bg ต่างจากปุ่มดีฟอลต์ (ใช้ btnBd→btnAct ซึ่งเป็นสีทึบทุกธีม) */
+.bNav{background:linear-gradient(180deg,var(--btnBd),var(--btnAct))!important;color:var(--acc)!important;border-color:var(--acc2)!important;box-shadow:0 4px 12px rgba(0,0,0,.28)!important}
+/* disabled ของปุ่มสี — คงสีความหมายไว้ (ไม่ grayscale) แค่จางลง + ไม่รับ hover */
+.bOk:disabled,.bBad:disabled,.bWarn:disabled,.bOrange:disabled,.bTeal:disabled,.bInfo:disabled,.bNav:disabled{opacity:.45!important;cursor:not-allowed;filter:none!important}
+/* ปุ่ม ⚙ ตั้งค่า — ปกติ = โทน accent เข้าธีม · เปิดแผง (.on) = แดง (สัญญาณกำลังใช้งาน) */
+#bSettings:not(.on){background:linear-gradient(180deg,var(--btnBd),var(--btnAct));color:var(--acc);border-color:var(--acc2)}
+
 .row{display:flex;gap:6px;margin-top:8px}
 button{flex:1;background:var(--btnBg,#1d232c);color:var(--txt);border:1px solid var(--btnBd,#2b333e);border-radius:12px;
  padding:12px 6px;font-size:1rem;font-weight:600;min-width:0;letter-spacing:.2px;
@@ -326,9 +373,9 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
 .histbtn{background:linear-gradient(180deg,var(--acc),var(--acc2))!important;color:var(--accInk)!important;
   border-color:var(--acc2)!important;box-shadow:0 5px 16px var(--accGlow)!important}
 .histbtn:active{filter:brightness(.93)}
-.savebtn{background:var(--btnBg)!important;color:var(--acc)!important;border:1px solid var(--btnBd)!important}
-.statbtn{background:var(--btnBg)!important;color:var(--acc)!important;border:1px solid var(--btnBd)!important}
-.statbtn:active{background:var(--btnAct)!important}
+.savebtn{background:linear-gradient(180deg,var(--cOk),var(--cOk2))!important;color:var(--cOkInk)!important;border:1px solid var(--cOk2)!important;box-shadow:0 4px 13px rgba(0,0,0,.32)!important}
+.statbtn{background:linear-gradient(180deg,var(--cInfo),var(--cInfo2))!important;color:var(--cInfoInk)!important;border:1px solid var(--cInfo2)!important;box-shadow:0 4px 13px rgba(0,0,0,.32)!important}
+.statbtn:active{filter:brightness(.93)}
 
 /* หน้าประวัติเกม / หน้าเล่นย้อนหลัง (เต็มหน้าจอเหมือนโหมด EDIT) */
 #histView,#replayView{position:fixed;inset:0;z-index:190;display:none;overflow-y:auto;overflow-x:hidden;
@@ -366,7 +413,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
   box-shadow:0 0 0 2px var(--accGlow),0 0 16px var(--accGlow),0 8px 22px rgba(0,0,0,.3)}
 .delall{background:linear-gradient(180deg,#e5534b,#d13f36)!important;color:#fff!important;border-color:#b23a30!important;
   box-shadow:0 4px 14px rgba(229,83,75,.35)!important;font-weight:700}
-#histExportSel:disabled,#histCopySel:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.6)}
+#histExportSel:disabled,#histCopySel:disabled,#histDelSel:disabled{opacity:.45;cursor:not-allowed}
 .logg{width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin:0 2px}
 .rpname{font-size:.92rem;color:var(--dim);margin:2px 2px 8px;overflow-wrap:anywhere}
 #rpBoardWrap{position:relative;width:100%;max-width:var(--boardmax,420px);margin:0 auto;aspect-ratio:1/1;
@@ -472,17 +519,17 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
   <div id="notice"></div>
 
   <div class="row">
-    <button id="bStart" class="sm" title="ไปจุดเริ่มต้น" data-i18n-title="tStart" style="flex:0 0 18%">⏮</button>
+    <button id="bStart" class="sm bNav" title="ไปจุดเริ่มต้น" data-i18n-title="tStart" style="flex:0 0 18%">⏮</button>
     <button id="bBack" class="sm" data-i18n="bBack">↶ ย้อนกลับ</button>
     <button id="bFwd" class="sm" data-i18n="bFwd">↷ ไปข้างหน้า</button>
-    <button id="bEnd" class="sm" title="ไปตาสุดท้าย" data-i18n-title="tEnd" style="flex:0 0 18%">⏭</button>
+    <button id="bEnd" class="sm bNav" title="ไปตาสุดท้าย" data-i18n-title="tEnd" style="flex:0 0 18%">⏭</button>
   </div>
   <div class="row">
     <button id="bUndo" class="sm" title="ย้อนกลับเกมก่อนหน้า" data-i18n-title="tUndo" data-i18n-aria="tUndo" aria-label="ย้อนกลับเกมก่อนหน้า" style="flex:0 0 7.5%" disabled>&#9664;&#xfe0e;</button>
     <button id="bNewGame" class="sm" data-i18n="bNewGame" style="flex:0 0 30%">เริ่มเกมใหม่</button>
     <button id="bRun" class="pri">▶ รัน</button>
-    <button id="bFlip" class="sm" data-i18n="bFlip" style="flex:0 0 21.5%">⇅ สลับฝั่ง</button>
-    <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" data-i18n-title="tTheme" data-i18n="bTheme" style="flex:0 0 16%">ธีม</button>
+    <button id="bFlip" class="sm bInfo" data-i18n="bFlip" style="flex:0 0 21.5%">⇅ สลับฝั่ง</button>
+    <button id="bTheme" class="sm bInfo" title="เปลี่ยนธีมกระดานเร็ว" data-i18n-title="tTheme" data-i18n="bTheme" style="flex:0 0 16%">ธีม</button>
   </div>
   <div id="log"></div>
   <div class="row">
@@ -603,7 +650,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
         <button id="bCopyFen" class="sm posbtn" data-i18n="bCopyFen">คัดลอก FEN</button>
       </div>
       <div class="row">
-        <button id="bShare" class="sm posbtn" data-i18n="bShare">🔗 แชร์ลิงก์ตำแหน่ง</button>
+        <button id="bShare" class="sm posbtn bTeal" data-i18n="bShare">🔗 แชร์ลิงก์ตำแหน่ง</button>
       </div>
       <div class="cardtitle" style="margin-top:10px" data-i18n="pgnTitle">นำเข้า PGN</div>
       <textarea id="pgnIn" data-i18n-ph="pgnPh" placeholder="วาง PGN ที่นี่ (มีหรือไม่มี header ก็ได้)"></textarea>
@@ -635,14 +682,14 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
   <div id="editInner">
     <div class="edhead">
       <h2 data-i18n="editTitle">✎ แก้ไขกระดาน</h2>
-      <button id="editBack" class="sm" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
+      <button id="editBack" class="sm bNav" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
     </div>
     <div id="editBoardWrap"><div id="editBoard"></div></div>
     <div class="cardtitle" style="margin-top:10px" data-i18n="editTrayT">ถาดหมาก</div>
     <div id="editTray"></div>
     <div class="row">
-      <button id="editDel" class="sm" data-i18n="editDel">🗑 ลบหมากที่เลือก</button>
-      <button id="editClear" class="sm" data-i18n="editClear">ล้างกระดาน</button>
+      <button id="editDel" class="sm bBad" data-i18n="editDel">🗑 ลบหมากที่เลือก</button>
+      <button id="editClear" class="sm bOrange" data-i18n="editClear">ล้างกระดาน</button>
     </div>
     <div class="cardtitle" style="margin-top:10px" data-i18n="editTurnT">ฝ่ายที่เดิน</div>
     <div class="row" id="editTurnSel">
@@ -659,15 +706,15 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
     <div class="cardtitle" style="margin-top:10px" data-i18n="editFenT">FEN</div>
     <div class="row"><input type="text" id="editFen" data-i18n-ph="editFenPh" placeholder="วาง FEN แล้วกด อ่าน FEN"></div>
     <div class="row">
-      <button id="editLoadFen" class="sm" data-i18n="editLoadFen">อ่าน FEN</button>
-      <button id="editCopyFen" class="sm" data-i18n="editCopyFen">คัดลอก FEN</button>
+      <button id="editLoadFen" class="sm bInfo" data-i18n="editLoadFen">อ่าน FEN</button>
+      <button id="editCopyFen" class="sm bTeal" data-i18n="editCopyFen">คัดลอก FEN</button>
     </div>
     <div class="tiny" id="editSelInfo">&nbsp;</div>
     <div class="row" style="margin-top:12px">
       <button id="editUse" class="pri" data-i18n="editUse">✓ ใช้งานตำแหน่งนี้</button>
     </div>
     <div class="row">
-      <button id="editBack2" class="sm" data-i18n="editCancel">ยกเลิก / กลับ</button>
+      <button id="editBack2" class="sm bNav" data-i18n="editCancel">ยกเลิก / กลับ</button>
     </div>
   </div>
 </div>
@@ -676,7 +723,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
   <div id="histInner">
     <div class="edhead">
       <h2 data-i18n="histTitle">🗂 ประวัติเกม</h2>
-      <button id="histBack" class="sm" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
+      <button id="histBack" class="sm bNav" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
     </div>
     <div class="tiny" id="histCount" style="margin-top:0"></div>
     <div class="tiny" id="histProg" style="margin-top:0;display:none"></div>
@@ -690,17 +737,20 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       </select>
     </div>
     <div class="row">
-      <button id="histExportAll" class="sm" data-i18n="histExportAll">⬇ ส่งออกทั้งประวัติ (.pgn)</button>
-      <button id="histCopyAll" class="sm" data-i18n="histCopyAll">📋 คัดลอกทั้งหมด</button>
+      <button id="histExportAll" class="sm bOk" data-i18n="histExportAll">⬇ ส่งออกทั้งประวัติ (.pgn)</button>
+      <button id="histCopyAll" class="sm bTeal" data-i18n="histCopyAll">📋 คัดลอกทั้งหมด</button>
     </div>
     <div class="row">
       <button id="histSelect" class="sm" data-i18n="histSelect">เลือก</button>
-      <button id="histSelAll" class="sm selonly-btn" data-i18n="histSelAll">เลือกทั้งหมด</button>
-      <button id="histSelNone" class="sm selonly-btn" data-i18n="histSelNone">ล้างที่เลือก</button>
+      <button id="histSelAll" class="sm bInfo selonly-btn" data-i18n="histSelAll">เลือกทั้งหมด</button>
+      <button id="histSelNone" class="sm bOrange selonly-btn" data-i18n="histSelNone">ล้างที่เลือก</button>
     </div>
     <div class="row selonly-row">
-      <button id="histExportSel" class="sm" disabled>⬇ ส่งออก PGN ที่เลือก (0)</button>
-      <button id="histCopySel" class="sm" disabled>📋 คัดลอก PGN ที่เลือก (0)</button>
+      <button id="histExportSel" class="sm bOk" disabled>⬇ ส่งออก PGN ที่เลือก (0)</button>
+      <button id="histCopySel" class="sm bTeal" disabled>📋 คัดลอก PGN ที่เลือก (0)</button>
+    </div>
+    <div class="row selonly-row">
+      <button id="histDelSel" class="sm bBad" disabled>🗑 ลบที่เลือก (0)</button>
     </div>
     <div id="histList"></div>
     <div class="row">
@@ -727,13 +777,20 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <button id="bDelAllNo" class="cno" data-i18n="no">ยกเลิก</button>
     </div>
   </div>
+  <div id="confirmDelSel" class="cbox cbcenter" role="dialog" aria-labelledby="confirmDelSelMsg">
+    <div class="cmsg" id="confirmDelSelMsg" data-i18n="confirmDelSelMsg">ลบเกมที่เลือก? (ถาวร)</div>
+    <div class="cbtns">
+      <button id="bDelSelYes" class="pri cyes" data-i18n="yes">ยืนยัน</button>
+      <button id="bDelSelNo" class="cno" data-i18n="no">ยกเลิก</button>
+    </div>
+  </div>
 </div>
 
 <div id="replayView">
   <div id="rpInner">
     <div class="edhead">
       <h2 data-i18n="rpTitle">⏯ เล่นย้อนหลัง</h2>
-      <button id="rpClose" class="sm" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
+      <button id="rpClose" class="sm bNav" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
     </div>
     <div class="rpname" id="rpName"></div>
     <div class="tiny" id="rpProg" style="text-align:center;display:none"></div>
@@ -745,15 +802,15 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <div id="rpEvalTxt"><span id="rpEvalNum">0.00</span></div>
     </div>
     <div class="row">
-      <button id="rpStart" class="sm" data-i18n-title="tStart" style="flex:0 0 18%">⏮</button>
-      <button id="rpBack" class="sm" data-i18n="bBack">↶ ย้อนกลับ</button>
-      <button id="rpFwd" class="sm" data-i18n="bFwd">↷ ไปข้างหน้า</button>
-      <button id="rpEnd" class="sm" data-i18n-title="tEnd" style="flex:0 0 18%">⏭</button>
+      <button id="rpStart" class="sm bNav" data-i18n-title="tStart" style="flex:0 0 18%">⏮</button>
+      <button id="rpBack" class="sm bInfo" data-i18n="bBack">↶ ย้อนกลับ</button>
+      <button id="rpFwd" class="sm bInfo" data-i18n="bFwd">↷ ไปข้างหน้า</button>
+      <button id="rpEnd" class="sm bNav" data-i18n-title="tEnd" style="flex:0 0 18%">⏭</button>
     </div>
     <div class="row">
-      <button id="rpRestart" class="sm" data-i18n="rpRestart" style="flex:0 0 32%">⟲ เริ่มใหม่</button>
+      <button id="rpRestart" class="sm bOrange" data-i18n="rpRestart" style="flex:0 0 32%">⟲ เริ่มใหม่</button>
       <button id="rpRun" class="pri" data-i18n="rpPlay">▶ เล่น</button>
-      <button id="rpFlip" class="sm" data-i18n="bFlip" style="flex:0 0 24%">⇅ สลับฝั่ง</button>
+      <button id="rpFlip" class="sm bInfo" data-i18n="bFlip" style="flex:0 0 24%">⇅ สลับฝั่ง</button>
     </div>
     <div class="row"><button id="rpAnim" class="sm togg" data-i18n="animOn" style="flex:1">อนิเมชันหมาก: เปิด</button></div>
     <div class="card">
@@ -764,7 +821,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       </div>
       <div class="row">
         <button id="rpStats" class="sm statbtn" data-i18n="bStats">📊 สถิติเกม</button>
-        <button id="rpShare" class="sm" data-i18n="histCopyPgn">📋 คัดลอก PGN ทั้งเกม</button>
+        <button id="rpShare" class="sm bTeal" data-i18n="histCopyPgn">📋 คัดลอก PGN ทั้งเกม</button>
       </div>
     </div>
     <div id="rpLog"></div>
@@ -946,6 +1003,7 @@ const I18N={
   histSelAll:'เลือกทั้งหมด', histSelNone:'ล้างที่เลือก',
   histExportSelN:'⬇ ส่งออก PGN ที่เลือก ({0})', histCopySelN:'📋 คัดลอก PGN ที่เลือก ({0})',
   histDelAll:'🗑 ลบประวัติทั้งหมด', confirmDelAllMsg:'ลบประวัติทั้งหมด? (ลบทุกเกม ถาวร)',
+  histDelSelN:'🗑 ลบที่เลือก ({0})', confirmDelSelMsg:'ลบเกมที่เลือก {0} เกม? (ถาวร)', toastDelSel:'ลบแล้ว {0} เกม',
   toastDelAll:'ลบประวัติทั้งหมดแล้ว', toastSelNoneWarn:'ยังไม่ได้เลือกเกม', toastExportSel:'ดาวน์โหลดไฟล์ {0} แล้ว ({1} เกม)',
   toastCopySelOk:'คัดลอก PGN ที่เลือกแล้ว ✓',
   toastExportAll:'ดาวน์โหลดไฟล์ {0} แล้ว', toastCopiedAll:'คัดลอกทั้งประวัติแล้ว ✓', toastCopyPgnOk:'คัดลอก PGN เกมนี้แล้ว ✓',
@@ -1059,6 +1117,7 @@ const I18N={
   histSelAll:'Select all', histSelNone:'Clear selection',
   histExportSelN:'⬇ Export selected PGN ({0})', histCopySelN:'📋 Copy selected PGN ({0})',
   histDelAll:'🗑 Delete all history', confirmDelAllMsg:'Delete all history? (all games, permanent)',
+  histDelSelN:'🗑 Delete selected ({0})', confirmDelSelMsg:'Delete {0} selected games? (permanent)', toastDelSel:'Deleted {0} games',
   toastDelAll:'All history deleted', toastSelNoneWarn:'No game selected yet', toastExportSel:'Downloaded file {0} ({1} games)',
   toastCopySelOk:'Copied selected PGN ✓',
   toastExportAll:'Downloaded file {0}', toastCopiedAll:'Copied all history ✓', toastCopyPgnOk:'Copied this game’s PGN ✓',
@@ -1938,6 +1997,11 @@ document.addEventListener('keydown', (e)=>{
     if(md){ e.preventDefault(); rpSetDelay(md[1]==='0' ? 10 : +md[1]); return; }
     return;
   }
+  if(boxOpen($('confirmDelSel'))){
+    if(c==='Enter' || c==='NumpadEnter' || k==='Enter'){ e.preventDefault(); $('bDelSelYes').onclick(); return; }
+    if(c==='Escape' || k==='Escape' || k==='Esc'){ e.preventDefault(); $('bDelSelNo').onclick(); return; }
+    return;                                    // กันคีย์อื่นทำงานตอนกล่องเปิด
+  }
   if(boxOpen($('confirmDelAll'))){
     if(c==='Enter' || c==='NumpadEnter' || k==='Enter'){ e.preventDefault(); $('bDelAllYes').onclick(); return; }
     if(c==='Escape' || k==='Escape' || k==='Esc'){ e.preventDefault(); $('bDelAllNo').onclick(); return; }
@@ -2580,7 +2644,7 @@ function gradeCounts(grades){
   const c={}; (grades||[]).forEach(g=>{ if(g) c[g]=(c[g]||0)+1; }); return c;
 }
 function openHist(){ histLoad(); histOn=true; const v=$('histView'); if(v) v.classList.add('show'); renderHist(); retroHistAll(); }
-function closeHist(){ histOn=false; const v=$('histView'); if(v) v.classList.remove('show','selmode','picking'); histSel.clear(); histSelSave(); refreshSelUI(); closeConfirmDelAll(); cancelSession(histSession); histSession=null; setProgText('histProg',0,0); }
+function closeHist(){ histOn=false; const v=$('histView'); if(v) v.classList.remove('show','selmode','picking'); histSel.clear(); histSelSave(); refreshSelUI(); closeConfirmDelAll(); closeConfirmDelSel(); cancelSession(histSession); histSession=null; setProgText('histProg',0,0); }
 function mkHBtn(key, cls, fn){ const b=document.createElement('button'); b.type='button';
   b.className='sm '+(cls||''); b.textContent=t(key); b.onclick=fn; return b; }
 function renderHist(){
@@ -2639,11 +2703,11 @@ function renderHist(){
     item.appendChild(sum);
     const btns=document.createElement('div'); btns.className='histBtns';
     btns.appendChild(mkHBtn('histOpen', 'pri', ()=>openReplayFromGame(gm, 0)));
-    btns.appendChild(mkHBtn('histStats', null, ()=>openStats(gm, {apply:(i,gr)=>{ gm.grades[i]=gr; }, persist:()=>{ histPersist(); if(histOn) renderHist(); }})));
-    btns.appendChild(mkHBtn('histCopyPgn', null, ()=>copyGamePgn(gm)));
-    btns.appendChild(mkHBtn('histRename', null, ()=>renameGame(gm)));
-    btns.appendChild(mkHBtn('histDel', 'del', ()=>delGame(gm)));
-    btns.appendChild(mkHBtn('histExport', null, ()=>exportPgn(gm)));
+    btns.appendChild(mkHBtn('histStats', 'bInfo', ()=>openStats(gm, {apply:(i,gr)=>{ gm.grades[i]=gr; }, persist:()=>{ histPersist(); if(histOn) renderHist(); }})));
+    btns.appendChild(mkHBtn('histCopyPgn', 'bTeal', ()=>copyGamePgn(gm)));
+    btns.appendChild(mkHBtn('histRename', 'bWarn', ()=>renameGame(gm)));
+    btns.appendChild(mkHBtn('histDel', 'bBad', ()=>delGame(gm)));
+    btns.appendChild(mkHBtn('histExport', 'bOk', ()=>exportPgn(gm)));
     item.appendChild(btns);
     list.appendChild(item);
   });
@@ -2652,6 +2716,7 @@ function refreshSelUI(){
   const n=histSel.size, hasHist=hist.length>0;
   const eb=$('histExportSel'); if(eb){ eb.textContent=t('histExportSelN', n); eb.disabled=(n===0||!hasHist); }
   const cbx=$('histCopySel'); if(cbx){ cbx.textContent=t('histCopySelN', n); cbx.disabled=(n===0||!hasHist); }
+  const db=$('histDelSel'); if(db){ db.textContent=t('histDelSelN', n); db.disabled=(n===0||!hasHist); }
   refreshSelModeUI();
 }
 function histInSelMode(){ const v=$('histView'); return !!(v && v.classList.contains('selmode')); }
@@ -2686,6 +2751,20 @@ function deleteAllHist(){
   hist=[]; histSel.clear(); histSelSave();
   try{ localStorage.removeItem(LSK_HIST); }catch(e){}
   closeConfirmDelAll(); renderHist(); toast(t('toastDelAll'), true);
+}
+/* ---------- ลบเกมที่เลือก (ยืนยันผ่านกล่อง .cbox เดียวกับ 'ลบประวัติทั้งหมด') ---------- */
+function openConfirmDelSel(){
+  const n=histSel.size; if(n<=0) return;                  // ไม่มีที่เลือก = ไม่เปิดกล่อง
+  const m=$('confirmDelSelMsg'); if(m) m.textContent=t('confirmDelSelMsg', n);
+  const b=$('confirmDelSel'); if(b) b.style.display='block';
+}
+function closeConfirmDelSel(){ const b=$('confirmDelSel'); if(b) b.style.display='none'; }
+function deleteSelHist(){
+  const n=histSel.size; if(n<=0){ closeConfirmDelSel(); return; }
+  hist=hist.filter(gm=> !histSel.has(gm.id));             // ลบเฉพาะที่เลือกจริง
+  histSel.clear(); histSelSave();
+  histPersist();
+  closeConfirmDelSel(); renderHist(); toast(t('toastDelSel', n), true);
 }
 function renameGame(gm){
   const n=prompt(t('histRenamePrompt'), gm.name||'');
@@ -3132,6 +3211,10 @@ function wireHistReplay(){
   const hdelall=$('histDelAll'); if(hdelall) hdelall.onclick=openConfirmDelAll;
   const bdely=$('bDelAllYes'); if(bdely) bdely.onclick=deleteAllHist;
   const bdeln=$('bDelAllNo'); if(bdeln) bdeln.onclick=closeConfirmDelAll;
+  // ลบเกมที่เลือก (ปุ่มใหม่ในโหมดเลือก · ยืนยันผ่านกล่อง .cbox เดียวกัน)
+  const hdelsel=$('histDelSel'); if(hdelsel) hdelsel.onclick=openConfirmDelSel;
+  const bdselY=$('bDelSelYes'); if(bdselY) bdselY.onclick=deleteSelHist;
+  const bdselN=$('bDelSelNo'); if(bdselN) bdselN.onclick=closeConfirmDelSel;
   // จอหลัก: สถิติเกมปัจจุบัน
   const bst=$('bStats'); if(bst) bst.onclick=()=>openStats(mainGameForStats(), {apply:(i,gr)=>{ moveGrades[i]=gr; render(); saveGame(); }});
   // ปุ่ม ⚙ ตั้งค่า (อยู่ในแถวเดียวกับ แก้ไขกระดาน) เปิด/ปิดแผงตั้งค่า
