@@ -370,11 +370,12 @@ function renderPV(){
       bottomIsBeingMated = (bottomMate!=null && bottomMate<0);
       mateThreat = bottomIsBeingMated;
       noticeRed = noticeGreen = noticeGrey = noticeYellow = '';
-      if(bottomMate!=null && bottomMate<0)
+      const mResign = (bottomMate!=null && bottomMate<0);      // อีกฝั่งขึ้น M ใส่เรา = แนะนำยอมแพ้ (ให้ความสำคัญสูงสุด)
+      if(mResign)
         noticeGrey = 'อีกฝั่งขึ้น M ได้แล้ว (M'+Math.abs(bottomMate)+') — เล่นไม่คุ้มแล้ว แนะนำยอมแพ้';
       else if(bottomCp <= -500)
         noticeGrey = 'เสียเปรียบ '+(bottomCp/100).toFixed(1)+' — เล่นไม่คุ้มแล้ว แนะนำยอมแพ้';
-      if(!noticeRed && !noticeYellow && sideToMove===bb){
+      if(!mResign && !noticeRed && !noticeYellow && sideToMove===bb){
         const gNow=new Chess(fens[ptr]);
         if(gNow.inCheck()){
           const canB = canBlockCheck(gNow);
@@ -408,7 +409,7 @@ function drawArrows(keys){
   keys.forEach((k,i)=>{ const l=lines[k]; if(!l||!l.pv[0]) return;
     items.push({k:k, i:i, a:sqCenter(l.pv[0].slice(0,2)), b:sqCenter(l.pv[0].slice(2,4))}); });
   // ชั้น 1: ลำลูกศร (เส้นตรงจากกลางช่องต้นทาง -> กลางช่องปลายทาง) — เหมือน Nibbler
-  items.forEach(o=>{
+  items.slice().reverse().forEach(o=>{
     const ln=document.createElementNS(NS,'line');
     ln.setAttribute('x1',o.a.x.toFixed(2)); ln.setAttribute('y1',o.a.y.toFixed(2));
     ln.setAttribute('x2',o.b.x.toFixed(2)); ln.setAttribute('y2',o.b.y.toFixed(2));
@@ -417,7 +418,7 @@ function drawArrows(keys){
     arrowsEl.appendChild(ln);
   });
   // ชั้น 2: วงกลมหัวลูกศร + เลขกำกับ (ดำ) — เหมือน Nibbler
-  items.forEach(o=>{
+  items.slice().reverse().forEach(o=>{
     const c=document.createElementNS(NS,'circle');
     c.setAttribute('cx',o.b.x.toFixed(2)); c.setAttribute('cy',o.b.y.toFixed(2)); c.setAttribute('r',R);
     c.setAttribute('fill',colors[o.i]);
