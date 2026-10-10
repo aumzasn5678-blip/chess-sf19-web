@@ -73,6 +73,9 @@ body.hidehints .coord{display:none}          /* โหมดซ่อนกา�
 #board .pcimg.animating,#rpBoard .pcimg.animating{z-index:7;will-change:transform}
 .pcimg.caught{position:absolute;inset:5%;width:90%;height:90%;object-fit:contain;pointer-events:none;
  z-index:0;transition:opacity .1s linear}
+/* ลงหมาก: pop สั้น ๆ 'ที่ช่องปลายทาง' (ย่อ→ขยาย+เฟด) ไม่มีการไถลข้ามช่อง — กัน 'วาปไป-กลับ' บนมือถือ */
+@keyframes landPop{0%{transform:scale(.55);opacity:.2}60%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}
+.sq.land img.pcimg:not(.caught){animation:landPop .16s cubic-bezier(.2,.7,.4,1.3) both}
 
 /* แถบเลือกตัวหมากโปรโมท — พื้นสี accent ของธีมกระดาน · รูปหมาก 4 ตัว (ควีน/เรือ/บิชอป/ม้า) */
 #promo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;display:none;
@@ -1331,9 +1334,6 @@ function drawArrows(keys){
 /* ---------- กระดาน ---------- */
 function render(){
   const g=new Chess(fens[ptr]);
-  const latestDest = (ptr>0 && ucis[ptr-1]) ? ucis[ptr-1].slice(2,4) : null;
-  const keepImg=[];                    // ชิ้นหมากของ 'ตาล่าสุด' ที่กำลังสไลด์ — ห้ามล้าง transform กลางทาง (อนิเมชันไม่ผูกกับเอนจิน/เกรด)
-  animEls.forEach(el=>{ if(el.isConnected && el.dataset.animTo===latestDest) keepImg.push(el); });
   boardEl.innerHTML='';
   const last = ptr>0 ? [ucis[ptr-1].slice(0,2), ucis[ptr-1].slice(2,4)] : null;
   for(let r=0;r<8;r++) for(let f=0;f<8;f++){
@@ -1354,15 +1354,9 @@ function render(){
     d.onclick=()=>onSquare(sq);
     boardEl.appendChild(d);
   }
-  // นำชิ้นหมากที่กำลังสไลด์ของ 'ตาล่าสุด' กลับเข้าช่องปลายทาง แล้วเริ่มสไลด์ต่อ (กัน re-render ระหว่างอนิเมชันล้าง transform)
-  for(const el of keepImg){
-    const cell=boardEl.querySelector('.sq[data-sq="'+el.dataset.animTo+'"]');
-    if(!cell){ resetAnimEl(el); animEls.delete(el); continue; }
-    const dup=cell.querySelector('img.pcimg'); if(dup && dup!==el) dup.remove();
-    cell.appendChild(el);
-    rearmSlide(el);
-  }
+  // (แผนสำรอง): อนิเมชันเป็น pop ที่ช่องปลายทาง ⇒ ไม่ต้องหิ้วชิ้นที่กำลังเคลื่อนข้ามการ re-render อีกแล้ว
   pruneAnims();                        // ล้างเฉพาะชิ้นที่หลุด DOM จริง (กันของค้าง)
+  if(landTo && performance.now()<landUntil) applyLandPop();   // คงอนิเมชัน 'ลงหมาก' ที่ช่องปลายทางถ้าเพิ่งเดิน (กัน re-render กลืนกลางทาง)
   if(g.inCheck()) for(const el of boardEl.children){ const p=g.get(el.dataset.sq); if(p&&p.type==='k'&&p.color===g.turn()) el.classList.add('chk','warnk'); }
   paintGrades();                       // ไอคอนเกรดการเดินบนช่องปลายทาง (ค้างอยู่ทุกครั้งที่วาดใหม่)
   renderLog(g);
@@ -1476,7 +1470,8 @@ const animEls=new Set();
 let animCount=0;                       // นับจำนวนครั้งที่สไลด์เริ่มจริง (ใช้ยืนยันการทดสอบ)
 function resetAnimEl(el){ if(!el) return;
   if(el._doneT){ clearTimeout(el._doneT); el._doneT=null; }
-  el.style.transition=''; el.style.transform=''; el.style.willChange=''; el.classList.remove('animating');
+  el.style.transition=''; el.style.transform=''; el.style.willChange=''; el.style.opacity=''; el.classList.remove('animating');
+  try{ const c=el.closest&&el.closest('.sq'); if(c) c.classList.remove('land'); }catch(e){}
   el._dx=null; el._dy=null; try{ delete el.dataset.animTo; delete el.dataset.animPly; }catch(e){}
 }
 function pruneAnims(){ animEls.forEach(el=>{ if(!el.isConnected){ resetAnimEl(el); animEls.delete(el); } }); }
@@ -1485,46 +1480,27 @@ function clearStrayGhosts(){
   const w=document.getElementById('boardWrap'); if(w) w.querySelectorAll('.ghost').forEach(e=>e.remove());
   const rw=document.getElementById('rpBoardWrap'); if(rw) rw.querySelectorAll('.ghost').forEach(e=>e.remove());
 }
-/* เริ่มสไลด์ชิ้นที่กำลังเคลื่อน 'ใหม่' หลังถูกถอด/ใส่ DOM ระหว่างอนิเมชัน (กันการวาดทับล้าง transform กลางทาง) */
-function rearmSlide(el){
-  if(!el || el._dx==null || !el.classList.contains('animating')) return;
-  if(el._doneT) clearTimeout(el._doneT);
-  el._doneT=setTimeout(()=>{ if(el._done) el._done(); }, 420);
-  el.style.willChange='transform';
-  el.style.transition='none';
-  el.style.transform='translate('+el._dx.toFixed(2)+'px,'+el._dy.toFixed(2)+'px)';
-  void el.offsetWidth;                                          // บังคับ reflow (commit จุดเริ่มต้น)
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{         // double rAF: การันตี 1 เฟรมที่ช่องเดิมก่อนเริ่มไถล
-    if(!el.classList.contains('animating')) return;
-    el.style.transition='transform .2s cubic-bezier(.22,.61,.36,1)'; el.style.transform='translate(0,0)'; }));
+/* อนิเมชันเดินหมาก (แผนสำรองกัน 'วาปไป-กลับ' 100%): หมากอยู่ที่ 'ช่องปลายทาง' เสมอ
+   ใช้เฉพาะ keyframe scale/opacity สั้น ๆ 'ที่ช่องปลายทาง' — ไม่มีการ translate ข้ามช่อง
+   ⇒ re-render กระดานกลางอนิเมชันไม่พัง (ไม่มี offset ให้กระโดดกลับ) + re-apply จาก state ได้ถ้าโดนวาดทับ */
+let landBoard=null, landTo=null, landUntil=0;   // ช่องปลายทางที่กำลัง 'pop' + เวลาสิ้นสุด (re-apply หลัง re-render)
+function applyLandPop(){
+  if(!landBoard || !landTo) return;
+  const cell=landBoard.querySelector('.sq[data-sq="'+landTo+'"]'); if(!cell) return;
+  if(cell.classList.contains('land')) return;    // กำลังเล่นอยู่แล้ว ไม่รีสตาร์ทให้กระตุก
+  const img=cell.querySelector('img.pcimg:not(.caught)'); if(!img) return;
+  cell.classList.add('land');
+  animEls.add(img);
+  img._done=()=>{ cell.classList.remove('land'); animEls.delete(img); };
 }
-/* เลื่อนหมากจริงใน cell ปลายทาง (ต้องวาดกระดานใหม่ที่ตำแหน่งใหม่ก่อนเรียก) */
 function slidePiece(board, from, to){
   if(!animOn || !board) return;
-  const cf=board.querySelector('.sq[data-sq="'+from+'"]'), ct=board.querySelector('.sq[data-sq="'+to+'"]');
-  if(!cf||!ct) return;
-  const img=ct.querySelector('img.pcimg'); if(!img) return;    // หมากจริงที่ปลายทาง = ชิ้นเดียวที่เคลื่อนไหว
-  const dr=ct.getBoundingClientRect(), fr=cf.getBoundingClientRect();
-  if(!dr.width) return;
-  const dx=fr.left-dr.left, dy=fr.top-dr.top;
-  if(!dx && !dy) return;
+  const cell=board.querySelector('.sq[data-sq="'+to+'"]'); if(!cell) return;
+  if(!cell.querySelector('img.pcimg:not(.caught)')) return;   // ต้องมีหมากจริงที่ปลายทางก่อน
   animEls.forEach(resetAnimEl); animEls.clear();                // ยกเลิกอนิเมชันเดิม (ถ้ามี) ก่อนเริ่มใหม่
   animCount++;
-  img.dataset.animTo=to; img.dataset.animPly=String(board===boardEl ? (ptr-1) : '');
-  img._dx=dx; img._dy=dy;
-  img.classList.add('animating');
-  img.style.willChange='transform';
-  img.style.transition='none';                                 // เฟส 1: ปิดทรานซิชัน แล้วชดเชยตำแหน่งกลับไปที่ช่องเดิม
-  img.style.transform='translate('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px)';
-  animEls.add(img);
-  void img.offsetWidth;                                        // บังคับ reflow: commit เฟส 1 'ก่อน' บราวเซอร์วาด (ห้ามโผล่ที่ปลายทาง)
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{        // เฟส 2: double rAF การันตี 1 เฟรมที่ช่องเดิม แล้วค่อยเปิดทรานซิชันไถล
-    if(!img.classList.contains('animating')) return;
-    img.style.transition='transform .2s cubic-bezier(.22,.61,.36,1)'; img.style.transform='translate(0,0)'; }));
-  const done=()=>{ resetAnimEl(img); animEls.delete(img); img.removeEventListener('transitionend',done); };
-  img._done=done;
-  img.addEventListener('transitionend',done);
-  img._doneT=setTimeout(()=>{ if(img._done) img._done(); }, 420);   // timeout กันค้าง (ครอบ double rAF + 200ms)
+  landBoard=board; landTo=to; landUntil=performance.now()+180;   // หน้าต่าง re-apply หลัง re-render
+  applyLandPop();
 }
 /* หมากที่ถูกกิน = จางหายเร็ว ๆ (~100ms) ชิ้นเดียว ไม่หายวับ */
 function fadeCaptured(board, sq, color, type){
