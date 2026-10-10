@@ -202,8 +202,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
     <summary>⚙ ตั้งค่า (ใส่ตำแหน่งเอง · เกมใหม่)</summary>
     <div class="card">
       <div class="row"><input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้ง"></div>
-      <div class="row"><label style="min-width:70px">อนิเมชันหมาก</label>
-        <select id="animSel"><option value="1" selected>เปิด</option><option value="0">ปิด</option></select></div>
+      <div class="row"><button id="animBtn" class="sm" style="flex:1">อนิเมชันหมาก: เปิด</button></div>
       <div class="row"><label style="min-width:70px">ELO</label>
         <input type="range" id="elo" min="1320" max="3190" step="10" value="3190" style="flex:1">
         <span id="elov" style="min-width:96px;text-align:right;font-size:12px">3190 (เต็ม)</span></div>
@@ -579,21 +578,8 @@ function onSquare(sq){
     }
   }
   if(p&&p.color!==g.turn()&&!sel&&!sugTo[sq]){
-    // แตะหมากอีกฝั่ง = สลับตาให้ทันที แล้วเลือกตัวนั้นเลย (คุมเองทั้งหมด ไม่ต้องกดปุ่มสลับฝั่ง)
-    const f=g.fen().split(' '); f[1]=p.color; f[3]='-';
-    try{
-      const c2=new Chess(f.join(' '));
-      ucis=ucis.slice(0,ptr); fens=fens.slice(0,ptr+1); fens[ptr]=c2.fen();
-      sel=sq; legal=c2.moves({square:sq, verbose:true});
-      lines={}; sugTo={}; sugRank={}; sqTagTxt={};
-      render(); renderPV(); updateTurnBtn();
-      toast('สลับตาเป็น '+(p.color==='w'?'ขาว':'ดำ')+' แล้ว — เลือกหมากตัวนี้ให้', true);
-      if(run) runAnalysis();
-      return;
-    }catch(e){
-      toast('ยังไม่ถึงตา — ตอนนี้ตาสี'+(g.turn()==='w'?'ขาว':'ดำ'), true);
-      return;
-    }
+    // ล็อกตาแล้ว: แตะหมากฝั่งตรงข้าม = ไม่ทำอะไร (ไม่สลับตา ไม่ขึ้นเตือน)
+    return;
   }
   if(p&&p.color===g.turn()){ sel=sq; legal=g.moves({square:sq,verbose:true}); render(); markTargets(); return; }
   if(sel&&legal.some(m=>m.to===sq)){ playUci(sel+sq); return; }
@@ -678,17 +664,18 @@ updateDepthUI();
 // คีย์บอร์ด (เล่นบนคอม): ← ย้อนกลับ · → ไปข้างหน้า · เว้นวรรค/G = รัน-หยุด · F = กลับหัว
 document.addEventListener('keydown', (e)=>{
   const tg = e.target && e.target.tagName;
-  if(tg==='INPUT' || tg==='TEXTAREA' || tg==='SELECT') return;
-  const k = e.key;
-  if(k==='ArrowLeft'){ e.preventDefault(); $('bBack').onclick(); }
-  else if(k==='ArrowRight'){ e.preventDefault(); $('bFwd').onclick(); }
-  else if(k===' ' || k==='g' || k==='G'){ e.preventDefault(); $('bRun').onclick(); }
-  else if(k==='f' || k==='F'){ e.preventDefault(); $('bFlip').onclick(); }
-  else if(k==='n' || k==='N'){ e.preventDefault(); $('bNewGame').onclick(); }
+  if(tg==='INPUT' || tg==='TEXTAREA') return;          // ไม่แย่งตอนพิมพ์
+  const c = e.code || '', k = e.key;
+  if(c==='ArrowLeft' || k==='ArrowLeft'){ e.preventDefault(); $('bBack').onclick(); }
+  else if(c==='ArrowRight' || k==='ArrowRight'){ e.preventDefault(); $('bFwd').onclick(); }
+  else if(c==='Space' || c==='KeyG' || k===' ' || k==='g' || k==='G'){ e.preventDefault(); $('bRun').onclick(); }
+  else if(c==='KeyF' || k==='f' || k==='F'){ e.preventDefault(); $('bFlip').onclick(); }
+  else if(c==='KeyN' || k==='n' || k==='N'){ e.preventDefault(); $('bNewGame').onclick(); }
 });
 let animOn = true; try{ animOn = (localStorage.getItem('chessAnim') !== '0'); }catch(e){}   // อนิเมชันหมาก (จำค่าไว้)
-$('animSel').value = animOn ? '1' : '0';
-$('animSel').onchange = ()=>{ animOn = ($('animSel').value === '1'); try{ localStorage.setItem('chessAnim', animOn?'1':'0'); }catch(e){} };
+function refreshAnimBtn(){ const b=$('animBtn'); if(b) b.textContent = 'อนิเมชันหมาก: ' + (animOn ? 'เปิด' : 'ปิด'); }
+refreshAnimBtn();
+$('animBtn').onclick = ()=>{ animOn = !animOn; try{ localStorage.setItem('chessAnim', animOn?'1':'0'); }catch(e){} refreshAnimBtn(); toast('อนิเมชันหมาก: '+(animOn?'เปิด':'ปิด'), true); };
 let eloN = 3190;                                            // เพดานความแรง (1320-3190 ตามลิมิต Stockfish)
 function applyElo(){
   if(!engine || !ready) return;
