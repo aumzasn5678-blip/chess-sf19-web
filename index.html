@@ -36,7 +36,7 @@ header .sub{font-size:.86rem;color:var(--dim);margin-left:auto;text-align:right}
  touch-action:manipulation}
 .sq{position:relative;display:flex;align-items:center;justify-content:center}
 .sq.light{background:var(--lt)} .sq.dark{background:var(--dk)}
-.sq img.pcimg{width:90%;height:90%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.sq img.pcimg{position:relative;z-index:2;width:90%;height:90%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
 .sq.sel{box-shadow:inset 0 0 0 4px rgba(78,196,111,.95)}
 .sq.mv::after{content:"";position:absolute;width:26%;height:26%;border-radius:50%;background:var(--hint);z-index:4}
 .sq.cap::after{content:"";position:absolute;inset:6%;border-radius:50%;border:5px solid var(--hint);z-index:4}
@@ -70,6 +70,10 @@ body.hidehints .coord{display:none}          /* โหมดซ่อนกา�
 #boardWrap .ghost,#rpBoardWrap .ghost{position:absolute;width:12.5%;height:12.5%;object-fit:contain;z-index:6;
  pointer-events:none;transition:transform .17s ease-out;will-change:transform;
  filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+#board .pcimg.animating,#rpBoard .pcimg.animating{z-index:7;will-change:transform;
+ filter:drop-shadow(0 5px 6px rgba(0,0,0,.5))}
+.pcimg.caught{position:absolute;inset:5%;width:90%;height:90%;object-fit:contain;pointer-events:none;
+ z-index:0;transition:opacity .14s ease-out}
 
 /* แถบเลือกตัวหมากโปรโมท — พื้นสี accent ของธีมกระดาน · รูปหมาก 4 ตัว (ควีน/เรือ/บิชอป/ม้า) */
 #promo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;display:none;
@@ -620,6 +624,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <button id="histBack" class="sm" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
     </div>
     <div class="tiny" id="histCount" style="margin-top:0"></div>
+    <div class="tiny" id="histProg" style="margin-top:0;display:none"></div>
     <div class="row sortrow">
       <input type="text" id="histSearch" data-i18n-ph="histSearchPh" placeholder="ค้นหาชื่อเกม…" style="flex:1">
       <select id="histSort" style="flex:0 0 44%">
@@ -657,6 +662,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <button id="rpClose" class="sm" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
     </div>
     <div class="rpname" id="rpName"></div>
+    <div class="tiny" id="rpProg" style="text-align:center;display:none"></div>
     <div id="rpSide" class="sidePill rpSidePill"></div>
     <div id="rpBoardWrap"><div id="rpBoard"></div><svg id="rpArrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div>
     <div id="rpEvalwrap">
@@ -707,6 +713,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <button id="statClose" class="sm" data-i18n="statClose" style="flex:0 0 auto">✕ ปิด</button>
     </div>
     <div id="statBody"></div>
+    <div id="gradeProg" class="tiny" style="text-align:center;display:none"></div>
     <div class="tiny" data-i18n="statApprox"></div>
   </div>
 </div>
@@ -853,6 +860,7 @@ const I18N={
   rpDelayLbl:'ความเร็ว', rpDelayUnit:'วิ', rpDelayVal:'ดีเลย์ {0} วิ',
   bStats:'📊 สถิติเกม', statTitle:'สถิติเกม', statWhite:'ขาว', statBlack:'ดำ', statAccuracy:'ความแม่นยำ',
   statApprox:'* ค่าความแม่นยำ (Accuracy) เป็นค่าประมาณ (approximate) คำนวณจากเกรดการเดินที่บันทึกไว้', statClose:'ปิด', statMoves:'จำนวนตา',
+  gradeProgress:'กำลังคำนวณเกรด {0}/{1}',
   gnBook:'ตำรา', gnBrilliant:'ยอดเยี่ยมมาก', gnGreat:'เยี่ยม', gnBest:'ดีที่สุด', gnExcellent:'ดีมาก', gnGood:'ดี', gnInaccuracy:'ไม่แม่น', gnMistake:'ผิดพลาด', gnBlunder:'พลาดร้ายแรง', gnMiss:'พลาดโอกาส', gnForced:'บังคับ',
   histSortLbl:'เรียง:', histSearchPh:'ค้นหาชื่อเกม…',
   sortDateDesc:'ใหม่สุดก่อน', sortDateAsc:'เก่าสุดก่อน', sortBlunder:'blunder มากสุด', sortNameAZ:'ชื่อ A-Z',
@@ -956,6 +964,7 @@ const I18N={
   rpDelayLbl:'Speed', rpDelayUnit:'s', rpDelayVal:'delay {0}s',
   bStats:'📊 Game stats', statTitle:'Game stats', statWhite:'White', statBlack:'Black', statAccuracy:'Accuracy',
   statApprox:'* Accuracy is an approximate value estimated from the recorded move grades', statClose:'Close', statMoves:'Moves',
+  gradeProgress:'Grading {0}/{1}',
   gnBook:'Book', gnBrilliant:'Brilliant', gnGreat:'Great', gnBest:'Best', gnExcellent:'Excellent', gnGood:'Good', gnInaccuracy:'Inaccuracy', gnMistake:'Mistake', gnBlunder:'Blunder', gnMiss:'Miss', gnForced:'Forced',
   histSortLbl:'Sort:', histSearchPh:'Search game name…',
   sortDateDesc:'Newest first', sortDateAsc:'Oldest first', sortBlunder:'Most blunders', sortNameAZ:'Name A-Z',
@@ -1003,7 +1012,7 @@ function applyLang(){
   if(promoPending) openPromo(promoPending.from, promoPending.to);   // อัปเดต label/aria ของแถบโปรโมทตามภาษา
   if(histOn) renderHist();          // อัปเดตข้อความในหน้าประวัติเกมตามภาษา
   if(rpOn){ rpRender(); rpUpdateButtons(); rpSetEval(rpLastEval.cp, rpLastEval.mate); }   // อัปเดตข้อความในหน้าเล่นย้อนหลัง + ป้าย eval (ไม่ปิดหน้า)
-  const _sv=$('statView'); if(_sv && _sv.classList.contains('show') && statGame) openStats(statGame);   // วาดกล่องสถิติที่เปิดค้างอยู่ซ้ำ ให้ทุกข้อความเปลี่ยนภาษาทันที
+  const _sv=$('statView'); if(_sv && _sv.classList.contains('show') && statGame) renderStatsBody(statGame);   // วาดกล่องสถิติที่เปิดค้างอยู่ซ้ำ ให้ทุกข้อความเปลี่ยนภาษาทันที
 }
 function setLang(l){ lang=(l==='en')?'en':'th'; lsSet(LSK.lang, lang); applyLang(); }
 document.querySelectorAll('.lang').forEach(b=>{ b.onclick=()=>{ setLang(b.dataset.lang); }; });
@@ -1025,9 +1034,10 @@ function startEngine(){
   try{ engine=new Worker('lib/stockfish.js'); }catch(e){ setSub('stEngineFail'); return; }
   engine.onmessage = ev =>{
     const line = typeof ev.data==='string' ? ev.data : (ev.data&&ev.data.text)||'';
-    if(line==='uciok'){ ready=true; setSub('stReady'); applyElo(); return; }
+    if(line==='uciok'){ ready=true; setSub('stReady'); applyElo(); gradeCacheLoad(); if(bootRetroPending){ bootRetroPending=false; retroMainGame(); } pumpGradeQueue(); return; }
     if(line.startsWith('info ')){
-      if(evalCb){ const sc=line.match(/ score (cp|mate) (-?\d+)/); if(sc){ evalBuf={kind:sc[1],val:+sc[2]}; } return; }
+      if(evalCb){ const mp=line.match(/ multipv (\d+)/), sc=line.match(/ score (cp|mate) (-?\d+)/);
+        if(sc){ if(!evalBuf) evalBuf={}; const k=mp?+mp[1]:1; evalBuf[k]={kind:sc[1],val:+sc[2]}; } return; }
       parseInfo(line); return;
     }
     if(line.startsWith('bestmove')){
@@ -1037,10 +1047,6 @@ function startEngine(){
       if(!searching) return;                                 // ผลของงานเก่า (หลัง stop) — ทิ้ง
       searching=false;
       renderPV(); setStatus(run?'stDoneRun':'stDoneEval', maxDepth());
-      if(gradeRunCtx && lines[1]){                           // โหมดรัน: คิดเกรดของตาที่เพิ่งเดินจากผลรอบใหม่
-        const c=gradeRunCtx; gradeRunCtx=null;
-        finalizeGrade(c.idx, c.beforeBestCp, -evalToCp(lines[1].kind, lines[1].val), c.gapCp);
-      }
       return;
     }
   };
@@ -1130,8 +1136,17 @@ function runAnalysis(){
   lines={}; busy=true; run=true; const id=++job;
   const d=+$('depth').value;
   searching=false; if(startTimer) clearTimeout(startTimer);
-  engine.postMessage('stop');                                    // เผื่อมีงานค้าง — รอให้จบก่อน
-  startTimer = setTimeout(()=>{ if(id!==job) return;
+  startTimer = setTimeout(()=>startRunSearch(id,d), 120);        // เผื่อมีงานค้าง — รอให้จบก่อน
+  $('bRun').classList.add('on'); $('bRun').textContent=t('bStop'); renderPV();
+}
+function startRunSearch(id, d){
+  if(id!==job) return;
+  if(gradeInFlight){ startTimer=setTimeout(()=>startRunSearch(id,d), 80); return; }  // งานเกรดกำลังทำ — รอให้จบก่อน (ไม่ทิ้งงานเกรด)
+  engine.postMessage('stop');                                    // ทยอยหยุดงานเดิมก่อน (เว้นจังหวะให้เอนจินว่างจริง)
+  startTimer=setTimeout(()=>{
+    if(id!==job) return;
+    if(gradeInFlight){ startTimer=setTimeout(()=>startRunSearch(id,d), 80); return; }
+    startTimer=null;
     searching=true;
     applyElo();                                                  // ส่งเพดาน ELO ก่อนเริ่มคิด
     engine.postMessage('setoption name MultiPV value '+npvN);
@@ -1139,8 +1154,7 @@ function runAnalysis(){
     const cap = (profCap!=null) ? profCap : autoTime(d);         // โปรไฟล์มีเพดานเวลา · กำหนดเองใช้ตามความลึก
     engine.postMessage('go depth '+d+' movetime '+cap);
     setStatus('stThinking', d, (cap/1000).toFixed(1));
-  }, 120);
-  $('bRun').classList.add('on'); $('bRun').textContent=t('bStop'); renderPV();
+  }, 140);
 }
 function stopAnalysis(){
   if(startTimer){ clearTimeout(startTimer); startTimer=null; }
@@ -1300,6 +1314,7 @@ function drawArrows(keys){
 function render(){
   const g=new Chess(fens[ptr]);
   boardEl.innerHTML='';
+  pruneAnims();                        // ล้าง transform โบราณของชิ้นที่หลุด DOM แล้ว (กันของค้าง)
   const last = ptr>0 ? [ucis[ptr-1].slice(0,2), ucis[ptr-1].slice(2,4)] : null;
   for(let r=0;r<8;r++) for(let f=0;f<8;f++){
     const file=flipped?7-f:f, rank=flipped?7-r:r, sq='abcdefgh'[file]+(8-rank);
@@ -1337,25 +1352,26 @@ function checkGameEnd(){               // รุกฆาต: เด้งกล
   else      box.innerHTML = t('mateLose')+'<span class="sm2">'+t('mateLoseSub')+'</span>';
   try{ const sb=document.createElement('button'); sb.type='button'; sb.className='sm statbtn'; sb.textContent=t('bStats');
     sb.style.cssText='margin:10px auto 0;display:block;width:auto;padding:8px 18px';
-    sb.onclick=(ev)=>{ ev.stopPropagation(); openStats(mainGameForStats()); };
+    sb.onclick=(ev)=>{ ev.stopPropagation(); openStats(mainGameForStats(), {apply:(i,gr)=>{ moveGrades[i]=gr; render(); saveGame(); }}); };
     box.appendChild(sb); }catch(e){}
   over.classList.add('show');
 }
 function renderLog(){
   const rootFen = fens[0] || new Chess().fen();
-  const g=new Chess(rootFen); const sans=[];               // เล่นซ้ำจากตำแหน่งตั้งต้นของสายปัจจุบัน (รองรับตำแหน่งที่โหลดจาก FEN ด้วย)
-  for(let i=0;i<ptr;i++){
-    try{ const m=g.move({from:ucis[i].slice(0,2),to:ucis[i].slice(2,4),promotion:ucis[i][4]||'q'}); if(!m) break; sans.push(m.san); }
-    catch(e){ break; }
-  }
+  const g=new Chess(rootFen);
   const rp=rootFen.split(' '); let turn=rp[1]==='b'?'b':'w', num=parseInt(rp[5],10)||1;
   let s='';
-  sans.forEach(h=>{
-    if(turn==='w') s += '<b>'+num+'.</b> '+h+' ';        // ตาขาว = ขึ้นเลขตาใหม่
-    else s += h+' ';                                     // ตาดำ = ต่อท้าย
+  for(let i=0;i<ptr;i++){
+    let h=null;
+    try{ const m=g.move({from:ucis[i].slice(0,2),to:ucis[i].slice(2,4),promotion:ucis[i][4]||'q'}); if(!m) break; h=m.san; }
+    catch(e){ break; }
+    const gr=moveGrades[i];                                   // ไอคอนเกรดต่อตา (แสดงครบทุกตาที่มีเกรด)
+    const icon=gr ? '<img class="logg" src="icons/'+gr+'.png" alt="'+gr+'" title="'+t(GRADE_NAME_KEY[gr]||gr)+'">' : '';
+    if(turn==='w') s += '<b>'+num+'.</b> '+h+icon+' ';        // ตาขาว = ขึ้นเลขตาใหม่
+    else s += h+icon+' ';                                     // ตาดำ = ต่อท้าย
     if(turn==='b') num++;
     turn = (turn==='w') ? 'b' : 'w';
-  });
+  }
   logEl.innerHTML = s || ('<span style="opacity:.6">'+t('logEmpty')+'</span>');
   logEl.scrollTop = logEl.scrollHeight;      // ขึ้นบรรทัดใหม่แล้วเลื่อน 'ลง' แนวตั้งไปท้ายสุด
 }
@@ -1426,24 +1442,48 @@ function game_over(g){                       // จบเกมแล้ว? (�
   toast(m);
   return true;
 }
-function animateMove(from,to){
-  if(!animOn) { return; }                                  // ปิดอนิเมชันไว้ = ข้าม
-  const g=new Chess(fens[ptr]); const p=g.get(from); if(!p) return;
-  const wrap=document.getElementById('boardWrap');
-  const a=sqCenter(from), b=sqCenter(to), W=wrap.clientWidth || 360;
-  const img=document.createElement('img');
-  img.className='pcimg ghost'; img.alt='';
-  img.src='pieces/'+(p.color==='b'?'_':'')+p.type.toUpperCase()+'.png';
-  img.style.left=a.x+'%'; img.style.top=a.y+'%';
-  img.style.transform='translate(-50%,-50%)';
-  wrap.appendChild(img);
-  requestAnimationFrame(()=>{
-    img.style.transform='translate(-50%,-50%) translate('+((b.x-a.x)/100*W).toFixed(1)+'px,'+((b.y-a.y)/100*W).toFixed(1)+'px)';
-  });
-  const kill=()=>{ if(img.parentNode) img.parentNode.removeChild(img); };
-  img.addEventListener('transitionend',kill,{once:true});
-  setTimeout(kill,320);
+/* ---------- อนิเมชันหมาก: เลื่อน 'ตัวหมากจริง' ที่ช่องปลายทางเพียงชิ้นเดียว (ไม่มี ghost ซ้อน) ---------- */
+const animEls=new Set();
+function resetAnimEl(el){ if(!el) return; el.style.transition=''; el.style.transform=''; el.classList.remove('animating'); }
+function pruneAnims(){ animEls.forEach(el=>{ if(!el.isConnected){ resetAnimEl(el); animEls.delete(el); } }); }
+function cancelAnims(){ animEls.forEach(resetAnimEl); animEls.clear(); clearStrayGhosts(); }
+function clearStrayGhosts(){
+  const w=document.getElementById('boardWrap'); if(w) w.querySelectorAll('.ghost').forEach(e=>e.remove());
+  const rw=document.getElementById('rpBoardWrap'); if(rw) rw.querySelectorAll('.ghost').forEach(e=>e.remove());
 }
+/* เลื่อนหมากจริงใน cell ปลายทาง (ต้องวาดกระดานใหม่ที่ตำแหน่งใหม่ก่อนเรียก) */
+function slidePiece(board, from, to){
+  if(!animOn || !board) return;
+  const cf=board.querySelector('.sq[data-sq="'+from+'"]'), ct=board.querySelector('.sq[data-sq="'+to+'"]');
+  if(!cf||!ct) return;
+  const img=ct.querySelector('img.pcimg'); if(!img) return;    // หมากจริงที่ปลายทาง = ชิ้นเดียวที่เคลื่อนไหว
+  const dr=ct.getBoundingClientRect(), fr=cf.getBoundingClientRect();
+  if(!dr.width) return;
+  const dx=fr.left-dr.left, dy=fr.top-dr.top;
+  if(!dx && !dy) return;
+  animEls.forEach(resetAnimEl); animEls.clear();                // ยกเลิกอนิเมชันเดิม (ถ้ามี) ก่อนเริ่มใหม่
+  img.classList.add('animating');
+  img.style.transition='none';
+  img.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)';
+  animEls.add(img);
+  void img.offsetWidth;                                        // บังคับ reflow ให้จุดเริ่มต้นติดก่อน
+  requestAnimationFrame(()=>{ img.style.transition='transform .2s cubic-bezier(.22,.61,.36,1)'; img.style.transform='translate(0,0)'; });
+  const done=()=>{ resetAnimEl(img); animEls.delete(img); img.removeEventListener('transitionend',done); };
+  img.addEventListener('transitionend',done);
+  setTimeout(done, 300);
+}
+/* หมากที่ถูกกิน = จางหายเร็ว ๆ (~140ms) ชิ้นเดียว ไม่หายวับ */
+function fadeCaptured(board, sq, color, type){
+  if(!animOn || !board || !sq) return;
+  const cell=board.querySelector('.sq[data-sq="'+sq+'"]'); if(!cell) return;
+  const img=document.createElement('img');
+  img.className='pcimg caught'; img.alt='';
+  img.src='pieces/'+(color==='b'?'_':'')+String(type).toUpperCase()+'.png';
+  cell.appendChild(img);
+  requestAnimationFrame(()=>{ img.style.opacity='0'; });
+  setTimeout(()=>{ if(img.parentNode) img.parentNode.removeChild(img); }, 190);
+}
+function animateMove(from,to){ slidePiece(boardEl, from, to); }
 /* ล้างคำแนะนำทั้งหมดทันทีแบบ synchronous — 'เดินปุ๊บ ลูกศรหายปั๊บ'
    (ไม่รออนิเมชัน/รอบวิเคราะห์ใหม่; เคลียร์ state ก่อนวาดใหม่เพื่อไม่ให้ป้ายเก่าค้าง) */
 function clearHints(){
@@ -1485,27 +1525,24 @@ function playUci(uci){
   const g=new Chess(fens[ptr]);
   const m=g.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]||'q'});
   if(!m) return;
-  const gctx=captureGradeCtx(uci);                       // จับคะแนนก่อนเดิน (ต้องทำก่อน clearHints ล้าง lines)
-  clearHints();                                          // ← ลูกศร/กรอบ/ป้ายหายปั๊บทันที "ก่อน" อนิเมชันและรอบวิเคราะห์ใหม่
-  animateMove(uci.slice(0,2), uci.slice(2,4));           // อนิเมชันเลื่อนหมาก (เบา ๆ)
-  moveGrades = moveGrades.slice(0, ptr);                 // ตัดเกรดของตาที่ถูกเขียนทับ (ถ้าเดินใหม่หลังย้อน)
-  gradeRunCtx = null;
+  const gctx=captureGradeCtx(uci);                       // จับคะแนนก่อนเดิน (ต้องทำก่อนล้าง lines)
+  const from=uci.slice(0,2), to=uci.slice(2,4);
+  /* ล้างคำแนะนำ + ตัด redo-history ที่อยู่เกินตำแหน่งปัจจุบันทิ้ง (ให้จำนวนเกรดตรงกับจำนวนตาจริง) */
+  moveGrades = moveGrades.slice(0, ptr);
   ucis = ucis.slice(0,ptr); fens = fens.slice(0,ptr+1);
   ucis.push(uci); fens.push(g.fen()); ptr=fens.length-1;
+  lines={}; sugTo={}; sugRank={}; sqTagTxt={}; arrowsEl.innerHTML='';
   sel=null; legal=[];
-  render(); renderPV(); updateTurnBtn(); saveGame();
-  const idx=ucis.length-1;
-  if(run){
-    gradeRunCtx={ idx:idx, beforeBestCp:gctx.beforeBestCp, gapCp:gctx.gapCp };   // รอผลวิเคราะห์รอบใหม่ แล้วคิดเกรด
-    runAnalysis();                                  // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง
-  } else {
-    setStatus('stMoved');
-    if(gctx.matchedVal!=null){                      // ตาที่เดินอยู่ในลิสต์ MultiPV อยู่แล้ว = รู้ผลทันที
-      finalizeGrade(idx, gctx.beforeBestCp, gctx.matchedVal, gctx.gapCp);
-    } else {
-      gradeAfterMove(idx, gctx);                    // ไม่อยู่ในลิสต์ → ประเมินสั้น ๆ (depth ~11, ≤1.5 วิ) แล้วค่อยคิดเกรด
-    }
+  render(); renderPV(); updateTurnBtn(); saveGame();     // วาดตำแหน่งใหม่ 'ก่อน' อนิเมชัน (ให้มีหมากจริงตัวเดียวที่ปลายทาง)
+  if(m.captured){                                        // กินหมาก: ให้ตัวที่ถูกกินจางหายเร็ว ๆ (ไม่หายวับ)
+    const ep=(m.flags||'').indexOf('e')>=0;
+    fadeCaptured(boardEl, ep ? (to[0]+from[1]) : to, m.color==='w'?'b':'w', m.captured);
   }
+  animateMove(from, to);                                 // เลื่อนหมากจริงจากช่องเก่า (ไม่มี ghost ซ้อน)
+  const idx=ucis.length-1;
+  setStatus('stMoved');
+  enqueueMoveGrade(idx, gctx);                           // การันตีเกรดทุกตา (แคช→MultiPV→คิวเอนจิน)
+  if(run) runAnalysis();                                 // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง
 }
 
 /* ---------- ปุ่มเดิน/กด ---------- */
@@ -1629,6 +1666,7 @@ function importPgn(){
     render(); renderPV(); updateTurnBtn(); updateUndoBtn(); saveGame();
     setStatus('stSetPos');
     toast(t('toastPgnImported', hist.length), true);
+    retroMainGame();                                // เติมเกรดย้อนหลังให้เกมที่นำเข้า (คิวเบื้องหลัง)
     if(run) runAnalysis();
   }catch(e){ toast(t('toastPgnBad')); }
 }
@@ -1932,39 +1970,217 @@ function finalizeGrade(idx, beforeBestCp, afterMoverCp, gapCp){
     render(); saveGame();
   }catch(e){}
 }
-/* ประเมินสั้น ๆ (depth ~11, ≤1.5 วิ) — คืนค่าเซนติเบี้ยมุมมองฝ่ายที่ถึงตาในตำแหน่งนั้น */
+/* ==================================================================
+   เกรดการเดินแบบ 'การันตีครบทุกตา' — แคชตามตำแหน่ง + คิวคำนวณเบื้องหลัง
+   ================================================================== */
+const LSK_GRADECACHE='chessGradeCache';
+const GRADE_CACHE_MAX=2000;
+let gradeCache={}, gradeCacheSaveT=null, gradeCacheLoaded=false;
+function gradeCacheLoad(){
+  if(gradeCacheLoaded) return; gradeCacheLoaded=true;
+  try{ const raw=localStorage.getItem(LSK_GRADECACHE); const d=raw?JSON.parse(raw):null; gradeCache=(d&&typeof d==='object')?d:{}; }catch(e){ gradeCache={}; }
+}
+function gradeCacheSave(){
+  if(gradeCacheSaveT) return;
+  gradeCacheSaveT=setTimeout(()=>{ gradeCacheSaveT=null;
+    try{
+      let keys=Object.keys(gradeCache);
+      if(keys.length>GRADE_CACHE_MAX){ const keep={}; const start=keys.length-GRADE_CACHE_MAX;
+        for(let i=start;i<keys.length;i++) keep[keys[i]]=gradeCache[keys[i]]; gradeCache=keep; }   // ตัดเก่าออก
+      localStorage.setItem(LSK_GRADECACHE, JSON.stringify(gradeCache));
+    }catch(e){}
+  }, 900);
+}
+function gradeKey(fenBefore, uci){ return posKeyOf(fenBefore)+'|'+uci; }      // FEN 3 ฟิลด์ + ตาที่เล่น
+function gradeCacheGet(fenBefore, uci){ const k=gradeKey(fenBefore,uci); return Object.prototype.hasOwnProperty.call(gradeCache,k)? gradeCache[k] : null; }
+function gradeCacheSet(fenBefore, uci, gr){ if(!gr) return; const k=gradeKey(fenBefore,uci); if(gradeCache[k]===gr) return; gradeCache[k]=gr; gradeCacheSave(); }
+
 function engineReady(){ return !!(engine && ready); }
-function microEval(fen, depth){
+function sleep0(ms){ return new Promise(r=>setTimeout(r, ms||0)); }
+/* ประเมินตำแหน่งสั้น ๆ (depth/movetime จำกัด) — คืน map {1:{kind,val},2:{...}} หรือ null */
+function engineEval(fen, opt){
+  opt=opt||{}; const depth=opt.depth||8, mt=opt.movetime||400, mpv=opt.multipv||1;
   return new Promise(resolve=>{
     if(!engineReady()){ resolve(null); return; }
-    evalBuf={kind:null,val:null}; evalCb=resolve;
+    evalBuf={}; evalCb=resolve;
     try{
-      engine.postMessage('setoption name MultiPV value 1');
+      engine.postMessage('setoption name MultiPV value '+mpv);
       engine.postMessage('position fen '+fen);
-      engine.postMessage('go depth '+(depth||11)+' movetime 1500');
+      engine.postMessage('go depth '+depth+' movetime '+mt);
     }catch(e){ evalCb=null; resolve(null); }
   });
 }
-async function microEvalMover(fen, stm){
-  const b=await microEval(fen, 11);
-  if(!b || b.kind==null) return null;
-  return evalToCp(b.kind, b.val);        // UCI = มุมมองฝ่ายที่ถึงตาใน fen นั้นอยู่แล้ว
-}
-async function gradeAfterMove(idx, ctx){
+/* คิดเกรดจากข้อมูลที่รู้อยู่แล้ว (ไม่แตะเอนจิน) — บังคับให้ได้เกรดเสมอสำหรับตาที่ถูกกติกา */
+function doClassify(fenBefore, uci, fenAfter, beforeBestCp, afterMoverCp, gapCp){
   try{
-    let beforeBest=ctx.beforeBestCp, gap=ctx.gapCp;
-    if(beforeBest==null && engineReady()){
-      const stm=new Chess(fens[idx]).turn();
-      beforeBest=await microEvalMover(fens[idx], stm);
+    const gBefore=new Chess(fenBefore);
+    const from=uci.slice(0,2), to=uci.slice(2,4), promo=uci[4]||'q';
+    const move=gBefore.moves({verbose:true}).find(m=>m.from===from&&m.to===to&&(!m.promotion||m.promotion===promo));
+    let gr=classifyMove(gBefore, move, beforeBestCp, afterMoverCp, gapCp, fenAfter);
+    if(!gr){ const legal=gBefore.moves({verbose:true}); gr=(legal.length<=1)?'forced':(move?'good':null); }
+    return gr;
+  }catch(e){ return null; }
+}
+/* ---- คิวงานเกรด: ทำทีละตา · รอเอนจินว่าง (ผู้ใช้อาจกด ▶ รัน) · หยุดเมื่อสลับแท็บ ---- */
+const gradeQueue=[]; const gradePending=new Map(); let gradeRunning=false, gradeInFlight=false, gradePaused=false, bootRetroPending=false;
+function enqueueGradeJob(job){
+  const key=gradeKey(job.fenBefore, job.uci);
+  const existing=gradePending.get(key);
+  if(existing){ (existing.extra||(existing.extra=[])).push(job); return; }   // ตำแหน่งเดียวกันถูกจัดคิวไว้แล้ว → ผูกเข้ากับงานเดิม
+  job.__key=key; job.extra=[];
+  gradePending.set(key, job);
+  gradeQueue.push(job); if(!gradePaused) pumpGradeQueue();
+}
+function cancelGradeJobs(pred){
+  for(let i=gradeQueue.length-1;i>=0;i--){ const j=gradeQueue[i]; if(!pred(j)) continue;
+    gradePending.delete(j.__key); gradeQueue.splice(i,1);
+    (j.extra||[]).forEach(x=>{                    // งานที่ผูกไว้ (คนละเซสชัน) ยังต้องทำ → จัดคิวใหม่
+      if((x.session&&x.session.cancelled) || (x.isDone&&x.isDone())) return;
+      const k=gradeKey(x.fenBefore,x.uci); x.__key=k; x.extra=[]; gradePending.set(k,x); gradeQueue.push(x);
+    });
+  }
+}
+async function pumpGradeQueue(){
+  if(gradeRunning || gradePaused) return; gradeRunning=true;
+  try{
+    while(gradeQueue.length){
+      if(document.hidden){ gradePaused=true; break; }               // สลับแท็บ = หยุดทันที (คงคิวไว้ ทำต่อเมื่อกลับมา)
+      if(!ready || searching || startTimer){ await sleep0(120); continue; }   // รอเอนจินพร้อม/ผู้ใช้วิเคราะห์ให้ว่าง — ไม่ยกเลิกงานเกรด
+      const job=gradeQueue.shift(); if(!job) continue;
+      const key=job.__key;
+      const chain=[job].concat(job.extra||[]);
+      const alive=chain.filter(j=>!(j.session && j.session.cancelled) && !(j.isDone && j.isDone()));
+      if(!alive.length){ gradePending.delete(key); continue; }
+      gradeInFlight=true;
+      let gr=null;
+      try{ gr=await computeGradeJob(job); }catch(e){}
+      gradeInFlight=false;
+      gradePending.delete(key);
+      alive.forEach(j=>{
+        if(gr && j.apply){ try{ j.apply(gr); }catch(e){} }
+        if(j.session && !j.session.cancelled){
+          j.session.done++;
+          setProgText(j.session.elId, j.session.done, j.session.total);
+          if(j.session.done>=j.session.total && j.session.afterAll){ try{ j.session.afterAll(); }catch(e){} }
+        }
+      });
+      await sleep0(0);                                              // yield ให้ UI ไม่กระตุก
     }
-    let afterM=null;
-    if(engineReady()){
-      const stm2=new Chess(fens[idx+1]).turn();
-      const v=await microEvalMover(fens[idx+1], stm2);
-      afterM = (v==null? null : -v);      // มุมมองฝ่ายที่เดิน = ตรงข้ามกับฝ่ายที่ถึงตาหลังเดิน
-    }
-    finalizeGrade(idx, beforeBest, afterM, gap);
-  }catch(e){}
+  } finally{ gradeRunning=false; }
+}
+async function computeGradeJob(job){
+  const fenBefore=job.fenBefore, uci=job.uci, fenAfter=job.fenAfter;
+  const cached=gradeCacheGet(fenBefore, uci); if(cached) return cached;
+  if(job.matchedVal!=null){                                         // มีผล MultiPV อยู่แล้ว = คิดทันที ไม่เรียกเอนจิน (0 ms)
+    const gr=doClassify(fenBefore, uci, fenAfter, job.beforeBestCp, job.matchedVal, job.gapCp);
+    if(gr) gradeCacheSet(fenBefore, uci, gr); return gr;
+  }
+  if(!engineReady()){ return null; }                                // รอเอนจินให้พร้อมก่อน (คิวจะรอแล้ว) — ไม่แต่งเกรดมั่ว
+  const bl=await engineEval(fenBefore, {depth:8, movetime:400, multipv:2});
+  let beforeBestCp=null, gapCp=null;
+  if(bl && bl[1]) beforeBestCp=evalToCp(bl[1].kind, bl[1].val);
+  if(bl && bl[1] && bl[2]) gapCp=evalToCp(bl[1].kind,bl[1].val)-evalToCp(bl[2].kind,bl[2].val);
+  const al=await engineEval(fenAfter, {depth:8, movetime:400, multipv:1});
+  let afterMoverCp=null;
+  if(al && al[1]) afterMoverCp = -evalToCp(al[1].kind, al[1].val);    // มุมมองฝ่ายที่เดิน
+  const gr=doClassify(fenBefore, uci, fenAfter, beforeBestCp, afterMoverCp, gapCp);
+  if(gr) gradeCacheSet(fenBefore, uci, gr); return gr;
+}
+/* เข้าคิวเกรด 'ตาปัจจุบัน' ของกระดานหลัก (เรียกหลังเดินตาใหม่) */
+function enqueueMoveGrade(idx, gctx){
+  const fenBefore=fens[idx], uci=ucis[idx], fenAfter=fens[idx+1];
+  if(!uci || !fenBefore || !fenAfter) return;
+  const cached=gradeCacheGet(fenBefore, uci);
+  if(cached){ moveGrades[idx]=cached; render(); saveGame(); return; } // แคช hit = 0 ms
+  enqueueGradeJob({ fenBefore:fenBefore, uci:uci, fenAfter:fenAfter,
+    matchedVal:(gctx&&gctx.matchedVal!=null)?gctx.matchedVal:null,
+    beforeBestCp:gctx?gctx.beforeBestCp:null, gapCp:gctx?gctx.gapCp:null,
+    isDone:()=> (moveGrades[idx]!=null && ucis[idx]===uci),
+    apply:gr=>{ if(idx<ucis.length && ucis[idx]===uci){ moveGrades[idx]=gr; render(); saveGame(); } } });
+}
+/* ---- ตัวเลขความคืบหน้าการเติมเกรดย้อนหลัง ---- */
+function setProgText(elId, done, total){
+  const el=$(elId); if(!el) return;
+  if(!total || total<=0){ el.style.display='none'; el.textContent=''; return; }
+  const d=Math.min(done,total);
+  el.style.display='block'; el.textContent=t('gradeProgress', d, total)+(d>=total?' ✓':'');
+}
+function cancelSession(sess){ if(!sess) return; sess.cancelled=true; cancelGradeJobs(j=>j.session===sess); }
+/* เติมเกรดจากแคชที่มีอยู่แล้วลง grades (ไม่แตะเอนจิน) · apply(i,gr) เขียนลงที่จริง */
+function fillCacheOnly(fensA, ucisA, grades, apply){
+  let n=0;
+  for(let i=0;i<ucisA.length;i++){ if(grades[i]) continue;
+    const c=gradeCacheGet(fensA[i], ucisA[i]); if(c){ grades[i]=c; n++; if(apply) apply(i,c); } }
+  return n;
+}
+/* ---- เติมเกรดย้อนหลัง: กระดานหลัก (หลังนำเข้า PGN / คืนเกมที่บันทึกไว้) ---- */
+let mainSession=null;
+function retroMainGame(){
+  cancelSession(mainSession); mainSession=null;
+  const u=ucis; if(!u || !u.length) return;
+  while(moveGrades.length<u.length) moveGrades.push(null);
+  moveGrades.length=u.length;
+  fillCacheOnly(fens, u, moveGrades, null);
+  const missing=[]; for(let i=0;i<u.length;i++) if(!moveGrades[i]) missing.push(i);
+  if(!missing.length){ render(); return; }
+  const sess={ cancelled:false, done:0, total:missing.length, elId:null, afterAll:()=>{ render(); saveGame(); } };
+  mainSession=sess;
+  missing.forEach(i=>{ const uci=u[i];
+    enqueueGradeJob({ fenBefore:fens[i], uci:uci, fenAfter:fens[i+1], session:sess,
+      apply:gr=>{ if(ucis[i]===uci){ moveGrades[i]=gr; render(); saveGame(); } } }); });
+}
+/* ---- เติมเกรดย้อนหลัง: กล่องสถิติ (คิวเบื้องหลัง ไม่กระตุก) ---- */
+let statSession=null;
+function retroStatsGame(gm, opts){
+  opts=opts||{}; cancelSession(statSession); statSession=null;
+  const u=gm.ucis||[]; const gr=gm.grades||(gm.grades=[]);
+  while(gr.length<u.length) gr.push(null);
+  const apply=opts.apply||null;
+  fillCacheOnly(gm.fens, u, gr, apply);
+  setProgText('gradeProg',0,0);
+  const missing=[]; for(let i=0;i<u.length;i++) if(!gr[i]) missing.push(i);
+  if(!missing.length) return;
+  const sess={ cancelled:false, done:0, total:missing.length, elId:'gradeProg',
+    afterAll:()=>{ if(statGame===gm){ renderStatsBody(gm); if(opts.persist) opts.persist(); } } };
+  statSession=sess;
+  missing.forEach(i=>{ enqueueGradeJob({ fenBefore:gm.fens[i], uci:u[i], fenAfter:gm.fens[i+1], session:sess,
+    apply:g2=>{ gr[i]=g2; if(apply) apply(i,g2); } }); });
+  setProgText('gradeProg',0,sess.total);
+}
+/* ---- เติมเกรดย้อนหลัง: หน้ารายการประวัติ ---- */
+let histSession=null;
+function retroHistAll(){
+  cancelSession(histSession); histSession=null; setProgText('histProg',0,0);
+  if(!histOn || !hist.length) return;
+  const missing=[];
+  hist.forEach(gm=>{ const u=gm.ucis||[]; const gr=gm.grades||(gm.grades=[]);
+    while(gr.length<u.length) gr.push(null);
+    fillCacheOnly(gm.fens, u, gr, null);
+    for(let i=0;i<u.length;i++) if(!gr[i]) missing.push([gm,i]); });
+  if(!missing.length) return;
+  const sess={ cancelled:false, done:0, total:missing.length, elId:'histProg',
+    afterAll:()=>{ histPersist(); if(histOn) renderHist(); } };
+  histSession=sess;
+  missing.forEach(([gm,i])=>{ const gr=gm.grades, u=gm.ucis;
+    enqueueGradeJob({ fenBefore:gm.fens[i], uci:u[i], fenAfter:gm.fens[i+1], session:sess,
+      apply:g2=>{ gr[i]=g2; histPersist(); } }); });
+  setProgText('histProg',0,sess.total);
+}
+/* ---- เติมเกรดย้อนหลัง: หน้า replay ---- */
+let rpSession=null;
+function retroReplay(){
+  cancelSession(rpSession); rpSession=null; setProgText('rpProg',0,0);
+  if(!rpOn || !rpUcis.length) return;
+  while(rpGrades.length<rpUcis.length) rpGrades.push(null);
+  fillCacheOnly(rpFens, rpUcis, rpGrades, null);
+  const missing=[]; for(let i=0;i<rpUcis.length;i++) if(!rpGrades[i]) missing.push(i);
+  if(!missing.length){ rpRender(); return; }
+  const sess={ cancelled:false, done:0, total:missing.length, elId:'rpProg',
+    afterAll:()=>{ if(rpOn) rpRender(); } };
+  rpSession=sess;
+  missing.forEach(i=>{ enqueueGradeJob({ fenBefore:rpFens[i], uci:rpUcis[i], fenAfter:rpFens[i+1], session:sess,
+    apply:g2=>{ rpGrades[i]=g2; if(rpOn) rpRenderLog(); } }); });
+  setProgText('rpProg',0,sess.total);
 }
 /* วาดไอคอนเกรดบนช่องปลายทาง เฉพาะ 'ตาล่าสุด' ที่นำมาสู่ตำแหน่งที่กำลังดู (ptr) เท่านั้น — ไม่สะสม */
 function paintGrades(){
@@ -2157,12 +2373,11 @@ function histAddCurrent(auto){     // เก็บเกมปัจจุบั
 function gradeCounts(grades){
   const c={}; (grades||[]).forEach(g=>{ if(g) c[g]=(c[g]||0)+1; }); return c;
 }
-function openHist(){ histLoad(); histOn=true; const v=$('histView'); if(v) v.classList.add('show'); renderHist(); }
-function closeHist(){ histOn=false; const v=$('histView'); if(v) v.classList.remove('show'); }
+function openHist(){ histLoad(); histOn=true; const v=$('histView'); if(v) v.classList.add('show'); renderHist(); retroHistAll(); }
+function closeHist(){ histOn=false; const v=$('histView'); if(v) v.classList.remove('show'); cancelSession(histSession); histSession=null; setProgText('histProg',0,0); }
 function mkHBtn(key, cls, fn){ const b=document.createElement('button'); b.type='button';
   b.className='sm '+(cls||''); b.textContent=t(key); b.onclick=fn; return b; }
 function renderHist(){
-  histLoad();
   const list=$('histList'); if(!list) return;
   const cnt=$('histCount'); if(cnt) cnt.textContent=t('histCount', hist.length, MAX_HIST);
   list.innerHTML='';
@@ -2204,7 +2419,7 @@ function renderHist(){
     item.appendChild(sum);
     const btns=document.createElement('div'); btns.className='histBtns';
     btns.appendChild(mkHBtn('histOpen', 'pri', ()=>openReplayFromGame(gm, 0)));
-    btns.appendChild(mkHBtn('histStats', null, ()=>openStats(gm)));
+    btns.appendChild(mkHBtn('histStats', null, ()=>openStats(gm, {apply:(i,gr)=>{ gm.grades[i]=gr; }, persist:()=>{ histPersist(); if(histOn) renderHist(); }})));
     btns.appendChild(mkHBtn('histCopyPgn', null, ()=>copyGamePgn(gm)));
     btns.appendChild(mkHBtn('histRename', null, ()=>renameGame(gm)));
     btns.appendChild(mkHBtn('histDel', 'del', ()=>delGame(gm)));
@@ -2287,28 +2502,27 @@ function importPgnToHist(openNow){
 let rpFens=[], rpUcis=[], rpGrades=[], rpPtr=0, rpFlipped=false, rpName='', rpSrcId=null;
 let rpPlaying=false, rpTimer=null, rpDelay=(()=>{ const v=+lsGet(LSK.rpDelay, 2); return (v>=1&&v<=10)? v : 2; })();
 
-function rpAnimateMove(from,to){                 // อนิเมชันหมากในหน้า replay — ข้ามเมื่อปิดอนิเมชัน
-  if(!animOn) return;
-  const b=$('rpBoard'), wrap=$('rpBoardWrap'); if(!b||!wrap) return;
-  const cf=b.querySelector('.sq[data-sq="'+from+'"]'), ct=b.querySelector('.sq[data-sq="'+to+'"]');
-  if(!cf||!ct) return;
-  const pimg=ct.querySelector('img.pcimg'); if(!pimg) return;
-  const wr=wrap.getBoundingClientRect(), fr=cf.getBoundingClientRect(), tr=ct.getBoundingClientRect();
-  if(!wr.width||!wr.height) return;
-  const ax=(fr.left+fr.width/2-wr.left)/wr.width*100, ay=(fr.top+fr.height/2-wr.top)/wr.height*100;
-  const bx=(tr.left+tr.width/2-wr.left)/wr.width*100, by=(tr.top+tr.height/2-wr.top)/wr.height*100;
-  const ghost=document.createElement('img'); ghost.className='pcimg ghost'; ghost.alt=''; ghost.src=pimg.src;
-  ghost.style.left=ax+'%'; ghost.style.top=ay+'%'; ghost.style.transform='translate(-50%,-50%)';
-  wrap.appendChild(ghost);
-  requestAnimationFrame(()=>{ ghost.style.transform='translate(-50%,-50%) translate('+((bx-ax)/100*wr.width).toFixed(1)+'px,'+((by-ay)/100*wr.height).toFixed(1)+'px)'; });
-  const kill=()=>{ if(ghost.parentNode) ghost.parentNode.removeChild(ghost); };
-  ghost.addEventListener('transitionend',kill,{once:true});
-  setTimeout(kill,300);
+function moveInfo(fenBefore, uci){
+  try{
+    const g=new Chess(fenBefore);
+    const mv=g.moves({verbose:true}).find(m=>m.from===uci.slice(0,2)&&m.to===uci.slice(2,4)&&(!m.promotion||m.promotion===(uci[4]||'q')));
+    return mv? {captured:mv.captured||null, flags:mv.flags||'', color:mv.color} : null;
+  }catch(e){ return null; }
+}
+function rpAnimateMove(from,to){                 // อนิเมชันหมากในหน้า replay — ใช้เส้นทางเดียวกับกระดานหลัก (เนียนเหมือนกัน)
+  const b=$('rpBoard'); if(!b) return;
+  if(rpPtr>0){
+    const mv=moveInfo(rpFens[rpPtr-1], rpUcis[rpPtr-1]);
+    if(mv && mv.captured){ const ep=(mv.flags||'').indexOf('e')>=0;
+      fadeCaptured(b, ep ? (to[0]+from[1]) : to, mv.color==='w'?'b':'w', mv.captured); }
+  }
+  slidePiece(b, from, to);
 }
 function rpRender(){
   const b=$('rpBoard'); if(!b||!rpFens.length) return;
   const g=new Chess(rpFens[rpPtr]);
   b.innerHTML='';
+  pruneAnims();
   const last = rpPtr>0 ? [rpUcis[rpPtr-1].slice(0,2), rpUcis[rpPtr-1].slice(2,4)] : null;
   for(let r=0;r<8;r++) for(let f=0;f<8;f++){
     const file=rpFlipped?7-f:f, rank=rpFlipped?7-r:r, sq='abcdefgh'[file]+(8-rank);
@@ -2401,10 +2615,12 @@ function openReplayFromGame(gm, startPtr){
   const v=$('replayView'); if(v) v.classList.add('show');
   rpSetEval(0,null);
   rpRender();
+  retroReplay();                              // เติมเกรดย้อนหลัง (คิวเบื้องหลัง)
 }
 function closeReplay(){
   rpStop();
   rpOn=false;
+  cancelSession(rpSession); rpSession=null; setProgText('rpProg',0,0);
   const v=$('replayView'); if(v) v.classList.remove('show');
 }
 function rpGoto(n){
@@ -2445,6 +2661,7 @@ function rpImportPgn(){
     rpFens=f; rpUcis=u; rpGrades=new Array(u.length).fill(null); rpPtr=0; rpName=first.name||'';
     rpPlaying=false; if(rpTimer){ clearTimeout(rpTimer); rpTimer=null; }
     rpRender();
+    retroReplay();                            // เติมเกรดย้อนหลังให้เกมที่เพิ่งนำเข้า
     toast(t('toastPgnImported', u.length), true);
     if($('rpSaveChk') && $('rpSaveChk').checked){
       const gm={ id:newId(), name:(first.name||defaultGameName()), savedAt:Date.now(), fens:f.slice(), ucis:u.slice(),
@@ -2490,9 +2707,7 @@ function gameStats(gm){
     s.acc = s.graded ? Math.max(0,Math.min(100,Math.round(100*Math.exp(-(s.loss/s.graded)/280)))) : null; });
   return out;
 }
-function openStats(gm){
-  if(!gm) return;
-  statGame=gm;                      // จำเกมที่แสดง เพื่อ re-render ตอนสลับภาษาโดยไม่ปิดกล่อง
+function renderStatsBody(gm){
   const st=gameStats(gm);
   const mine=playerColorOf(gm), other=(mine==='w'?'b':'w'), res=gameResult(gm);
   const nm=$('statName'); if(nm) nm.textContent=(gm.name? displayGameName(gm.name)+' · ' : '')+t('statTitle');
@@ -2513,9 +2728,19 @@ function openStats(gm){
     + '<div class="statCols">'+colHtml(mine,true)+colHtml(other,false)+'</div>'
     + '<div class="tiny" style="text-align:center">'+t('statMoves')+': '+((gm.ucis||[]).length)+'</div>'
     + '<div class="tiny" style="text-align:center;opacity:.8">'+t('resNote')+'</div>';
-  const v=$('statView'); if(v) v.classList.add('show');
 }
-function closeStats(){ const v=$('statView'); if(v) v.classList.remove('show'); statGame=null; }
+function openStats(gm, opts){
+  if(!gm) return;
+  statGame=gm;                      // จำเกมที่แสดง เพื่อ re-render ตอนสลับภาษาโดยไม่ปิดกล่อง
+  renderStatsBody(gm);
+  const v=$('statView'); if(v) v.classList.add('show');
+  // เติมเกรดย้อนหลังเป็นคิวเบื้องหลัง (หยุดเมื่อปิดกล่อง/สลับแท็บ) — ไม่ทำหน้าเว็บกระตุก
+  retroStatsGame(gm, {
+    apply:(opts&&opts.apply)||null,
+    persist:(opts&&opts.persist)||null
+  });
+}
+function closeStats(){ const v=$('statView'); if(v) v.classList.remove('show'); statGame=null; cancelSession(statSession); statSession=null; setProgText('gradeProg',0,0); }
 function mainGameForStats(){ return { name:'', fens:fens.slice(), ucis:ucis.slice(), grades:moveGrades.slice(), flipped:!!flipped }; }
 function replayGameForStats(){ return { name:rpName, fens:rpFens.slice(), ucis:rpUcis.slice(), grades:rpGrades.slice(), flipped:!!rpFlipped }; }
 
@@ -2603,7 +2828,7 @@ function wireHistReplay(){
     const ok=await copyRaw(txt); toast(t(ok?'toastCopiedAll':'toastCopyFail'), true);
   };
   // จอหลัก: สถิติเกมปัจจุบัน
-  const bst=$('bStats'); if(bst) bst.onclick=()=>openStats(mainGameForStats());
+  const bst=$('bStats'); if(bst) bst.onclick=()=>openStats(mainGameForStats(), {apply:(i,gr)=>{ moveGrades[i]=gr; render(); saveGame(); }});
   // ปุ่ม ⚙ ตั้งค่า (อยู่ในแถวเดียวกับ แก้ไขกระดาน) เปิด/ปิดแผงตั้งค่า
   const bset=$('bSettings'); if(bset) bset.onclick=()=>{ const sp=$('settings'); if(!sp) return; const o=!sp.open; sp.open=o; bset.classList.toggle('on', o); bset.setAttribute('aria-expanded', o?'true':'false'); };
   // ปุ่มปิดกล่องสถิติ
@@ -2618,7 +2843,7 @@ function wireHistReplay(){
   const rrun=$('rpRun'); if(rrun) rrun.onclick=rpTogglePlay;
   const rres=$('rpRestart'); if(rres) rres.onclick=rpRestartPlay;
   const rfl=$('rpFlip'); if(rfl) rfl.onclick=()=>{ rpFlipped=!rpFlipped; rpRender(); };
-  const rstat=$('rpStats'); if(rstat) rstat.onclick=()=>openStats(replayGameForStats());
+  const rstat=$('rpStats'); if(rstat) rstat.onclick=()=>openStats(replayGameForStats(), {apply:(i,gr)=>{ rpGrades[i]=gr; if(rpOn) rpRender(); }});
   const rsh=$('rpShare'); if(rsh) rsh.onclick=()=>copyGamePgn(replayGameForStats());
   const rim=$('rpImport'); if(rim) rim.onclick=rpImportPgn;
   const rdl=$('rpDelay'); if(rdl) rdl.oninput=()=>rpSetDelay(+rdl.value);
@@ -2630,9 +2855,15 @@ wireHistReplay();
 try{ window.__chessDbg={
   get hist(){ return hist; }, get ptr(){ return ptr; }, get ucisLen(){ return ucis.length; },
   get rpPtr(){ return rpPtr; }, get rpUcisLen(){ return rpUcis.length; }, get rpPlaying(){ return rpPlaying; },
-  get rpOn(){ return rpOn; }, get histOn(){ return histOn; }, get rpDelay(){ return rpDelay; }
+  get rpOn(){ return rpOn; }, get histOn(){ return histOn; }, get rpDelay(){ return rpDelay; },
+  get moveGrades(){ return moveGrades.slice(); }, get ucis(){ return ucis.slice(); }, get fens(){ return fens.slice(); },
+  get gradeCacheSize(){ return Object.keys(gradeCache).length; }, get gradeQueueLen(){ return gradeQueue.length; },
+  get gradePendingSize(){ return gradePending.size; }, get gradeInFlight(){ return gradeInFlight; },
+  get gradeRunning(){ return gradeRunning; }, get gradePaused(){ return gradePaused; }
 }; }catch(e){}
 
+gradeCacheLoad();
+bootRetroPending = (ucis.length>0);        // เกมที่คืนจาก localStorage → เติมเกรดที่ขาดให้ครบเมื่อเอนจินพร้อม
 startEngine(); render(); renderPV(); updateTurnBtn(); updateUndoBtn(); setEval(0,null); histLoad(); applyLang();
 </script>
 </body>
