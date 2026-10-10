@@ -122,10 +122,34 @@ button.rec-on{background:linear-gradient(180deg,#f4b258,#cf8d2c)!important;color
 .npv.on[data-npv="4"]{background:#f08a1e!important;color:#2a1400;border-color:#f08a1e;box-shadow:0 0 0 2px rgba(240,138,30,.45),0 0 12px rgba(240,138,30,.5)}
 .npv.on[data-npv="5"]{background:#e5534b!important;color:#2a0705;border-color:#e5534b;box-shadow:0 0 0 2px rgba(229,83,75,.45),0 0 12px rgba(229,83,75,.5)}
 
-#log{margin-top:8px;height:62px;line-height:60px;border:1px solid var(--line);border-radius:12px;
- background:#0f141b;padding:0 14px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;font-size:1.12rem;color:var(--dim);
- font-variant-numeric:tabular-nums;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
-#log::-webkit-scrollbar{display:none;height:0;width:0}
+/* ปุ่มขนาดธีม 3 อัน — ใหญ่=ม่วง · กลาง=น้ำเงิน · เล็ก=ฟ้า (ไม่เลือก=โทนเทาจาง · เลือก=สีเต็ม+ขอบเรืองค้าง) */
+.size{font-weight:700;background:transparent!important;color:var(--dim);border-color:var(--line);transition:background .15s,color .15s,border-color .15s,box-shadow .15s}
+.size.on[data-size="small"]{background:#38bdf8!important;color:#04202c;border-color:#38bdf8;box-shadow:0 0 0 2px rgba(56,189,248,.45),0 0 12px rgba(56,189,248,.5)}
+.size.on[data-size="medium"]{background:#3b82f6!important;color:#04122e;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.45),0 0 12px rgba(59,130,246,.5)}
+.size.on[data-size="large"]{background:#8b5cf6!important;color:#180430;border-color:#8b5cf6;box-shadow:0 0 0 2px rgba(139,92,246,.45),0 0 12px rgba(139,92,246,.5)}
+
+/* ปุ่มโปรไฟล์ 3 อัน — เร็ว=เขียวอ่อน · ปกติ=น้ำเงิน · ลึก=ม่วง (ไม่เลือก=จาง · เลือก=สีเต็ม+ขอบเรืองค้าง) */
+.prof{font-weight:700;background:transparent!important;color:var(--dim);border-color:var(--line);transition:background .15s,color .15s,border-color .15s,box-shadow .15s}
+.prof.on[data-prof="quick"]{background:#34d399!important;color:#04231a;border-color:#34d399;box-shadow:0 0 0 2px rgba(52,211,153,.45),0 0 12px rgba(52,211,153,.5)}
+.prof.on[data-prof="normal"]{background:#3b82f6!important;color:#04122e;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.45),0 0 12px rgba(59,130,246,.5)}
+.prof.on[data-prof="deep"]{background:#a855f7!important;color:#1e0533;border-color:#a855f7;box-shadow:0 0 0 2px rgba(168,85,247,.45),0 0 12px rgba(168,85,247,.5)}
+
+/* ปุ่มสลับ (อนิเมชัน/ซ่อนการชี้นำ) — เปิด=เขียว · ปิด=แดง (สไตล์เดียวกับปุ่มรัน) */
+.togg.on3{background:linear-gradient(180deg,#4ec46f,#34a55b)!important;color:#04170b!important;border-color:#2f8f4e!important;box-shadow:0 5px 16px rgba(78,196,111,.3)!important}
+.togg.off3{background:linear-gradient(180deg,#f0675e,#cf3b33)!important;color:#fff!important;border-color:#a52f28!important;box-shadow:0 5px 16px rgba(229,83,75,.3)!important}
+
+/* ปุ่ม PGN/FEN — สีตามหน้าที + ไฮไลท์ปุ่มที่คลิกล่าสุด (ขอบเรืองทอง) */
+#bPaste{background:var(--btnBg);color:#9db4c8;border-color:#4a5a6b}
+#bSet{background:linear-gradient(180deg,#3b82f6,#2f6fd0);color:#04122e;border-color:#2563eb;box-shadow:0 4px 12px rgba(59,130,246,.3)}
+#bCopy,#bCopyFen{background:var(--btnBg);color:#4ec46f;border-color:#2f8f4e}
+.posbtn.lastclick{box-shadow:0 0 0 2px #f5d327,0 0 14px 3px rgba(245,211,39,.75)!important;border-color:#f5d327!important;filter:brightness(1.15)}
+
+#log{margin-top:8px;height:68px;line-height:32px;border:1px solid var(--line);border-radius:12px;
+ background:#0f141b;padding:2px 14px;overflow-x:hidden;overflow-y:auto;white-space:normal;word-break:break-word;text-align:left;
+ font-size:1.12rem;color:var(--dim);
+ font-variant-numeric:tabular-nums;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+#log::-webkit-scrollbar{width:6px;height:0}
+#log::-webkit-scrollbar-thumb{background:rgba(147,160,177,.4);border-radius:3px}
 #log b{color:var(--acc,#4ec46f);font-weight:800;font-size:1.24rem;margin-right:2px}
 #status{font-size:.79rem;color:var(--dim);margin-top:6px;min-height:14px}
 
@@ -140,8 +164,10 @@ button.rec-on{background:linear-gradient(180deg,#f4b258,#cf8d2c)!important;color
 #depth::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#f3f6f9;border:3px solid var(--acc,#4ec46f)}
 
 /* สีปุ่มให้เข้าธีม (ใช้กับทุกปุ่ม) */
-#bRun{background:linear-gradient(180deg,var(--acc),var(--acc2));border-color:var(--acc2);color:var(--accInk)}
+#bRun{background:linear-gradient(180deg,#4ec46f,#34a55b);border-color:#2f8f4e;color:#04170b;box-shadow:0 5px 16px rgba(78,196,111,.35)}
 #bRun.on{background:linear-gradient(180deg,#f0675e,#cf3b33);border-color:#a52f28;color:#fff}
+#bRun:active{background:linear-gradient(180deg,#3fb162,#2f8f4e);box-shadow:0 5px 16px rgba(78,196,111,.35)}
+#bRun.on:active{background:linear-gradient(180deg,#e0554d,#cf3b33)}
 #bBack,#bFwd{background:var(--btnBg);color:var(--acc);border-color:var(--acc2)}
 #bStart,#bEnd{background:var(--btnBg);color:var(--txt);font-size:1.07rem}
 #bFlip{background:var(--btnBg);color:var(--dim)}
@@ -179,8 +205,19 @@ button.rec-on{background:linear-gradient(180deg,#f4b258,#cf8d2c)!important;color
 #bigover .box.lose{border-color:#e0402f;color:#ffe0db;background:rgba(46,12,10,.96)}
 #bigover .box .sm2{display:block;font-size:.86rem;font-weight:400;opacity:.75;margin-top:6px}
 details{margin-top:8px}
-summary{list-style:none;font-size:.96rem;font-weight:600;color:var(--dim);cursor:pointer;padding:12px 14px}
-details[open]>summary{color:var(--txt);border-bottom:1px solid var(--line)}
+/* summary = ปุ่มจริง (พื้นสี+ขอบ+เงา · hover/active · ไฮไลท์ค้างเมื่อเปิด) ให้เข้าระบบเดียวกับปุ่มหลัก */
+summary{list-style:none;display:flex;align-items:center;gap:6px;cursor:pointer;padding:12px 14px;
+ border-radius:12px;font-size:1rem;font-weight:600;min-width:0;letter-spacing:.2px;color:var(--txt);
+ transition:transform .08s,filter .15s,background .15s,box-shadow .15s,color .15s}
+summary::-webkit-details-marker{display:none}
+summary::marker{content:""}
+summary:active{transform:scale(.98)}
+#settings>summary{background:linear-gradient(180deg,#2a3543,#1f2833);color:#c3d0de;border:1px solid #3d4a59;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+#settings>summary:hover{filter:brightness(1.12)}
+#settings[open]>summary{background:linear-gradient(180deg,#3b82f6,#2f6fd0);color:#04122e;border-color:#2563eb;box-shadow:0 0 0 2px rgba(59,130,246,.45),0 5px 16px rgba(59,130,246,.35)}
+#posPanel>summary{background:linear-gradient(180deg,#20302a,#18251f);color:#a8d8bb;border:1px solid #33513f;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+#posPanel>summary:hover{filter:brightness(1.12)}
+#posPanel[open]>summary{background:linear-gradient(180deg,#4ec46f,#34a55b);color:#04170b;border-color:#2f8f4e;box-shadow:0 0 0 2px rgba(78,196,111,.45),0 5px 16px rgba(78,196,111,.35)}
 .card{background:linear-gradient(180deg,var(--panel2) 0%,var(--panel) 100%);border:1px solid var(--line);border-radius:15px;padding:10px;margin-top:8px;box-shadow:0 8px 22px rgba(0,0,0,.3)}
 .card .row{margin:7px 0}
 details .card{background:transparent;border:0;box-shadow:none;border-radius:0;padding:6px 12px 12px}
@@ -222,9 +259,9 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
   </div>
   <div class="row">
     <button id="bRun" class="pri">▶ รัน</button>
-    <button id="bFlip" class="sm">⇅ กลับหัว</button>
+    <button id="bFlip" class="sm">⇅ สลับฝั่ง</button>
     <button id="bNewGame" class="sm" style="flex:0 0 34%">เริ่มเกมใหม่</button>
-    <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" style="flex:0 0 16%">🎨</button>
+    <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" style="flex:0 0 16%">ธีม</button>
   </div>
   <div id="confirmNew" class="card">
     <div class="inner">
@@ -244,9 +281,9 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
       <div class="row">
         <label style="min-width:64px">โปรไฟล์</label>
         <div id="profbtns" style="display:flex;gap:6px;flex:1">
-          <button class="sm prof" data-prof="quick">คิดแบบเร็ว</button>
-          <button class="sm prof" data-prof="normal">คิดแบบปกติ</button>
-          <button class="sm prof" data-prof="deep">คิดแบบลึก</button>
+          <button class="sm prof" data-prof="quick">⚡ คิดแบบเร็ว</button>
+          <button class="sm prof" data-prof="normal">⚖️ คิดแบบปกติ</button>
+          <button class="sm prof" data-prof="deep">🧠 คิดแบบลึก</button>
         </div>
       </div>
       <div class="tiny" id="profv">โปรไฟล์: คิดแบบปกติ</div>
@@ -274,19 +311,9 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
         <label style="min-width:64px;font-size:12px;line-height:1.25">ขนาดของธีม, ปุ่ม</label>
         <div id="sizebtns" style="display:flex;gap:6px;flex:1">
           <button class="sm size" data-size="small">เล็ก</button>
-          <button class="sm size on2" data-size="medium">กลาง</button>
+          <button class="sm size on" data-size="medium">กลาง</button>
           <button class="sm size" data-size="large">ใหญ่</button>
         </div>
-      </div>
-
-      <div class="row">
-        <label style="min-width:64px">ธีม</label>
-        <select id="theme">
-          <option value="nibble">ขาว Nibbler</option>
-          <option value="bw">ขาว-ดำ</option>
-          <option value="brown">น้ำตาลเดิม</option>
-          <option value="green">เขียว</option>
-        </select>
       </div>
 
       <div class="row">
@@ -295,7 +322,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
         <span id="elov" style="min-width:96px;text-align:right;font-size:.86rem">3190 (เต็ม)</span>
       </div>
 
-      <div class="row"><button id="animBtn" class="sm togg on2">อนิเมชันหมาก: เปิด</button></div>
+      <div class="row"><button id="animBtn" class="sm togg">อนิเมชันหมาก: เปิด</button></div>
       <div class="row"><button id="hideBtn" class="sm togg">ซ่อนการชี้นำ: ปิด</button></div>
       <div class="tiny">กด ▶ รัน = วิเคราะห์ตำแหน่งปัจจุบัน (กดอีกครั้ง = หยุด) · แตะช่องปลายลูกศร = เดินตามนั้นทันที<br>
       แตะหมาก = เลือก · จุดฟ้า = ที่เดินได้ · เข้าป้อม: แตะคิงแล้วแตะเรือ (กฎสากลเต็มรูปแบบ)</div>
@@ -307,12 +334,12 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
     <div class="card">
       <div class="row">
         <input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้งตำแหน่ง">
-        <button id="bPaste" class="sm" style="flex:0 0 24%">วาง</button>
+        <button id="bPaste" class="sm posbtn" style="flex:0 0 24%">วาง</button>
       </div>
       <div class="row">
-        <button id="bSet" class="sm">ตั้งตำแหน่ง</button>
-        <button id="bCopy" class="sm">คัดลอก PGN</button>
-        <button id="bCopyFen" class="sm">คัดลอก FEN</button>
+        <button id="bSet" class="sm posbtn">ตั้งตำแหน่ง</button>
+        <button id="bCopy" class="sm posbtn">คัดลอก PGN</button>
+        <button id="bCopyFen" class="sm posbtn">คัดลอก FEN</button>
       </div>
       <div class="tiny" id="fenhint"><b>FEN</b> = รหัสตำแหน่งกระดานปัจจุบัน (ใช้แชร์/วางต่อในโปรแกรมหมากรุกอื่น)<br><b>PGN</b> = บันทึกการเดินทั้งเกม (เอาไปให้คนอื่น/โปรแกรมวิเคราะห์ต่อได้)</div>
     </div>
@@ -653,7 +680,7 @@ function renderLog(){
   let s='';
   sans.forEach((h,i)=>{ s += (i%2===0 ? '<b>'+(i/2+1)+'.</b> ' : ''); s += h+' '; });
   logEl.innerHTML = s || '<span style="opacity:.6">— ยังไม่มีการเดิน —</span>';
-  logEl.scrollLeft = logEl.scrollWidth;
+  logEl.scrollTop = logEl.scrollHeight;      // ขึ้นบรรทัดใหม่แล้วเลื่อน 'ลง' แนวตั้งไปท้ายสุด
 }
 function boardWithoutPiece(fenBoard, sq){
   try{
@@ -793,6 +820,13 @@ $('bPaste').onclick=async()=>{
   try{ const t=await navigator.clipboard.readText(); if(t){ $('fen').value=t.trim(); toast('วางแล้ว ✓', true); } }
   catch(e){ const t=prompt('วาง FEN / PGN ที่นี่:'); if(t) $('fen').value=t.trim(); }
 };
+/* ไฮไลท์ปุ่มที่คลิกล่าสุดในหมวด PGN/FEN (ขอบเรืองทองย้ายตามปุ่มล่าสุดเสมอ) */
+document.querySelectorAll('.posbtn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.posbtn').forEach(x=>x.classList.remove('lastclick'));
+    b.classList.add('lastclick');
+  });
+});
 
 /* ---------- ความลึก / ตัวเลือก / โปรไฟล์ ---------- */
 function updateDepthUI(){
@@ -808,7 +842,7 @@ function setNpvVis(v){
 }
 function updateProfUI(){
   const el=$('profv'); if(el) el.textContent='โปรไฟล์: '+(profName==='custom'?'กำหนดเอง':PROFILES[profName].label);
-  document.querySelectorAll('.prof').forEach(b=>b.classList.toggle('on2', b.dataset.prof===profName));
+  document.querySelectorAll('.prof').forEach(b=>b.classList.toggle('on', b.dataset.prof===profName));
 }
 function applyProfile(name){
   if(PROFILES[name]){ const p=PROFILES[name];
@@ -842,7 +876,7 @@ function applySize(s){
   sizeName=s; const c=SIZES[s];
   document.documentElement.style.setProperty('--boardmax', c.max);
   document.documentElement.style.setProperty('--fs', c.fs);
-  document.querySelectorAll('.size').forEach(b=>b.classList.toggle('on2', b.dataset.size===s));
+  document.querySelectorAll('.size').forEach(b=>b.classList.toggle('on', b.dataset.size===s));
   lsSet(LSK.size, s);
 }
 document.querySelectorAll('.size').forEach(b=>{ b.onclick=()=>{ applySize(b.dataset.size); }; });
@@ -854,10 +888,8 @@ function applyTheme(t){
   const cls={nibble:'theme-white',bw:'theme-bw',brown:'theme-brown',green:'theme-green'}[t];
   document.body.classList.remove('theme-white','theme-bw','theme-brown','theme-green');
   if(cls) document.body.classList.add(cls);          // สีปุ่ม/แอคเซนต์เข้าธีม
-  if($('theme')) $('theme').value=t;                 // ซิงก์กับตัวเลือกในแผงตั้งค่า
   lsSet(LSK.theme, t);
 }
-$('theme').onchange=()=>{ applyTheme($('theme').value); };
 $('bTheme').onclick=()=>{                            // ปุ่มเปลี่ยนธีมเร็วบนจอหลัก
   const i=THEME_ORDER.indexOf(themeName);
   const next=THEME_ORDER[(i+1)%THEME_ORDER.length];
@@ -885,9 +917,11 @@ $('elo').oninput=()=>{
   applyElo(); if(busy) stopAnalysis();
 };
 let animOn = true;
-function refreshAnimBtn(){ const b=$('animBtn'); if(b){ b.textContent='อนิเมชันหมาก: '+(animOn?'เปิด':'ปิด'); b.classList.toggle('on2', animOn); } }
+function refreshAnimBtn(){ const b=$('animBtn'); if(b){ b.textContent='อนิเมชันหมาก: '+(animOn?'เปิด':'ปิด');
+  b.classList.toggle('on3', animOn); b.classList.toggle('off3', !animOn); } }
 $('animBtn').onclick=()=>{ animOn=!animOn; lsSet(LSK.anim, animOn?'1':'0'); refreshAnimBtn(); toast('อนิเมชันหมาก: '+(animOn?'เปิด':'ปิด'), true); };
-function refreshHideBtn(){ const b=$('hideBtn'); if(b){ b.textContent='ซ่อนการชี้นำ: '+(hideHints?'เปิด':'ปิด'); b.classList.toggle('on2', hideHints); }
+function refreshHideBtn(){ const b=$('hideBtn'); if(b){ b.textContent='ซ่อนการชี้นำ: '+(hideHints?'เปิด':'ปิด');
+    b.classList.toggle('on3', hideHints); b.classList.toggle('off3', !hideHints); }
   document.body.classList.toggle('hidehints', hideHints); }         // ซ่อนตัวเลขพิกัดบนกระดานด้วย
 $('hideBtn').onclick=()=>{ hideHints=!hideHints; lsSet(LSK.hide, hideHints?'1':'0'); refreshHideBtn();
   render();                                                        // วาดใหม่เพื่อตัด/คืนตัวเลขพิกัด
