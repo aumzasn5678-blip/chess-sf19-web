@@ -5,285 +5,305 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Chess SF19">
-<meta name="theme-color" content="#1a1a1a">
+<meta name="apple-mobile-web-app-title" content="Chess Scan">
+<meta name="theme-color" content="#15181c">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
 <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
-}
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{})); }
 </script>
-<title>Chess · Stockfish 19</title>
+<title>Chess Scan · Stockfish 19</title>
 <style>
-:root{
-  --bg:#15181c; --panel:#1e2228; --panel2:#262b33; --line:#39404a;
-  --txt:#e9edf2; --dim:#98a2b3; --acc:#f0a04b; --acc2:#4ea1f0;
-  --lt:#e8d3ae; --dk:#7a5a3c; --sel:#f0a04b; --hint:rgba(78,161,240,.45); --ok:#57c785; --bad:#e05c5c;
-}
+:root{--bg:#15181c;--panel:#1e2228;--panel2:#262b33;--line:#39404a;--txt:#e9edf2;--dim:#98a2b3;
+  --acc:#f0a04b;--acc2:#4ea1f0;--lt:#e8d3ae;--dk:#7a5a3c;--hint:rgba(78,161,240,.45);--ok:#57c785;--bad:#e05c5c}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  overscroll-behavior:none;-webkit-user-select:none;user-select:none}
-#app{max-width:520px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 8px) 10px calc(env(safe-area-inset-bottom) + 10px)}
-header{display:flex;align-items:center;gap:8px;padding:2px 2px 8px}
-header h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.2px}
+html,body{margin:0;background:var(--bg);color:var(--txt);overscroll-behavior:none;-webkit-user-select:none;user-select:none;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+#app{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 8px) 10px calc(env(safe-area-inset-bottom) + 12px)}
+header{display:flex;align-items:center;gap:8px;padding:0 2px 8px}
+header h1{font-size:15px;margin:0;font-weight:600}
 header .sub{font-size:11px;color:var(--dim);margin-left:auto;text-align:right;line-height:1.3}
-#board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1/1;width:100%;
+#boardWrap{position:relative;width:100%;aspect-ratio:1/1}
+#board{position:absolute;inset:0;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
   border:2px solid var(--line);border-radius:10px;overflow:hidden;touch-action:manipulation}
 .sq{position:relative;display:flex;align-items:center;justify-content:center;font-size:min(9vw,44px);line-height:1}
 .sq.light{background:var(--lt)} .sq.dark{background:var(--dk)}
 .sq .pc{pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
 .sq.w .pc{color:#fff;-webkit-text-stroke:1.5px #2b2b2b}
 .sq.b .pc{color:#2b2b2b;-webkit-text-stroke:1.5px #f2f2f2}
-.sq.sel{box-shadow:inset 0 0 0 4px var(--sel)}
+.sq.sel{box-shadow:inset 0 0 0 4px var(--acc)}
 .sq.mv::after{content:"";position:absolute;width:26%;height:26%;border-radius:50%;background:var(--hint)}
 .sq.cap::after{content:"";position:absolute;inset:6%;border-radius:50%;border:5px solid var(--hint)}
-.sq.last{box-shadow:inset 0 0 0 3px rgba(240,160,75,.55)}
-.sq.chk{background:#c0392b !important}
-.coord{position:absolute;font-size:9px;color:rgba(0,0,0,.45);font-weight:700}
-.coord.f{left:3px;bottom:1px} .coord.r{right:3px;top:1px;color:rgba(255,255,255,.5)}
-.bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-button{flex:1 1 auto;min-width:0;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
-  border-radius:10px;padding:11px 8px;font-size:13px;font-weight:600}
+.sq.last{box-shadow:inset 0 0 0 3px rgba(240,160,75,.5)}
+.sq.chk{background:#c0392b!important}
+.coord{position:absolute;font-size:9px;font-weight:700;color:rgba(0,0,0,.45)}
+.coord.f{left:3px;bottom:1px}.coord.r{right:3px;top:1px;color:rgba(255,255,255,.5)}
+#arrows{position:absolute;inset:0;pointer-events:none;z-index:3}
+#evalbar{height:8px;background:#2b2f36;border-radius:4px;margin-top:8px;overflow:hidden;position:relative}
+#evalfill{height:100%;width:50%;background:var(--acc2);transition:width .25s}
+#evaltxt{position:absolute;inset:0;font-size:9px;line-height:8px;text-align:center;color:#fff;opacity:.9}
+.row{display:flex;align-items:center;gap:8px;margin:8px 0}
+button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;
+  padding:11px 10px;font-size:13px;font-weight:600;flex:1}
 button:active{background:#333a44}
 button.pri{background:var(--acc);color:#20140a;border-color:#c8813a}
 button.on{background:var(--acc2);color:#08131f;border-color:#3d82c4}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px}
-.row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
-.row label{color:var(--dim);min-width:74px}
-input[type=range]{flex:1;-webkit-appearance:none;height:26px;background:transparent}
-input[type=range]::-webkit-slider-runnable-track{height:6px;background:#3a414b;border-radius:3px}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-9px;
-  border-radius:50%;background:var(--acc);border:2px solid #111}
-select{flex:1;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px}
-#status{margin-top:8px;font-size:14px;font-weight:600;min-height:20px}
-#status.warn{color:var(--acc)} #status.good{color:var(--ok)} #status.bad{color:var(--bad)}
-#moves{margin-top:6px;font-size:12px;color:var(--dim);line-height:1.5;word-break:break-word;max-height:64px;overflow:auto}
-.big{font-size:12px;color:var(--dim);text-align:center;margin-top:8px;line-height:1.5}
+#pv{display:flex;flex-direction:column;gap:6px}
+.pvrow{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:10px;padding:9px 10px;font-size:14px}
+.pvrow:active{background:#333a44}
+.pvrow .n{font-size:11px;color:var(--dim);min-width:16px}
+.pvrow .mv{font-weight:700;min-width:64px}
+.pvrow .sc{font-weight:700;margin-left:auto;font-variant-numeric:tabular-nums}
+.pvrow .ln{font-size:11px;color:var(--dim);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:38%}
+.pvrow.best{border-color:var(--ok)}
+.sc.pos{color:var(--ok)}.sc.neg{color:var(--bad)}
+#status{font-size:12px;color:var(--dim);margin-top:8px;min-height:16px}
+#moves{font-size:12px;color:var(--dim);line-height:1.5;word-break:break-word;max-height:56px;overflow:auto;margin-top:6px}
+label{color:var(--dim);font-size:12px;min-width:62px}
+select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+  border-radius:8px;padding:8px;font-size:13px;min-width:0}
+details{margin-top:10px}
+summary{font-size:13px;color:var(--dim);padding:6px 2px}
+.tiny{font-size:11px;color:var(--dim);line-height:1.5;margin-top:8px}
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <h1 id="title">♞ Chess · SF19</h1>
-    <div class="sub" id="sub">พร้อม</div>
+    <h1>♞ Chess Scan</h1>
+    <div class="sub" id="sub">กำลังโหลดเอนจิน…</div>
   </header>
 
-  <div id="board"></div>
-  <div id="status">เริ่มเกมใหม่ได้เลย</div>
-  <div id="moves"></div>
+  <div id="boardWrap">
+    <div id="board"></div>
+    <svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+  </div>
+  <div id="evalbar"><div id="evalfill"></div><div id="evaltxt">0.00</div></div>
 
-  <div class="bar">
-    <button id="bNew" class="pri">เกมใหม่</button>
-    <button id="bFlip">↻ หมุนกระดาน</button>
+  <div class="row">
+    <button id="bRun" class="pri">▶ วิเคราะห์</button>
     <button id="bUndo">↶ ย้อน</button>
+    <button id="bFlip">↻ หมุน</button>
   </div>
 
   <div class="card">
-    <div class="row"><label>โหมด</label>
-      <select id="mode">
-        <option value="sf">เล่นกับ Stockfish 19</option>
-        <option value="2p">2 คน (เครื่องเดียว)</option>
-      </select>
-    </div>
-    <div class="row"><label>สีที่เล่น</label>
-      <select id="side">
-        <option value="w">ขาว (เดินก่อน)</option>
-        <option value="b">ดำ</option>
-      </select>
-    </div>
-    <div class="row"><label>ระดับ SF</label>
-      <input type="range" id="skill" min="0" max="20" value="10">
-      <span id="skillv" style="min-width:44px;text-align:right">10</span>
-    </div>
-    <div class="row"><label>คิดนาน</label>
-      <select id="movetime">
-        <option value="300">0.3 วิ (เร็ว)</option>
-        <option value="800" selected>0.8 วิ</option>
-        <option value="2000">2 วิ</option>
-        <option value="4000">4 วิ (คิดนาน)</option>
-      </select>
-    </div>
+    <div id="pv"></div>
   </div>
-  <div class="big">แตะหมาก → จุดฟ้า = ที่เดินได้ · <b>เข้าป้อม: แตะคิง แล้วแตะเรือ</b> (หรือเดินคิงไป 2 ช่อง) · SF19 = Stockfish 19 (lite single)</div>
+
+  <div id="status"></div>
+  <div id="moves"></div>
+
+  <div class="row">
+    <button id="bNew">เกมใหม่</button>
+    <button id="bCopy">คัดลอก PGN / ตำแหน่ง</button>
+  </div>
+
+  <details class="card">
+    <summary>ตั้งค่า / ใส่ตำแหน่งเอง · เลือกสีที่หมุนกระดาน</summary>
+    <div class="row"><label>ความลึก</label>
+      <select id="depth">
+        <option value="12">12 (เร็ว)</option>
+        <option value="16" selected>16</option>
+        <option value="20">20</option>
+        <option value="24">24 (ช้า แต่ลึก)</option>
+      </select>
+    </div>
+    <div class="row"><label>จำนวนตัวเลือก</label>
+      <select id="npv"><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+    </div>
+    <div class="row"><label>ตำแหน่ง</label>
+      <input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้ง" >
+    </div>
+    <div class="row"><button id="bSet">ตั้งตำแหน่ง (FEN)</button></div>
+    <div class="tiny">วิเคราะห์จะอัปเดตให้เองทุกครั้งที่เดิน · แตะแถวตัวเลือก = เดินตามนั้นทันที
+      · ปุ่ม <b>↻ หมุน</b> ไว้กลับด้านกระดาน (ไม่สลับเอง)</div>
+  </details>
 </div>
 
 <script type="module">
 import { Chess } from './lib/chess.js';
 
-const GLYPH = {p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚'};
-const boardEl = document.getElementById('board');
-const statusEl = document.getElementById('status');
-const movesEl  = document.getElementById('moves');
-const skillEl  = document.getElementById('skill');
-const skillV   = document.getElementById('skillv');
-const modeEl   = document.getElementById('mode');
-const sideEl   = document.getElementById('side');
-const mtEl     = document.getElementById('movetime');
-const subEl    = document.getElementById('sub');
+const GLYPH={p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚'};
+const $ = id => document.getElementById(id);
+const boardEl=$('board'), arrowsEl=$('arrows'), pvEl=$('pv'), statusEl=$('status'), movesEl=$('moves'), subEl=$('sub');
+const evalFill=$('evalfill'), evalTxt=$('evaltxt');
 
-let game = new Chess();
-let flipped = false;            // มุมมองกระดาน (ล็อกไว้ ไม่สลับเอง)
-let sel = null;                 // ช่องที่เลือก
-let legal = [];                 // กฎที่เดินได้จากช่องที่เลือก
-let last = null;                // 2 ช่องของการเดินล่าสุด
-let thinking = false;
-let history = [];               // สำเนา FEN ไว้ย้อน
+let game=new Chess(), flipped=false, sel=null, legal=[], last=null, running=false, busy=false;
+let jobId=0;                       // กันผลลัพธ์เก่ามาทับ
+let lines={};                      // multipv -> {depth,cp,mate,pv}
 
 /* ---------- เอนจิน ---------- */
-let engine = null, engineReady = false, pending = null;
+let engine=null, ready=false;
 function startEngine(){
-  if (engine) return;
-  try { engine = new Worker('lib/stockfish.js'); }
-  catch(e){ subEl.textContent = 'โหลดเอนจินไม่ได้ (ต้องเปิดผ่าน http)'; return; }
-  engine.onmessage = (ev)=>{
-    const line = typeof ev.data === 'string' ? ev.data : (ev.data && ev.data.text) || '';
-    if (line === 'uciok'){ engineReady = true; subEl.textContent = 'SF19 พร้อม'; send('setoption name Skill Level value ' + skillEl.value); return; }
-    if (line.startsWith('bestmove')){
-      const mv = line.split(/\s+/)[1];
-      thinking = false;
-      if (pending) { const cb = pending; pending = null; }
-      if (mv && mv !== '(none)') applyEngineMove(mv);
-      render(); updateStatus();
-      return;
-    }
+  try{ engine=new Worker('lib/stockfish.js'); }catch(e){ subEl.textContent='โหลดเอนจินไม่ได้ (ต้องเปิดผ่าน http/https)'; return; }
+  engine.onmessage = ev =>{
+    const line = typeof ev.data==='string' ? ev.data : (ev.data && ev.data.text) || '';
+    if(line==='uciok'){ ready=true; subEl.textContent='SF19 พร้อม'; return; }
+    if(line.startsWith('info ')) parseInfo(line);
+    if(line.startsWith('bestmove')){ busy=false; renderPV(); statusEl.textContent='วิเคราะห์เสร็จ (ลึก '+maxDepth()+')'; }
   };
-  send('uci');
+  engine.postMessage('uci'); engine.postMessage('setoption name Threads value 1');
   engine.postMessage('isready');
 }
-function send(cmd){ if (engine) engine.postMessage(cmd); }
+function parseInfo(line){
+  const d=line.match(/ depth (\d+)/), mp=line.match(/ multipv (\d+)/), sc=line.match(/ score (cp|mate) (-?\d+)/), pv=line.match(/ pv (.+)$/);
+  if(!mp||!sc||!pv) return;
+  const i=+mp[1];
+  lines[i]={ depth:d?+d[1]:0, kind:sc[1], val:+sc[2], pv:pv[1].trim().split(/\s+/) };
+}
+function maxDepth(){ return Math.max(0, ...Object.values(lines).map(l=>l.depth)); }
+function analyse(){
+  if(!engine||!ready) return;
+  jobId++; lines={}; busy=true;
+  const id=jobId;
+  engine.postMessage('stop');
+  engine.postMessage('setoption name MultiPV value '+$('npv').value);
+  engine.postMessage('position fen '+game.fen());
+  engine.postMessage('go depth '+$('depth').value);
+  statusEl.textContent='กำลังคิด…';
+  setTimeout(()=>{ if(id===jobId && busy) {} }, 0);
+}
 
-/* ---------- กระดาน ---------- */
-function idxToSq(f,r){ return 'abcdefgh'[f] + (8-r); }
-function render(){
-  boardEl.innerHTML = '';
-  const rows = [...Array(8).keys()];
-  const cols = [...Array(8).keys()];
-  for (const r of rows){
-    for (const f of cols){
-      const file = flipped ? 7-f : f, rank = flipped ? 7-r : r;
-      const sq = idxToSq(file, rank);
-      const piece = game.get(sq);
-      const d = document.createElement('div');
-      d.className = 'sq ' + ((file+rank)%2 ? 'dark' : 'light');
-      d.dataset.sq = sq;
-      if (sel === sq) d.classList.add('sel');
-      if (last && last.includes(sq)) d.classList.add('last');
-      const mv = legal.find(m => m.to === sq);
-      if (mv) d.classList.add(mv.captured || mv.flags.includes('e') ? 'cap' : 'mv');
-      if (piece){
-        const s = document.createElement('span');
-        s.className = 'pc';
-        const wrap = document.createElement('span');
-        wrap.className = 'sq ' + (piece.color === 'w' ? 'w' : 'b');
-        s.textContent = GLYPH[piece.type];
-        d.appendChild(s);
-        d.classList.add(piece.color === 'w' ? 'w' : 'b');
-      }
-      // พิกัด
-      if (r === 7){ const c=document.createElement('span'); c.className='coord f'; c.textContent = 'abcdefgh'[file]; d.appendChild(c); }
-      if (f === 0){ const c=document.createElement('span'); c.className='coord r'; c.textContent = 8-rank; d.appendChild(c); }
-      // ไฮไลต์ชาห์
-      d.onclick = ()=> onSquare(sq);
-      boardEl.appendChild(d);
-    }
-  }
-  // ชาห์
-  if (game.inCheck()){
-    for (const el of boardEl.children){
-      const sq = el.dataset.sq; const p = game.get(sq);
-      if (p && p.type === 'k' && p.color === game.turn()) el.classList.add('chk');
-    }
-  }
+/* ---------- แสดงผลตัวเลือก ---------- */
+function scoreText(l, blackToMove){
+  let cp = l.kind==='cp' ? l.val/100 : (l.val>0? 99:-99);
+  if(blackToMove) cp = -cp;                       // แปลงเป็นมุมมองขาว
+  const s = l.kind==='mate' ? ('#'+(blackToMove? -l.val : l.val)) : (cp>0?'+':'')+cp.toFixed(2);
+  return {txt:s, sign: cp>=0?1:-1, cp};
 }
-function onSquare(sq){
-  if (thinking) return;
-  const piece = game.get(sq);
-  // 1) ถ้าเลือกคิงอยู่ และแตะเรือฝ่ายเดียวกัน → เข้าป้อม
-  if (sel){
-    const sp = game.get(sel);
-    if (sp && sp.type === 'k' && piece && piece.type === 'r' && piece.color === game.turn() && piece.color === sp.color){
-      const target = castleTargetFor(sel, sq);
-      if (target && tryMove({from: sel, to: target.to})) return;
-      statusEl.textContent = 'เข้าป้อมไม่ได้ตอนนี้'; statusEl.className='status warn';
-      return;
-    }
+function toSan(ucis){
+  const c=new Chess(game.fen()); const out=[];
+  for(const u of ucis.slice(0,6)){
+    try{ const m=c.move({from:u.slice(0,2),to:u.slice(2,4),promotion:u[4]||'q'}); if(!m) break; out.push(m.san); }
+    catch(e){ break; }
   }
-  // 2) แตะหมากตัวเอง → เลือก
-  if (piece && piece.color === game.turn()){
-    sel = sq;
-    legal = game.moves({square: sq, verbose: true});
-    render();
-    return;
-  }
-  // 3) แตะช่องปลายทาง
-  if (sel && legal.some(m => m.to === sq)){ tryMove({from: sel, to: sq}); return; }
-  sel = null; legal = []; render();
+  return out.join(' ');
 }
-function castleTargetFor(kingSq, rookSq){
-  const rank = kingSq[1];
-  const opts = legal.filter(m => m.flags.includes('k') || m.flags.includes('q'));
-  return opts.find(m => {
-    const wantRook = m.flags.includes('k') ? 'h'+rank : 'a'+rank;
-    return rookSq === wantRook;
+function renderPV(){
+  const black = game.turn()==='b';
+  const keys=Object.keys(lines).map(Number).sort((a,b)=>a-b);
+  pvEl.innerHTML='';
+  if(!keys.length){ pvEl.innerHTML='<div class="pvrow"><span class="ln">ยังไม่มีผล — กด ▶ วิเคราะห์</span></div>'; return; }
+  let bestCp=null;
+  keys.forEach((k,idx)=>{
+    const l=lines[k]; const sc=scoreText(l, black);
+    if(idx===0) bestCp=sc.cp;
+    const row=document.createElement('div');
+    row.className='pvrow'+(k===1?' best':'');
+    const mv = l.pv[0] ? (l.pv[0].slice(0,2)+'→'+l.pv[0].slice(2,4)) : '?';
+    const san = toSan(l.pv).split(' ')[0] || '';
+    row.innerHTML = `<span class="n">${k}</span><span class="mv">${san||mv}</span>
+      <span class="sc ${sc.cp>=0?'pos':'neg'}">${sc.txt}</span><span class="ln">${toSan(l.pv.slice(1))}</span>`;
+    if(l.pv[0]) row.onclick=()=>{ playUci(l.pv[0]); };
+    pvEl.appendChild(row);
+  });
+  if(bestCp!==null){
+    const pct = Math.max(2, Math.min(98, 50 + 45*Math.tanh(bestCp/3)));
+    evalFill.style.width = pct+'%';
+    evalTxt.textContent = (bestCp>0?'+':'')+bestCp.toFixed(2)+(game.turn()==='b'?' (ดำคิด)':'');
+  }
+  drawArrows(keys.slice(0,3));
+}
+function sqCenter(sq){
+  const f='abcdefgh'.indexOf(sq[0]), r=8-(+sq[1]);
+  const fl = flipped ? 7-f : f, rk = flipped ? 7-r : r;
+  return { x:(fl+0.5)*12.5, y:(rk+0.5)*12.5 };
+}
+function drawArrows(keys){
+  arrowsEl.innerHTML='';
+  const colors=['#57c785','#f0a04b','#4ea1f0'];
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  colors.forEach((c,i)=>{
+    const m=document.createElementNS('http://www.w3.org/2000/svg','marker');
+    m.setAttribute('id','ah'+i); m.setAttribute('viewBox','0 0 10 10'); m.setAttribute('refX','7');
+    m.setAttribute('refY','5'); m.setAttribute('markerWidth','4'); m.setAttribute('markerHeight','4');
+    m.setAttribute('orient','auto');
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d','M0,0 L10,5 L0,10 z'); p.setAttribute('fill',c);
+    m.appendChild(p); defs.appendChild(m);
+  });
+  arrowsEl.appendChild(defs);
+  keys.forEach((k,i)=>{
+    const l=lines[k]; if(!l||!l.pv[0]) return;
+    const a=sqCenter(l.pv[0].slice(0,2)), b=sqCenter(l.pv[0].slice(2,4));
+    const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+    ln.setAttribute('x1',a.x); ln.setAttribute('y1',a.y); ln.setAttribute('x2',b.x); ln.setAttribute('y2',b.y);
+    ln.setAttribute('stroke',colors[i]); ln.setAttribute('stroke-width', 2.2-i*0.5);
+    ln.setAttribute('stroke-linecap','round'); ln.setAttribute('opacity','0.92');
+    ln.setAttribute('marker-end','url(#ah'+i+')');
+    arrowsEl.appendChild(ln);
   });
 }
-function applyEngineMove(uci){
-  const from = uci.slice(0,2), to = uci.slice(2,4), promo = uci[4];
-  try { game.move({from, to, promotion: promo || 'q'}); last = [from, to]; sel=null; legal=[]; history.push(game.fen()); }
-  catch(e){ console.warn('engine move rejected', uci, e); }
+
+/* ---------- กระดาน ---------- */
+function render(){
+  boardEl.innerHTML='';
+  for(let r=0;r<8;r++) for(let f=0;f<8;f++){
+    const file=flipped?7-f:f, rank=flipped?7-r:r, sq='abcdefgh'[file]+(8-rank);
+    const p=game.get(sq);
+    const d=document.createElement('div');
+    d.className='sq '+((file+rank)%2?'dark':'light');
+    d.dataset.sq=sq;
+    if(sel===sq) d.classList.add('sel');
+    if(last&&last.includes(sq)) d.classList.add('last');
+    const mv=legal.find(m=>m.to===sq);
+    if(mv) d.classList.add(mv.captured||mv.flags.includes('e')?'cap':'mv');
+    if(p){ const s=document.createElement('span'); s.className='pc'; s.textContent=GLYPH[p.type]; d.appendChild(s); d.classList.add(p.color); }
+    if(r===7){ const c=document.createElement('span'); c.className='coord f'; c.textContent='abcdefgh'[file]; d.appendChild(c); }
+    if(f===0){ const c=document.createElement('span'); c.className='coord r'; c.textContent=8-rank; d.appendChild(c); }
+    d.onclick=()=>onSquare(sq);
+    boardEl.appendChild(d);
+  }
+  if(game.inCheck()) for(const el of boardEl.children){ const p=game.get(el.dataset.sq); if(p&&p.type==='k'&&p.color===game.turn()) el.classList.add('chk'); }
+  movesEl.textContent=game.history().map((h,i)=>(i%2?'':'('+(i/2+1)+') ')+h).join(' ');
 }
-function tryMove(m){
-  const before = game.fen();
-  const res = game.move({from: m.from, to: m.to, promotion: 'q'});
-  if (!res) return false;
-  last = [m.from, m.to]; sel = null; legal = [];
-  history.push(before);
-  render(); updateStatus();
-  if (!game.isGameOver() && modeEl.value === 'sf' && game.turn() !== sideEl.value) askEngine();
-  return true;
+function onSquare(sq){
+  const p=game.get(sq);
+  if(sel){
+    const sp=game.get(sel);
+    if(sp&&sp.type==='k'&&p&&p.type==='r'&&p.color===sp.color&&p.color===game.turn()){
+      const t=legal.find(m=>(m.flags.includes('k')&&sq==='h'+sel[1])||(m.flags.includes('q')&&sq==='a'+sel[1]));
+      if(t){ playUci(sel+t.to); return; }
+    }
+  }
+  if(p&&p.color===game.turn()){ sel=sq; legal=game.moves({square:sq, verbose:true}); render(); return; }
+  if(sel&&legal.some(m=>m.to===sq)){ playUci(sel+sq); return; }
+  sel=null; legal=[]; render();
 }
-function askEngine(){
-  if (!engine){ updateStatus(); return; }
-  thinking = true; subEl.textContent = 'SF19 กำลังคิด…';
-  send('position fen ' + game.fen());
-  send('go movetime ' + mtEl.value);
-}
-function updateStatus(){
-  let msg = '', cls='';
-  if (game.isCheckmate()){ msg = (game.turn()==='w' ? 'ดำ' : 'ขาว') + ' ชนะ (รุกฆาต)'; cls='bad'; }
-  else if (game.isStalemate()){ msg = 'เสมอ (อับ)'; cls='warn'; }
-  else if (game.isInsufficientMaterial()){ msg = 'เสมอ (หมากไม่พอ)'; cls='warn'; }
-  else if (game.isThreefoldRepetition()){ msg = 'เสมอ (เดินซ้ำ 3 ครั้ง)'; cls='warn'; }
-  else if (game.isDraw()){ msg = 'เสมอ'; cls='warn'; }
-  else { msg = (game.turn()==='w'?'ตา ขาว':'ตา ดำ') + (game.inCheck() ? ' · รุกอยู่!' : ''); cls = game.inCheck() ? 'warn' : ''; }
-  statusEl.textContent = msg; statusEl.className = cls;
-  const hist = game.history();
-  movesEl.textContent = hist.map((h,i)=> (i%2? '' : (i/2+1)+'. ') + h).join(' ');
-  if (!thinking) subEl.textContent = game.isGameOver() ? 'จบเกม' : (engineReady ? 'SF19 พร้อม' : 'กำลังโหลด SF19…');
+function playUci(uci){
+  const ev=game.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]||'q'});
+  if(!ev) return;
+  last=[uci.slice(0,2),uci.slice(2,4)]; sel=null; legal=[]; render();
+  if(running) analyse(); else { lines={}; renderPV(); }
 }
 
-/* ---------- ปุ่มควบคุม ---------- */
-document.getElementById('bFlip').onclick = ()=>{ flipped = !flipped; render(); };
-document.getElementById('bNew').onclick = ()=>{
-  game = new Chess(); sel=null; legal=[]; last=null; history=[]; thinking=false;
-  flipped = (modeEl.value === 'sf' && sideEl.value === 'b');
-  render(); updateStatus();
-  if (modeEl.value === 'sf' && sideEl.value === 'b') askEngine();
+/* ---------- ปุ่ม ---------- */
+$('bRun').onclick=()=>{
+  running=!running;
+  $('bRun').classList.toggle('on', running);
+  $('bRun').textContent = running? '■ หยุดวิเคราะห์' : '▶ วิเคราะห์';
+  if(running) analyse(); else { engine&&engine.postMessage('stop'); statusEl.textContent='หยุดแล้ว'; }
 };
-document.getElementById('bUndo').onclick = ()=>{
-  const n = (modeEl.value === 'sf') ? 2 : 1;
-  for (let i=0;i<n;i++){ game.undo(); history.pop(); }
-  sel=null; legal=[]; last=null; render(); updateStatus();
+$('bFlip').onclick=()=>{ flipped=!flipped; render(); drawArrows(Object.keys(lines).map(Number).sort((a,b)=>a-b).slice(0,3)); };
+$('bUndo').onclick=()=>{ game.undo(); sel=null; legal=[]; last=null; render(); if(running) analyse(); else { lines={}; renderPV(); } };
+$('bNew').onclick=()=>{ game=new Chess(); sel=null; legal=[]; last=null; lines={}; render(); renderPV(); if(running) analyse(); };
+$('bCopy').onclick=async()=>{
+  const txt = game.history().length ? game.pgn() : game.fen();
+  try{ await navigator.clipboard.writeText(txt); statusEl.textContent='คัดลอกแล้ว ✓'; }
+  catch(e){ $('fen').value=txt; statusEl.textContent='คัดลอกอัตโนมัติไม่ได้ — ข้อความอยู่ในช่องตำแหน่ง'; }
 };
-skillEl.oninput = ()=>{ skillV.textContent = skillEl.value; if (engineReady) send('setoption name Skill Level value ' + skillEl.value); };
-modeEl.onchange = sideEl.onchange = ()=>{
-  document.getElementById('bNew').click();
+$('bSet').onclick=()=>{
+  const v=$('fen').value.trim();
+  if(!v) return;
+  try{ const g=new Chess(); if(v.includes('/')){ g.load(v); } else { g.loadPgn(v); } game=g; lines={}; last=null; render(); renderPV(); if(running) analyse(); statusEl.textContent='ตั้งตำแหน่งแล้ว ✓'; }
+  catch(e){ statusEl.textContent='FEN/PGN ไม่ถูกต้อง'; }
 };
-startEngine();
-render(); updateStatus();
+$('depth').onchange=$('npv').onchange=()=>{ if(running) analyse(); };
+
+startEngine(); render(); renderPV();
 </script>
 </body>
 </html>
