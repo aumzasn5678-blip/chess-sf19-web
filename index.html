@@ -256,26 +256,31 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
  line-height:1.45;margin-top:6px;box-sizing:border-box;white-space:pre-wrap;word-break:break-word}
 .tiny,.hint{color:var(--dim);font-size:.79rem;line-height:1.5;margin-top:6px}
 .rec{color:#4ec46f;font-weight:700}
-/* ---------- กล่องยืนยัน 'เริ่มเกมใหม่' — overlay ลอย (fixed) ในโซนระหว่างหลอด HP กับแถวปุ่มหลัก
-   ขอบบนถูกล็อกด้วย JS ไม่ให้สูงกว่าขอบล่างของหลอด HP (ไม่บังกระดาน) และไม่ดันเนื้อหา (fixed = หลุด flow) ---------- */
-#confirmNew{position:fixed;left:50%;transform:translateX(-50%);top:0;z-index:130;display:none;
+/* ---------- กล่องยืนยัน (เริ่มเกมใหม่ / ย้อนกลับเกมก่อนหน้า) — overlay ลอย (fixed) ในโซนระหว่างหลอด HP กับแถวปุ่มหลัก
+   ใช้คลาสร่วม .cbox ทั้งสองกล่อง · ขอบบนถูกล็อกด้วย JS ไม่ให้บังกระดาน และไม่ดันเนื้อหา (fixed = หลุด flow) ---------- */
+.cbox{position:fixed;left:50%;transform:translateX(-50%);top:0;z-index:130;display:none;
   width:min(calc(var(--boardmax,420px) + 2px),calc(100vw - 22px));
   background:linear-gradient(180deg,var(--panel2) 0%,var(--panel) 100%);
   border:2px solid #e5534b;border-radius:14px;padding:11px 12px;
   box-shadow:0 0 0 3px rgba(229,83,75,.22),0 0 22px rgba(229,83,75,.4),0 14px 36px rgba(0,0,0,.6)}
-#confirmNew .cmsg{font-size:.95rem;font-weight:600;line-height:1.3;text-align:center;color:var(--txt);margin-bottom:9px;white-space:normal}
-#confirmNew .cbtns{display:flex;gap:8px}
-#confirmNew .cbtns button{flex:1;padding:9px 4px;border-radius:11px;font-size:.95rem}
-#bNewYes{background:linear-gradient(180deg,#4ec46f,#2f8f4e)!important;color:#04170b!important;border-color:#2f8f4e!important;box-shadow:0 4px 14px rgba(78,196,111,.4)!important}
-#bNewYes:active{filter:brightness(.93)}
-#bNewNo{background:linear-gradient(180deg,#e5534b,#d13f36)!important;color:#fff!important;border-color:#b23a30!important;box-shadow:0 4px 14px rgba(229,83,75,.4)!important}
-#bNewNo:active{filter:brightness(.93)}
+.cbox .cmsg{font-size:.95rem;font-weight:600;line-height:1.3;text-align:center;color:var(--txt);margin-bottom:9px;white-space:normal}
+.cbox .cbtns{display:flex;gap:8px}
+.cbox .cbtns button{flex:1;padding:9px 4px;border-radius:11px;font-size:.95rem}
+.cyes{background:linear-gradient(180deg,#4ec46f,#2f8f4e)!important;color:#04170b!important;border-color:#2f8f4e!important;box-shadow:0 4px 14px rgba(78,196,111,.4)!important}
+.cyes:active{filter:brightness(.93)}
+.cno{background:linear-gradient(180deg,#e5534b,#d13f36)!important;color:#fff!important;border-color:#b23a30!important;box-shadow:0 4px 14px rgba(229,83,75,.4)!important}
+.cno:active{filter:brightness(.93)}
 
 /* ---------- ไอคอนเกรดการเดิน (chess.com style) บนช่องปลายทาง ---------- */
 .gradico{position:absolute;right:1px;bottom:1px;width:21px;height:21px;z-index:4;pointer-events:none;
   background-size:contain;background-repeat:no-repeat;background-position:center;
   filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
-@media (max-width:360px){.gradico{width:17px;height:17px}}
+/* placeholder 'กำลังคิดเกรด' — โผล่ที่ช่องปลายทางทันทีที่เดิน แล้วหายไปเมื่อไอคอนจริงขึ้น */
+.gradico.pending{background-image:none!important;display:flex;align-items:center;justify-content:center}
+.gradico.pending::after{content:'';width:12px;height:12px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.62);border-top-color:transparent;animation:gspin .7s linear infinite}
+@keyframes gspin{to{transform:rotate(360deg)}}
+@media (max-width:360px){.gradico{width:17px;height:17px}.gradico.pending::after{width:10px;height:10px}}
 #legend{display:flex;flex-direction:column;gap:3px;margin-top:4px}
 .legrow{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--dim);line-height:1.35}
 .legico{width:19px;height:19px;flex:0 0 auto;object-fit:contain}
@@ -533,11 +538,18 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <div class="tiny" data-i18n-html="legendNote">หมายเหตุ: ไอคอน Brilliant และ Book เป็นการประเมินแบบ "ใกล้เคียง" (approximate)</div>
     </div>
   </details>
-  <div id="confirmNew" role="dialog" aria-labelledby="confirmNewMsg">
+  <div id="confirmNew" class="cbox" role="dialog" aria-labelledby="confirmNewMsg">
     <div class="cmsg" id="confirmNewMsg" data-i18n="confirmMsg">เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)</div>
     <div class="cbtns">
-      <button id="bNewYes" class="pri" data-i18n="yes">ยืนยัน</button>
-      <button id="bNewNo" data-i18n="no">ยกเลิก</button>
+      <button id="bNewYes" class="pri cyes" data-i18n="yes">ยืนยัน</button>
+      <button id="bNewNo" class="cno" data-i18n="no">ยกเลิก</button>
+    </div>
+  </div>
+  <div id="confirmUndo" class="cbox" role="dialog" aria-labelledby="confirmUndoMsg">
+    <div class="cmsg" id="confirmUndoMsg" data-i18n="confirmUndoMsg">ย้อนกลับไปเกมล่าสุด? (เกมปัจจุบันจะถูกแทนที่)</div>
+    <div class="cbtns">
+      <button id="bUndoYes" class="pri cyes" data-i18n="yes">ยืนยัน</button>
+      <button id="bUndoNo" class="cno" data-i18n="no">ยกเลิก</button>
     </div>
   </div>
 
@@ -781,7 +793,7 @@ const I18N={
   bBack:'↶ ย้อนกลับ', bFwd:'↷ ไปข้างหน้า',
   tStart:'ไปจุดเริ่มต้น', tEnd:'ไปตาสุดท้าย', tUndo:'ย้อนกลับเกมก่อนหน้า', tTheme:'เปลี่ยนธีมกระดานเร็ว',
   bNewGame:'เริ่มเกมใหม่', bRun:'▶ รัน', bStop:'■ หยุด', bFlip:'⇅ สลับฝั่ง', bTheme:'ธีม',
-  confirmMsg:'เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)', yes:'ยืนยัน', no:'ยกเลิก',
+  confirmMsg:'เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)', confirmUndoMsg:'ย้อนกลับไปเกมล่าสุด? (เกมปัจจุบันจะถูกแทนที่)', yes:'ยืนยัน', no:'ยกเลิก',
   sumSettings:'⚙ ตั้งค่า', sumPos:'📋 นำเข้า/ส่งออก',
   lblProfile:'โปรไฟล์', lblDepth:'ความลึก', lblNpv:'ตัวเลือก', lblSize:'ขนาดของธีม, ปุ่ม', lblElo:'ELO', lblLang:'ภาษา / Language',
   profQuick:'⚡ คิดแบบเร็ว', profNormal:'⚖️ คิดแบบปกติ', profDeep:'🧠 คิดแบบลึก', profCustom:'กำหนดเอง',
@@ -885,7 +897,7 @@ const I18N={
   bBack:'↶ Back', bFwd:'↷ Forward',
   tStart:'Go to start', tEnd:'Go to last move', tUndo:'Restore previous game', tTheme:'Quick change board theme',
   bNewGame:'New Game', bRun:'▶ Run', bStop:'■ Stop', bFlip:'⇅ Flip', bTheme:'Theme',
-  confirmMsg:'Start a new game? (moves will be lost)', yes:'Confirm', no:'Cancel',
+  confirmMsg:'Start a new game? (moves will be lost)', confirmUndoMsg:'Restore the previous game? (the current game will be replaced)', yes:'Confirm', no:'Cancel',
   sumSettings:'⚙ Settings', sumPos:'📋 Import/Export',
   lblProfile:'Profile', lblDepth:'Depth', lblNpv:'Lines', lblSize:'Theme/Button size', lblElo:'ELO', lblLang:'Language',
   profQuick:'⚡ Quick', profNormal:'⚖️ Normal', profDeep:'🧠 Deep', profCustom:'Custom',
@@ -1135,8 +1147,15 @@ function runAnalysis(){
   if(!engine||!ready) return;
   lines={}; busy=true; run=true; const id=++job;
   const d=+$('depth').value;
-  searching=false; if(startTimer) clearTimeout(startTimer);
-  startTimer = setTimeout(()=>startRunSearch(id,d), 120);        // เผื่อมีงานค้าง — รอให้จบก่อน
+  if(startTimer){ clearTimeout(startTimer); startTimer=null; }
+  if(hasLiveGradePending()){
+    // เกรด 'ตาล่าสุด' สำคัญกว่า: หยุด/เลื่อนงานวิเคราะห์เดิมชั่วคราว ให้เกรดขึ้นก่อน แล้ว pump สั่ง go ต่อ
+    if(!gradeInFlight){ try{ engine.postMessage('stop'); }catch(e){} searching=false; }
+    gradeResumeRun=true;
+  }else{
+    searching=false;
+    startTimer = setTimeout(()=>startRunSearch(id,d), 120);       // เผื่อมีงานค้าง — รอให้จบก่อน
+  }
   $('bRun').classList.add('on'); $('bRun').textContent=t('bStop'); renderPV();
 }
 function startRunSearch(id, d){
@@ -1172,7 +1191,7 @@ function hardStop(){
   searching=false; busy=false; run=false;
   const b=$('bRun'); if(b){ b.classList.remove('on'); b.textContent=t('bRun'); }
 }
-document.addEventListener('visibilitychange', ()=>{ if(document.hidden) hardStop(); });
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden){ gradePaused=true; hardStop(); } else { gradePaused=false; pumpGradeQueue(); } });
 window.addEventListener('pagehide', hardStop);
 
 /* ---------- หลอดคะแนน (นับจากฝั่งด้านล่างเท่านั้น) ---------- */
@@ -1313,8 +1332,10 @@ function drawArrows(keys){
 /* ---------- กระดาน ---------- */
 function render(){
   const g=new Chess(fens[ptr]);
+  const latestDest = (ptr>0 && ucis[ptr-1]) ? ucis[ptr-1].slice(2,4) : null;
+  const keepImg=[];                    // ชิ้นหมากของ 'ตาล่าสุด' ที่กำลังสไลด์ — ห้ามล้าง transform กลางทาง (อนิเมชันไม่ผูกกับเอนจิน/เกรด)
+  animEls.forEach(el=>{ if(el.isConnected && el.dataset.animTo===latestDest) keepImg.push(el); });
   boardEl.innerHTML='';
-  pruneAnims();                        // ล้าง transform โบราณของชิ้นที่หลุด DOM แล้ว (กันของค้าง)
   const last = ptr>0 ? [ucis[ptr-1].slice(0,2), ucis[ptr-1].slice(2,4)] : null;
   for(let r=0;r<8;r++) for(let f=0;f<8;f++){
     const file=flipped?7-f:f, rank=flipped?7-r:r, sq='abcdefgh'[file]+(8-rank);
@@ -1334,6 +1355,15 @@ function render(){
     d.onclick=()=>onSquare(sq);
     boardEl.appendChild(d);
   }
+  // นำชิ้นหมากที่กำลังสไลด์ของ 'ตาล่าสุด' กลับเข้าช่องปลายทาง แล้วเริ่มสไลด์ต่อ (กัน re-render ระหว่างอนิเมชันล้าง transform)
+  for(const el of keepImg){
+    const cell=boardEl.querySelector('.sq[data-sq="'+el.dataset.animTo+'"]');
+    if(!cell){ resetAnimEl(el); animEls.delete(el); continue; }
+    const dup=cell.querySelector('img.pcimg'); if(dup && dup!==el) dup.remove();
+    cell.appendChild(el);
+    rearmSlide(el);
+  }
+  pruneAnims();                        // ล้างเฉพาะชิ้นที่หลุด DOM จริง (กันของค้าง)
   if(g.inCheck()) for(const el of boardEl.children){ const p=g.get(el.dataset.sq); if(p&&p.type==='k'&&p.color===g.turn()) el.classList.add('chk','warnk'); }
   paintGrades();                       // ไอคอนเกรดการเดินบนช่องปลายทาง (ค้างอยู่ทุกครั้งที่วาดใหม่)
   renderLog(g);
@@ -1444,12 +1474,28 @@ function game_over(g){                       // จบเกมแล้ว? (�
 }
 /* ---------- อนิเมชันหมาก: เลื่อน 'ตัวหมากจริง' ที่ช่องปลายทางเพียงชิ้นเดียว (ไม่มี ghost ซ้อน) ---------- */
 const animEls=new Set();
-function resetAnimEl(el){ if(!el) return; el.style.transition=''; el.style.transform=''; el.classList.remove('animating'); }
+let animCount=0;                       // นับจำนวนครั้งที่สไลด์เริ่มจริง (ใช้ยืนยันการทดสอบ)
+function resetAnimEl(el){ if(!el) return;
+  if(el._doneT){ clearTimeout(el._doneT); el._doneT=null; }
+  el.style.transition=''; el.style.transform=''; el.classList.remove('animating');
+  el._dx=null; el._dy=null; try{ delete el.dataset.animTo; delete el.dataset.animPly; }catch(e){}
+}
 function pruneAnims(){ animEls.forEach(el=>{ if(!el.isConnected){ resetAnimEl(el); animEls.delete(el); } }); }
 function cancelAnims(){ animEls.forEach(resetAnimEl); animEls.clear(); clearStrayGhosts(); }
 function clearStrayGhosts(){
   const w=document.getElementById('boardWrap'); if(w) w.querySelectorAll('.ghost').forEach(e=>e.remove());
   const rw=document.getElementById('rpBoardWrap'); if(rw) rw.querySelectorAll('.ghost').forEach(e=>e.remove());
+}
+/* เริ่มสไลด์ชิ้นที่กำลังเคลื่อน 'ใหม่' หลังถูกถอด/ใส่ DOM ระหว่างอนิเมชัน (กันการวาดทับล้าง transform กลางทาง) */
+function rearmSlide(el){
+  if(!el || el._dx==null || !el.classList.contains('animating')) return;
+  if(el._doneT) clearTimeout(el._doneT);
+  el._doneT=setTimeout(()=>{ if(el._done) el._done(); }, 350);
+  el.style.transition='none';
+  el.style.transform='translate('+el._dx.toFixed(1)+'px,'+el._dy.toFixed(1)+'px)';
+  void el.offsetWidth;                                          // บังคับ reflow
+  requestAnimationFrame(()=>{ if(!el.classList.contains('animating')) return;
+    el.style.transition='transform .2s cubic-bezier(.22,.61,.36,1)'; el.style.transform='translate(0,0)'; });
 }
 /* เลื่อนหมากจริงใน cell ปลายทาง (ต้องวาดกระดานใหม่ที่ตำแหน่งใหม่ก่อนเรียก) */
 function slidePiece(board, from, to){
@@ -1462,6 +1508,9 @@ function slidePiece(board, from, to){
   const dx=fr.left-dr.left, dy=fr.top-dr.top;
   if(!dx && !dy) return;
   animEls.forEach(resetAnimEl); animEls.clear();                // ยกเลิกอนิเมชันเดิม (ถ้ามี) ก่อนเริ่มใหม่
+  animCount++;
+  img.dataset.animTo=to; img.dataset.animPly=String(board===boardEl ? (ptr-1) : '');
+  img._dx=dx; img._dy=dy;
   img.classList.add('animating');
   img.style.transition='none';
   img.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)';
@@ -1469,8 +1518,9 @@ function slidePiece(board, from, to){
   void img.offsetWidth;                                        // บังคับ reflow ให้จุดเริ่มต้นติดก่อน
   requestAnimationFrame(()=>{ img.style.transition='transform .2s cubic-bezier(.22,.61,.36,1)'; img.style.transform='translate(0,0)'; });
   const done=()=>{ resetAnimEl(img); animEls.delete(img); img.removeEventListener('transitionend',done); };
+  img._done=done;
   img.addEventListener('transitionend',done);
-  setTimeout(done, 300);
+  img._doneT=setTimeout(()=>{ if(img._done) img._done(); }, 350);   // timeout กันค้าง
 }
 /* หมากที่ถูกกิน = จางหายเร็ว ๆ (~140ms) ชิ้นเดียว ไม่หายวับ */
 function fadeCaptured(board, sq, color, type){
@@ -1533,16 +1583,16 @@ function playUci(uci){
   ucis.push(uci); fens.push(g.fen()); ptr=fens.length-1;
   lines={}; sugTo={}; sugRank={}; sqTagTxt={}; arrowsEl.innerHTML='';
   sel=null; legal=[];
+  const idx=ucis.length-1;
+  enqueueMoveGrade(idx, gctx, {noRender:true});          // จัดคิวเกรด 'ตาล่าสุด' (หัวคิว) ก่อนวาด ⇒ placeholder ขึ้นทันที
   render(); renderPV(); updateTurnBtn(); saveGame();     // วาดตำแหน่งใหม่ 'ก่อน' อนิเมชัน (ให้มีหมากจริงตัวเดียวที่ปลายทาง)
   if(m.captured){                                        // กินหมาก: ให้ตัวที่ถูกกินจางหายเร็ว ๆ (ไม่หายวับ)
     const ep=(m.flags||'').indexOf('e')>=0;
     fadeCaptured(boardEl, ep ? (to[0]+from[1]) : to, m.color==='w'?'b':'w', m.captured);
   }
   animateMove(from, to);                                 // เลื่อนหมากจริงจากช่องเก่า (ไม่มี ghost ซ้อน)
-  const idx=ucis.length-1;
   setStatus('stMoved');
-  enqueueMoveGrade(idx, gctx);                           // การันตีเกรดทุกตา (แคช→MultiPV→คิวเอนจิน)
-  if(run) runAnalysis();                                 // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง
+  if(run) runAnalysis();                                 // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง (เกรดจะแทรกก่อน)
 }
 
 /* ---------- ปุ่มเดิน/กด ---------- */
@@ -1558,9 +1608,9 @@ $('bBack').onclick=()=>{ if(ptr>0) navTo(ptr-1, 'navBack'); };
 $('bFwd').onclick=()=>{ if(ptr<fens.length-1) navTo(ptr+1, 'navFwd'); };
 $('bEnd').onclick=()=>navTo(fens.length-1, 'navEnd');
 $('bFlip').onclick=()=>{ flipped=!flipped; render(); renderPV(); saveGame(); };
-/* ---------- กล่องยืนยัน 'เริ่มเกมใหม่' = overlay ลอย (fixed) ในโซนระหว่างหลอด HP กับแถวปุ่มหลัก ---------- */
-function positionConfirmNew(){                 // ล็อกขอบบน: ไม่สูงกว่าขอบล่างหลอด HP (ไม่บังกระดาน) และไม่เลยขึ้นไปทับแถว log
-  const cn=$('confirmNew'); if(!cn || cn.style.display==='none') return;
+/* ---------- กล่องยืนยัน (เริ่มเกมใหม่ / ย้อนกลับเกมก่อนหน้า) = overlay ลอย (fixed) ใช้คลาสร่วม .cbox ---------- */
+function positionConfirmBox(cn){               // ล็อกขอบบน: ไม่สูงกว่าขอบล่างหลอด HP (ไม่บังกระดาน) และไม่เลยขึ้นไปทับแถว log
+  if(!cn || cn.style.display==='none') return;
   const ew=$('evalwrap'); if(!ew) return;
   const log=$('log');
   const gap=6;
@@ -1572,7 +1622,11 @@ function positionConfirmNew(){                 // ล็อกขอบบน: �
   if(top<4) top=4;
   cn.style.top=Math.round(top)+'px';
 }
-function openConfirmNew(){ const cn=$('confirmNew'); if(!cn) return; cn.style.display='block'; positionConfirmNew(); }
+function positionConfirmNew(){ positionConfirmBox($('confirmNew')); positionConfirmBox($('confirmUndo')); }
+function boxOpen(cn){ return !!cn && getComputedStyle(cn).display!=='none'; }
+function closeConfirmBoxes(){ const n=$('confirmNew'), u=$('confirmUndo'); if(n) n.style.display='none'; if(u) u.style.display='none'; }
+function openConfirmNew(){ const u=$('confirmUndo'); if(u) u.style.display='none'; const cn=$('confirmNew'); if(!cn) return; cn.style.display='block'; positionConfirmBox(cn); }
+function openConfirmUndo(){ if(!prevGame) return; const n=$('confirmNew'); if(n) n.style.display='none'; const cn=$('confirmUndo'); if(!cn) return; cn.style.display='block'; positionConfirmBox(cn); }
 window.addEventListener('resize', positionConfirmNew, {passive:true});
 window.addEventListener('scroll', positionConfirmNew, {passive:true});
 $('bNewGame').onclick=()=>{ openConfirmNew(); };
@@ -1594,7 +1648,7 @@ function startNewGame(){
   if(run) runAnalysis();
 }
 $('bNewYes').onclick=()=>{ $('confirmNew').style.display='none'; startNewGame(); };
-$('bUndo').onclick=()=>{                    // ย้อนกลับไปเกมที่ถูก 'เริ่มใหม่' ทิ้งไปล่าสุด (ใช้ได้ครั้งเดียว)
+function restorePrevGame(){                 // ย้อนกลับไปเกมที่ถูก 'เริ่มใหม่' ทิ้งไปล่าสุด (ใช้ได้ครั้งเดียว)
   if(!prevGame) return;
   fens = prevGame.fens.slice(); ucis = prevGame.ucis.slice(); ptr = prevGame.ptr;
   flipped = prevGame.flipped; lines = JSON.parse(JSON.stringify(prevGame.lines));
@@ -1605,7 +1659,10 @@ $('bUndo').onclick=()=>{                    // ย้อนกลับไปเ
   render(); renderPV(); updateTurnBtn(); updateUndoBtn(); saveGame();   // บันทึกกลับเป็นเกมที่คืนมาแล้ว
   statusEl.textContent=t('stPrevGame');
   if(run) runAnalysis();
-};
+}
+$('bUndo').onclick=()=>{ if(!prevGame) return; openConfirmUndo(); };   // เปิดกล่องยืนยันก่อน (ไม่ทำงานทันที)
+$('bUndoYes').onclick=()=>{ $('confirmUndo').style.display='none'; restorePrevGame(); };
+$('bUndoNo').onclick=()=>{ $('confirmUndo').style.display='none'; };
 function updateTurnBtn(){ const el=$('bTurn'); if(!el) return; const t=new Chess(fens[ptr]).turn(); el.textContent='ตา: '+(t==='w'?'ขาว':'ดำ'); }
 $('bSet').onclick=()=>{
   const v=$('fen').value.trim(); if(!v) return;
@@ -1809,11 +1866,16 @@ document.addEventListener('keydown', (e)=>{
     if(c==='Escape'||k==='Escape'||k==='Esc'){ e.preventDefault(); closePromo(); sel=null; legal=[]; render(); markTargets(); return; }
     return;                                    // ระหว่างเลือก: กันคีย์อื่น (เช่น n = เกมใหม่) ทำงาน
   }
-  // กล่องยืนยัน 'เริ่มเกมใหม่': Enter = ยืนยัน · ESC = ยกเลิก (เฉพาะตอนกล่องเปิด)
-  const cn=$('confirmNew');
-  if(cn && getComputedStyle(cn).display!=='none'){
+  // กล่องยืนยัน (ย้อนกลับเกมก่อนหน้า / เริ่มเกมใหม่): Enter = ยืนยัน · ESC = ยกเลิก (เปิดทีละกล่อง)
+  if(boxOpen($('confirmUndo'))){
+    if(c==='Enter' || c==='NumpadEnter' || k==='Enter'){ e.preventDefault(); $('bUndoYes').onclick(); return; }
+    if(c==='Escape' || k==='Escape' || k==='Esc'){ e.preventDefault(); $('bUndoNo').onclick(); return; }
+    return;                                    // กันคีย์อื่นทำงานตอนกล่องเปิด
+  }
+  if(boxOpen($('confirmNew'))){
     if(c==='Enter' || c==='NumpadEnter' || k==='Enter'){ e.preventDefault(); $('bNewYes').onclick(); return; }
     if(c==='Escape' || k==='Escape' || k==='Esc'){ e.preventDefault(); $('bNewNo').onclick(); return; }
+    return;                                    // กันคีย์อื่นทำงานตอนกล่องเปิด
   }
   if(c==='ArrowLeft'){ e.preventDefault(); $('bBack').onclick(); }
   else if(c==='ArrowRight'){ e.preventDefault(); $('bFwd').onclick(); }
@@ -2021,13 +2083,41 @@ function doClassify(fenBefore, uci, fenAfter, beforeBestCp, afterMoverCp, gapCp)
     return gr;
   }catch(e){ return null; }
 }
-/* ---- คิวงานเกรด: ทำทีละตา · รอเอนจินว่าง (ผู้ใช้อาจกด ▶ รัน) · หยุดเมื่อสลับแท็บ ---- */
-const gradeQueue=[]; const gradePending=new Map(); let gradeRunning=false, gradeInFlight=false, gradePaused=false, bootRetroPending=false;
+/* ---- คิวงานเกรด: ทำทีละตา · ตาล่าสุดได้หัวคิว · หยุด/เลื่อนงานวิเคราะห์ชั่วคราวได้ · หยุดเมื่อสลับแท็บ ---- */
+const GRADE_PRIO_LIVE=100;                 // ลำดับความสำคัญ: งานเกรด 'ตาล่าสุด' (หัวคิว) สูงกว่าเกรดย้อนหลัง (0)
+const GRADE_MT_BEFORE=160, GRADE_MT_AFTER=90, GRADE_DEPTH=7;   // งบเวลาต่อตา ≈250 ms (ก่อน/หลังเดิน)
+const gradeQueue=[]; const gradePending=new Map(); let gradeRunning=false, gradeInFlight=false, gradeInFlightLive=false, gradePaused=false, bootRetroPending=false, gradeResumeRun=false;
+function hasLiveGradePending(){
+  if(gradeInFlight && gradeInFlightLive) return true;
+  for(const j of gradeQueue) if((j.prio||0)>=GRADE_PRIO_LIVE && !(j.isDone&&j.isDone())) return true;
+  return false;
+}
+/* หยุด/เลื่อนงานวิเคราะห์ของผู้ใช้ชั่วคราวเพื่อคิดเกรดตาล่าสุดให้เสร็จก่อน (≤300 ms) แล้ว pump จะสั่ง go ต่อ */
+async function preemptForGrade(){
+  const wasRun=!!run;
+  if(startTimer){ clearTimeout(startTimer); startTimer=null; }
+  if(searching){ try{ engine.postMessage('stop'); }catch(e){} searching=false; }
+  if(paintTimer){ clearTimeout(paintTimer); paintTimer=null; }
+  gradeResumeRun=wasRun;
+  await sleep0(150);                       // เว้นจังหวะ stop→go กัน wasm trap
+}
+/* กลับไปคิดวิเคราะห์ต่อจากเดิม (depth/movetime ตามที่ผู้ใช้ตั้งไว้) หลังเกรดเสร็จ */
+function resumeRunSearch(){
+  if(!run || !engine || !ready) return;
+  applyElo();
+  engine.postMessage('setoption name MultiPV value '+npvN);
+  engine.postMessage('position fen '+fens[ptr]);
+  const d=+$('depth').value;
+  const cap=(profCap!=null)?profCap:autoTime(d);
+  searching=true;
+  engine.postMessage('go depth '+d+' movetime '+cap);
+  setStatus('stThinking', d, (cap/1000).toFixed(1));
+}
 function enqueueGradeJob(job){
   const key=gradeKey(job.fenBefore, job.uci);
   const existing=gradePending.get(key);
   if(existing){ (existing.extra||(existing.extra=[])).push(job); return; }   // ตำแหน่งเดียวกันถูกจัดคิวไว้แล้ว → ผูกเข้ากับงานเดิม
-  job.__key=key; job.extra=[];
+  job.__key=key; job.extra=[]; if(job.prio==null) job.prio=0;
   gradePending.set(key, job);
   gradeQueue.push(job); if(!gradePaused) pumpGradeQueue();
 }
@@ -2045,16 +2135,23 @@ async function pumpGradeQueue(){
   try{
     while(gradeQueue.length){
       if(document.hidden){ gradePaused=true; break; }               // สลับแท็บ = หยุดทันที (คงคิวไว้ ทำต่อเมื่อกลับมา)
-      if(!ready || searching || startTimer){ await sleep0(120); continue; }   // รอเอนจินพร้อม/ผู้ใช้วิเคราะห์ให้ว่าง — ไม่ยกเลิกงานเกรด
+      if(!ready){ await sleep0(80); continue; }                     // รอเอนจินพร้อม
+      gradeQueue.sort((a,b)=>(b.prio||0)-(a.prio||0));              // ตาล่าสุด (prio สูง) ขึ้นหัวคิว · ที่เหลือคงลำดับ FIFO
+      const top=gradeQueue[0];
+      const live=(top.prio||0)>=GRADE_PRIO_LIVE;
+      if(searching || startTimer){
+        if(!live){ await sleep0(120); continue; }                   // งานเกรดย้อนหลัง: รอผู้ใช้วิเคราะห์ให้ว่างก่อน
+        await preemptForGrade();                                    // ตาล่าสุด: หยุด/เลื่อนงานวิเคราะห์ชั่วคราว แล้วคิดเกรดก่อน
+      }
       const job=gradeQueue.shift(); if(!job) continue;
       const key=job.__key;
       const chain=[job].concat(job.extra||[]);
       const alive=chain.filter(j=>!(j.session && j.session.cancelled) && !(j.isDone && j.isDone()));
       if(!alive.length){ gradePending.delete(key); continue; }
-      gradeInFlight=true;
+      gradeInFlight=true; gradeInFlightLive=((job.prio||0)>=GRADE_PRIO_LIVE);
       let gr=null;
       try{ gr=await computeGradeJob(job); }catch(e){}
-      gradeInFlight=false;
+      gradeInFlight=false; gradeInFlightLive=false;
       gradePending.delete(key);
       alive.forEach(j=>{
         if(gr && j.apply){ try{ j.apply(gr); }catch(e){} }
@@ -2064,6 +2161,7 @@ async function pumpGradeQueue(){
           if(j.session.done>=j.session.total && j.session.afterAll){ try{ j.session.afterAll(); }catch(e){} }
         }
       });
+      if(gradeResumeRun){ gradeResumeRun=false; try{ resumeRunSearch(); }catch(e){} }   // กลับไปคิดวิเคราะห์ต่อ
       await sleep0(0);                                              // yield ให้ UI ไม่กระตุก
     }
   } finally{ gradeRunning=false; }
@@ -2076,23 +2174,24 @@ async function computeGradeJob(job){
     if(gr) gradeCacheSet(fenBefore, uci, gr); return gr;
   }
   if(!engineReady()){ return null; }                                // รอเอนจินให้พร้อมก่อน (คิวจะรอแล้ว) — ไม่แต่งเกรดมั่ว
-  const bl=await engineEval(fenBefore, {depth:8, movetime:400, multipv:2});
+  const bl=await engineEval(fenBefore, {depth:GRADE_DEPTH, movetime:GRADE_MT_BEFORE, multipv:2});
   let beforeBestCp=null, gapCp=null;
   if(bl && bl[1]) beforeBestCp=evalToCp(bl[1].kind, bl[1].val);
   if(bl && bl[1] && bl[2]) gapCp=evalToCp(bl[1].kind,bl[1].val)-evalToCp(bl[2].kind,bl[2].val);
-  const al=await engineEval(fenAfter, {depth:8, movetime:400, multipv:1});
+  const al=await engineEval(fenAfter, {depth:GRADE_DEPTH, movetime:GRADE_MT_AFTER, multipv:1});
   let afterMoverCp=null;
   if(al && al[1]) afterMoverCp = -evalToCp(al[1].kind, al[1].val);    // มุมมองฝ่ายที่เดิน
   const gr=doClassify(fenBefore, uci, fenAfter, beforeBestCp, afterMoverCp, gapCp);
   if(gr) gradeCacheSet(fenBefore, uci, gr); return gr;
 }
-/* เข้าคิวเกรด 'ตาปัจจุบัน' ของกระดานหลัก (เรียกหลังเดินตาใหม่) */
-function enqueueMoveGrade(idx, gctx){
+/* เข้าคิวเกรด 'ตาปัจจุบัน' ของกระดานหลัก (เรียกหลังเดินตาใหม่) — หัวคิว ทำทันที */
+function enqueueMoveGrade(idx, gctx, opts){
+  opts=opts||{};
   const fenBefore=fens[idx], uci=ucis[idx], fenAfter=fens[idx+1];
   if(!uci || !fenBefore || !fenAfter) return;
   const cached=gradeCacheGet(fenBefore, uci);
-  if(cached){ moveGrades[idx]=cached; render(); saveGame(); return; } // แคช hit = 0 ms
-  enqueueGradeJob({ fenBefore:fenBefore, uci:uci, fenAfter:fenAfter,
+  if(cached){ moveGrades[idx]=cached; if(!opts.noRender){ render(); saveGame(); } return; } // แคช hit = 0 ms
+  enqueueGradeJob({ fenBefore:fenBefore, uci:uci, fenAfter:fenAfter, prio:GRADE_PRIO_LIVE,
     matchedVal:(gctx&&gctx.matchedVal!=null)?gctx.matchedVal:null,
     beforeBestCp:gctx?gctx.beforeBestCp:null, gapCp:gctx?gctx.gapCp:null,
     isDone:()=> (moveGrades[idx]!=null && ucis[idx]===uci),
@@ -2184,12 +2283,21 @@ function retroReplay(){
 }
 /* วาดไอคอนเกรดบนช่องปลายทาง เฉพาะ 'ตาล่าสุด' ที่นำมาสู่ตำแหน่งที่กำลังดู (ptr) เท่านั้น — ไม่สะสม */
 function paintGrades(){
-  if(!moveGrades.length || ptr<=0) return;   // จุดเริ่มต้น/ยังไม่มีการเดิน = ไม่มีไอคอน
+  if(ptr<=0 || !ucis.length) return;         // จุดเริ่มต้น/ยังไม่มีการเดิน = ไม่มีไอคอน
   const i=ptr-1;                             // ตาที่นำมาสู่ตำแหน่งปัจจุบัน
-  const gr=moveGrades[i]; if(!gr) return;
   const dest=ucis[i].slice(2,4);
   const cell=boardEl.querySelector('.sq[data-sq="'+dest+'"]');
   if(!cell) return;
+  const gr=moveGrades[i];
+  if(!gr){
+    // ยังไม่มีเกรด: ถ้างานเกรด 'ตาล่าสุด' อยู่ในคิว/กำลังทำ → โชว์ placeholder 'กำลังคิดเกรด' ทันที
+    if(gradePending.has(gradeKey(fens[i], ucis[i]))){
+      const ph=document.createElement('span');
+      ph.className='gradico pending'; ph.dataset.pending='1'; ph.dataset.ply=String(i);
+      cell.appendChild(ph);
+    }
+    return;
+  }
   const ic=document.createElement('span');
   ic.className='gradico'; ic.dataset.grade=gr; ic.dataset.ply=String(i);
   ic.style.backgroundImage="url('icons/"+gr+".png')";
@@ -2852,14 +2960,20 @@ function wireHistReplay(){
 wireHistReplay();
 
 /* ---------- debug hook (อ่านอย่างเดียว · ใช้ยืนยันผลตอนทดสอบ) ---------- */
-try{ window.__chessDbg={
+try{ window.__dbgChess=Chess; window.__chessDbg={
   get hist(){ return hist; }, get ptr(){ return ptr; }, get ucisLen(){ return ucis.length; },
   get rpPtr(){ return rpPtr; }, get rpUcisLen(){ return rpUcis.length; }, get rpPlaying(){ return rpPlaying; },
   get rpOn(){ return rpOn; }, get histOn(){ return histOn; }, get rpDelay(){ return rpDelay; },
   get moveGrades(){ return moveGrades.slice(); }, get ucis(){ return ucis.slice(); }, get fens(){ return fens.slice(); },
   get gradeCacheSize(){ return Object.keys(gradeCache).length; }, get gradeQueueLen(){ return gradeQueue.length; },
   get gradePendingSize(){ return gradePending.size; }, get gradeInFlight(){ return gradeInFlight; },
-  get gradeRunning(){ return gradeRunning; }, get gradePaused(){ return gradePaused; }
+  get gradeRunning(){ return gradeRunning; }, get gradePaused(){ return gradePaused; },
+  get searching(){ return searching; }, get run(){ return run; }, get busy(){ return busy; },
+  get ready(){ return ready; }, get depth(){ return document.getElementById('depth') ? +document.getElementById('depth').value : 0; },
+  get startTimer(){ return !!startTimer; }, get gradeInFlightLive(){ return gradeInFlightLive; },
+  get animCount(){ return animCount; }, get undoDisabled(){ const b=document.getElementById('bUndo'); return b?b.disabled:null; },
+  get sugTo(){ return Object.assign({}, sugTo); },
+  dbgOpenStats(gm){ return openStats(gm, {}); }, dbgCloseStats(){ closeStats(); }
 }; }catch(e){}
 
 gradeCacheLoad();
