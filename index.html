@@ -510,8 +510,8 @@ function onSquare(sq){
   if(game_over(g)){ return; }
   // แตะช่องปลายทางของคำแนะนำ = เดินทันที (ไม่ต้องเลือกหมากก่อน)
   if(!sel && sugTo[sq]){ playUci(sugTo[sq]); return; }
-  // หมากที่ขยับไม่ได้เพราะคิงจะถูกรุก (ใช้ได้ทั้งฝั่งเราและฝั่งตรงข้าม)
-  if(p && p.type!=='k' && isPinned(g, sq)){
+  // หมากที่ขยับไม่ได้เพราะคิงจะถูกรุก — เตือนเฉพาะตอนเป็น "ตาของฝั่งนั้น" เท่านั้น (ไม่เตือนหมากฝั่งตรงข้าม)
+  if(p && p.type!=='k' && p.color===g.turn() && isPinned(g, sq)){
     toast('หมากตัวนี้ขยับไม่ได้ — ขยับแล้วคิงจะถูกรุก');
     return;
   }
@@ -524,8 +524,21 @@ function onSquare(sq){
     }
   }
   if(p&&p.color!==g.turn()&&!sel){
-    toast('ยังไม่ถึงตา — ตอนนี้ตาสี'+(g.turn()==='w'?'ขาว':'ดำ'), true);
-    return;
+    // แตะหมากอีกฝั่ง = สลับตาให้ทันที แล้วเลือกตัวนั้นเลย (คุมเองทั้งหมด ไม่ต้องกดปุ่มสลับฝั่ง)
+    const f=g.fen().split(' '); f[1]=p.color; f[3]='-';
+    try{
+      const c2=new Chess(f.join(' '));
+      ucis=ucis.slice(0,ptr); fens=fens.slice(0,ptr+1); fens[ptr]=c2.fen();
+      sel=sq; legal=c2.moves({square:sq, verbose:true});
+      lines={}; sugTo={}; sugRank={}; sqTagTxt={};
+      render(); renderPV(); updateTurnBtn();
+      toast('สลับตาเป็น '+(p.color==='w'?'ขาว':'ดำ')+' แล้ว — เลือกหมากตัวนี้ให้', true);
+      if(run) runAnalysis();
+      return;
+    }catch(e){
+      toast('ยังไม่ถึงตา — ตอนนี้ตาสี'+(g.turn()==='w'?'ขาว':'ดำ'), true);
+      return;
+    }
   }
   if(p&&p.color===g.turn()){ sel=sq; legal=g.moves({square:sq,verbose:true}); render(); markTargets(); return; }
   if(sel&&legal.some(m=>m.to===sq)){ playUci(sel+sq); return; }
