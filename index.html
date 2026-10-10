@@ -247,7 +247,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
 <div id="bigover" onclick="this.classList.remove('show')"><div class="box" id="bigbox"></div></div>
   <header>
     <h1>♞ Chess AI - <span class="dim">Stockfish 19</span></h1>
-    <div class="sub" id="sub" data-i18n="stLoading">กำลังโหลดเอนจิน…</div>
+    <div class="sub" id="sub"></div>
   </header>
 
   <div id="boardWrap"><div id="board"></div><svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div>
@@ -336,8 +336,8 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
       <div class="row" style="margin-top:10px;align-items:center">
         <label style="min-width:64px;font-size:12px;line-height:1.25" data-i18n="lblLang">ภาษา / Language</label>
         <div id="langbtns" style="display:flex;gap:6px;flex:1">
-          <button class="sm lang on" data-lang="th">ไทย</button>
-          <button class="sm lang" data-lang="en">English</button>
+          <button class="sm lang on" data-lang="th" data-i18n="langTh">ไทย</button>
+          <button class="sm lang" data-lang="en" data-i18n="langEn">English</button>
         </div>
       </div>
 
@@ -386,7 +386,8 @@ function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 let lang='th';
 const I18N={
  th:{
-  stLoading:'กำลังโหลดเอนจิน…', stReady:'พร้อมใช้งาน',
+  stReady:'พร้อมใช้งาน',
+  langTh:'ไทย', langEn:'English',
   stEngineFail:'โหลดเอนจินไม่ได้ (ต้องเปิดผ่าน http/https)',
   bBack:'↶ ย้อนกลับ', bFwd:'↷ ไปข้างหน้า',
   tStart:'ไปจุดเริ่มต้น', tEnd:'ไปตาสุดท้าย', tUndo:'ย้อนกลับเกมก่อนหน้า', tTheme:'เปลี่ยนธีมกระดานเร็ว',
@@ -430,18 +431,19 @@ const I18N={
   themeNibble:'ขาว Nibbler', themeBw:'ขาว-ดำ', themeBrown:'น้ำตาลเดิม', themeGreen:'เขียว'
  },
  en:{
-  stLoading:'Loading engine…', stReady:'Ready',
+  stReady:'Ready',
+  langTh:'Thai', langEn:'English',
   stEngineFail:'Cannot load engine (must be opened via http/https)',
   bBack:'↶ Back', bFwd:'↷ Forward',
   tStart:'Go to start', tEnd:'Go to last move', tUndo:'Restore previous game', tTheme:'Quick change board theme',
   bNewGame:'New Game', bRun:'▶ Run', bStop:'■ Stop', bFlip:'⇅ Flip', bTheme:'Theme',
   confirmMsg:'Start a new game? (moves will be lost)', yes:'Confirm', no:'Cancel',
   sumSettings:'⚙ Settings', sumPos:'📋 Position & Copy',
-  lblProfile:'Profile', lblDepth:'Depth', lblNpv:'Lines', lblSize:'Theme/Button size', lblElo:'ELO', lblLang:'Language / ภาษา',
+  lblProfile:'Profile', lblDepth:'Depth', lblNpv:'Lines', lblSize:'Theme/Button size', lblElo:'ELO', lblLang:'Language',
   profQuick:'⚡ Quick', profNormal:'⚖️ Normal', profDeep:'🧠 Deep', profCustom:'Custom',
   sizeSmall:'Small', sizeMedium:'Medium', sizeLarge:'Large',
   animOn:'Piece animation: On', animOff:'Piece animation: Off',
-  hideOn:'Hide hints: On', hideOff:'Hide hints: Off',
+  hideOn:'Hide guidance: On', hideOff:'Hide guidance: Off',
   onWord:'On', offWord:'Off',
   bPaste:'Paste', bSet:'Set position', bCopy:'Copy PGN', bCopyFen:'Copy FEN',
   fenPh:'Paste FEN then press Set position',
