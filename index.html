@@ -119,8 +119,13 @@ body.theme-bw{--acc:#d7dde5;--acc2:#9aa7b4;--accInk:#0b0f14;--accGlow:rgba(215,2
 .row{display:flex;gap:6px;margin-top:8px}
 button{flex:1;background:var(--btnBg,#1d232c);color:var(--txt);border:1px solid var(--btnBd,#2b333e);border-radius:12px;
  padding:12px 6px;font-size:1rem;font-weight:600;min-width:0;letter-spacing:.2px;
- transition:transform .08s,filter .15s,background .15s}
-button:active{background:var(--btnAct,#333a44);transform:scale(.97)}
+ transition:transform .13s ease,filter .13s ease,background .13s ease,border-color .13s ease}
+button:active{background:var(--btnAct,#333a44);transform:translateY(0) scale(.98)}
+/* hover ไฮไลท์ปุ่มทั้งแอพ — พื้นสว่างขึ้น + ขอบ accent + ยกขึ้นเล็กน้อย · เฉพาะอุปกรณ์มีเมาส์จริง (ทัชไม่ค้าง hover) · disabled ไม่มี effect */
+@media (hover:hover) and (pointer:fine){
+  button:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.08)}
+  button:hover:not(:disabled):not(.npv){border-color:var(--acc)}
+}
 button.pri{background:linear-gradient(180deg,var(--acc),var(--acc2));color:var(--accInk);border-color:var(--acc2);box-shadow:0 5px 16px var(--accGlow)}
 button.on{background:linear-gradient(180deg,#f0675e,#cf3b33);color:#fff;border-color:#a52f28;box-shadow:0 5px 16px rgba(229,83,75,.3)}
 button.sm{font-size:.93rem;padding:10px 4px}
@@ -344,7 +349,17 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
 .histBtns button{flex:1 1 40%;font-size:.88rem;padding:9px 4px}
 .histBtns button.del{color:#ff9d8f;border-color:#7a2f28}
 /* ---------- เลือกหลายเกม (เช็คบ็อกซ์ + ไฮไลท์การ์ดที่เลือก) ---------- */
-.histpick{display:flex;align-items:center;align-self:center;flex:0 0 auto;cursor:pointer;user-select:none;-webkit-user-select:none}
+.histpick{display:none;align-items:center;align-self:center;flex:0 0 auto;cursor:pointer;user-select:none;-webkit-user-select:none}
+#histView.selmode .histpick{display:flex}
+#histView.selmode .histItem{cursor:pointer}
+#histView.selmode.picking .histpick{animation:pickPop .2s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pickPop{from{opacity:0;transform:scale(.35)}to{opacity:1;transform:scale(1)}}
+/* แถว/ปุ่มที่โชว์เฉพาะตอนอยู่ในโหมดเลือก */
+.selonly-row{display:none}
+#histView.selmode .selonly-row{display:flex}
+.selonly-btn{display:none}
+#histView.selmode .selonly-btn{display:block}
+#histSelect.act{background:linear-gradient(180deg,var(--acc),var(--acc2))!important;color:var(--accInk)!important;border-color:var(--acc2)!important}
 .histpick input{width:24px;height:24px;flex:0 0 auto;margin:0;accent-color:var(--acc);cursor:pointer}
 .histItem.sel{border:2px solid var(--acc);padding:9px;
   background:linear-gradient(180deg,var(--accGlow),var(--accGlow)),linear-gradient(180deg,var(--panel2),var(--panel));
@@ -679,10 +694,11 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <button id="histCopyAll" class="sm" data-i18n="histCopyAll">📋 คัดลอกทั้งหมด</button>
     </div>
     <div class="row">
-      <button id="histSelAll" class="sm" data-i18n="histSelAll">เลือกทั้งหมด</button>
-      <button id="histSelNone" class="sm" data-i18n="histSelNone">ล้างที่เลือก</button>
+      <button id="histSelect" class="sm" data-i18n="histSelect">เลือก</button>
+      <button id="histSelAll" class="sm selonly-btn" data-i18n="histSelAll">เลือกทั้งหมด</button>
+      <button id="histSelNone" class="sm selonly-btn" data-i18n="histSelNone">ล้างที่เลือก</button>
     </div>
-    <div class="row">
+    <div class="row selonly-row">
       <button id="histExportSel" class="sm" disabled>⬇ ส่งออก PGN ที่เลือก (0)</button>
       <button id="histCopySel" class="sm" disabled>📋 คัดลอก PGN ที่เลือก (0)</button>
     </div>
@@ -926,6 +942,7 @@ const I18N={
   histNone:'— ไม่พบเกมที่ตรงกับคำค้น —',
   histStats:'ดูสถิติ', histCopyPgn:'📋 คัดลอก PGN ทั้งเกม', histCopyShort:'📋 คัดลอก PGN',
   histExportAll:'⬇ ส่งออกทั้งประวัติ (.pgn)', histCopyAll:'📋 คัดลอกทั้งหมด',
+  histSelect:'เลือก', histSelectDone:'เสร็จสิ้น',
   histSelAll:'เลือกทั้งหมด', histSelNone:'ล้างที่เลือก',
   histExportSelN:'⬇ ส่งออก PGN ที่เลือก ({0})', histCopySelN:'📋 คัดลอก PGN ที่เลือก ({0})',
   histDelAll:'🗑 ลบประวัติทั้งหมด', confirmDelAllMsg:'ลบประวัติทั้งหมด? (ลบทุกเกม ถาวร)',
@@ -1038,6 +1055,7 @@ const I18N={
   histNone:'— no game matches the search —',
   histStats:'View stats', histCopyPgn:'📋 Copy full-game PGN', histCopyShort:'📋 Copy PGN',
   histExportAll:'⬇ Export all history (.pgn)', histCopyAll:'📋 Copy all',
+  histSelect:'Select', histSelectDone:'Done',
   histSelAll:'Select all', histSelNone:'Clear selection',
   histExportSelN:'⬇ Export selected PGN ({0})', histCopySelN:'📋 Copy selected PGN ({0})',
   histDelAll:'🗑 Delete all history', confirmDelAllMsg:'Delete all history? (all games, permanent)',
@@ -2562,7 +2580,7 @@ function gradeCounts(grades){
   const c={}; (grades||[]).forEach(g=>{ if(g) c[g]=(c[g]||0)+1; }); return c;
 }
 function openHist(){ histLoad(); histOn=true; const v=$('histView'); if(v) v.classList.add('show'); renderHist(); retroHistAll(); }
-function closeHist(){ histOn=false; const v=$('histView'); if(v) v.classList.remove('show'); closeConfirmDelAll(); cancelSession(histSession); histSession=null; setProgText('histProg',0,0); }
+function closeHist(){ histOn=false; const v=$('histView'); if(v) v.classList.remove('show','selmode','picking'); histSel.clear(); histSelSave(); refreshSelUI(); closeConfirmDelAll(); cancelSession(histSession); histSession=null; setProgText('histProg',0,0); }
 function mkHBtn(key, cls, fn){ const b=document.createElement('button'); b.type='button';
   b.className='sm '+(cls||''); b.textContent=t(key); b.onclick=fn; return b; }
 function renderHist(){
@@ -2583,6 +2601,12 @@ function renderHist(){
   view.forEach(gm=>{
     const item=document.createElement('div'); item.className='histItem'; item.dataset.id=gm.id;
     if(histSel.has(gm.id)) item.classList.add('sel');
+    // โหมดเลือก: คลิกที่ใดก็ได้บนการ์ด (ยกเว้นปุ่ม/ช่องติ๊ก/ลิงก์ของการ์ด) = เลือก/ยกเลิกเกมนั้น
+    item.onclick=(e)=>{
+      const v=$('histView'); if(!v || !v.classList.contains('selmode')) return;
+      if(e.target.closest('button')||e.target.closest('input')||e.target.closest('label')||e.target.closest('a')) return;
+      toggleCardSel(gm, item);
+    };
     const head=document.createElement('div'); head.className='histHead';
     const pick=document.createElement('label'); pick.className='histpick';
     const cb=document.createElement('input'); cb.type='checkbox'; cb.dataset.id=gm.id; cb.checked=histSel.has(gm.id);
@@ -2628,6 +2652,29 @@ function refreshSelUI(){
   const n=histSel.size, hasHist=hist.length>0;
   const eb=$('histExportSel'); if(eb){ eb.textContent=t('histExportSelN', n); eb.disabled=(n===0||!hasHist); }
   const cbx=$('histCopySel'); if(cbx){ cbx.textContent=t('histCopySelN', n); cbx.disabled=(n===0||!hasHist); }
+  refreshSelModeUI();
+}
+function histInSelMode(){ const v=$('histView'); return !!(v && v.classList.contains('selmode')); }
+function refreshSelModeUI(){
+  const inMode=histInSelMode();
+  const sb=$('histSelect'); if(sb){ sb.textContent=t(inMode?'histSelectDone':'histSelect'); sb.classList.toggle('act', inMode); }
+}
+function setSelMode(on, animate){
+  const v=$('histView'); if(!v) return;
+  histSel.clear(); histSelSave();                              // เปิด/ปิดโหมด = ล้างการเลือกเดิมเสมอ
+  v.classList.toggle('selmode', !!on);
+  if(on && animate!==false){ v.classList.add('picking'); setTimeout(()=>v.classList.remove('picking'), 260); }
+  else v.classList.remove('picking');
+  renderHist();
+  refreshSelModeUI();
+}
+function histSelectToggle(){ setSelMode(!histInSelMode()); }
+function toggleCardSel(gm, item){
+  if(histSel.has(gm.id)) histSel.delete(gm.id); else histSel.add(gm.id);
+  histSelSave();
+  const on=histSel.has(gm.id);
+  if(item){ item.classList.toggle('sel', on); const cb=item.querySelector('.histpick input'); if(cb) cb.checked=on; }
+  refreshSelUI();
 }
 function selectedGames(){ return (hist||[]).filter(gm=>histSel.has(gm.id)); }
 function buildSelPgn(){ return selectedGames().map(pgnBlock).join('\n\n'); }
@@ -3066,6 +3113,7 @@ function wireHistReplay(){
     const ok=await copyRaw(txt); toast(t(ok?'toastCopiedAll':'toastCopyFail'), true);
   };
   // เลือกหลายเกม (เช็คบ็อกซ์) → ส่งออก/คัดลอก PGN เฉพาะที่เลือก
+  const hsel=$('histSelect'); if(hsel) hsel.onclick=histSelectToggle;
   const hselall=$('histSelAll'); if(hselall) hselall.onclick=histSelAll;
   const hselnone=$('histSelNone'); if(hselnone) hselnone.onclick=histSelNone;
   const hexpsel=$('histExportSel'); if(hexpsel) hexpsel.onclick=()=>{
@@ -3115,6 +3163,7 @@ try{ window.__dbgChess=Chess; window.__chessDbg={
   get rpPtr(){ return rpPtr; }, get rpUcisLen(){ return rpUcis.length; }, get rpPlaying(){ return rpPlaying; },
   get rpOn(){ return rpOn; }, get histOn(){ return histOn; }, get rpDelay(){ return rpDelay; },
   get histSel(){ return Array.from(histSel); },
+  get histSelMode(){ return histInSelMode(); },
   get moveGrades(){ return moveGrades.slice(); }, get ucis(){ return ucis.slice(); }, get fens(){ return fens.slice(); },
   get gradeCacheSize(){ return Object.keys(gradeCache).length; }, get gradeQueueLen(){ return gradeQueue.length; },
   get gradePendingSize(){ return gradePending.size; }, get gradeInFlight(){ return gradeInFlight; },
