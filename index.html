@@ -965,6 +965,8 @@ function t(key){ const d=(I18N[lang]&&I18N[lang][key]); let s=(d!=null?d:(I18N.t
   if(arguments.length>1){ for(let i=1;i<arguments.length;i++){ s=s.split('{'+ (i-1) +'}').join(String(arguments[i])); } }
   return s; }
 let lastSub=null, lastStatus=null, lastEval={cp:0,mate:null};
+let statGame=null;                  // เกมที่กล่องสถิติกำลังแสดงอยู่ (ไว้ re-render ตอนสลับภาษา)
+let rpLastEval={cp:0,mate:null};    // ค่า eval ล่าสุดของหน้า replay (ไว้ refresh ป้ายตอนสลับภาษา)
 function setSub(key){ lastSub={key:key,args:Array.prototype.slice.call(arguments,1)}; subEl.textContent=t.apply(null,[key].concat(lastSub.args)); }
 function setStatus(key){ lastStatus={key:key,args:Array.prototype.slice.call(arguments,1)}; statusEl.textContent=t.apply(null,[key].concat(lastStatus.args)); }
 function applyLang(){
@@ -988,7 +990,8 @@ function applyLang(){
   if(editOn) renderEdit();          // อัปเดตข้อความในโหมดแก้ไขกระดานตามภาษา
   if(promoPending) openPromo(promoPending.from, promoPending.to);   // อัปเดต label/aria ของแถบโปรโมทตามภาษา
   if(histOn) renderHist();          // อัปเดตข้อความในหน้าประวัติเกมตามภาษา
-  if(rpOn){ rpRender(); rpUpdateButtons(); }   // อัปเดตข้อความในหน้าเล่นย้อนหลังตามภาษา
+  if(rpOn){ rpRender(); rpUpdateButtons(); rpSetEval(rpLastEval.cp, rpLastEval.mate); }   // อัปเดตข้อความในหน้าเล่นย้อนหลัง + ป้าย eval (ไม่ปิดหน้า)
+  const _sv=$('statView'); if(_sv && _sv.classList.contains('show') && statGame) openStats(statGame);   // วาดกล่องสถิติที่เปิดค้างอยู่ซ้ำ ให้ทุกข้อความเปลี่ยนภาษาทันที
 }
 function setLang(l){ lang=(l==='en')?'en':'th'; lsSet(LSK.lang, lang); applyLang(); }
 document.querySelectorAll('.lang').forEach(b=>{ b.onclick=()=>{ setLang(b.dataset.lang); }; });
@@ -2329,6 +2332,7 @@ function rpRenderLog(){
   el.scrollTop = el.scrollHeight;
 }
 function rpSetEval(cp, mate){
+  rpLastEval={cp:cp, mate:mate};    // จำค่าไว้ เพื่อ re-render ป้ายตอนสลับภาษา
   const bottom=rpFlipped?'b':'w';
   const whiteAdv = mate!=null ? (mate>0?99:-99) : cp;
   const val = bottom==='w'? whiteAdv : -whiteAdv;
@@ -2459,6 +2463,7 @@ function gameStats(gm){
 }
 function openStats(gm){
   if(!gm) return;
+  statGame=gm;                      // จำเกมที่แสดง เพื่อ re-render ตอนสลับภาษาโดยไม่ปิดกล่อง
   const st=gameStats(gm);
   const mine=playerColorOf(gm), other=(mine==='w'?'b':'w'), res=gameResult(gm);
   const nm=$('statName'); if(nm) nm.textContent=(gm.name? displayGameName(gm.name)+' · ' : '')+t('statTitle');
@@ -2481,7 +2486,7 @@ function openStats(gm){
     + '<div class="tiny" style="text-align:center;opacity:.8">'+t('resNote')+'</div>';
   const v=$('statView'); if(v) v.classList.add('show');
 }
-function closeStats(){ const v=$('statView'); if(v) v.classList.remove('show'); }
+function closeStats(){ const v=$('statView'); if(v) v.classList.remove('show'); statGame=null; }
 function mainGameForStats(){ return { name:'', fens:fens.slice(), ucis:ucis.slice(), grades:moveGrades.slice(), flipped:!!flipped }; }
 function replayGameForStats(){ return { name:rpName, fens:rpFens.slice(), ucis:rpUcis.slice(), grades:rpGrades.slice(), flipped:!!rpFlipped }; }
 
