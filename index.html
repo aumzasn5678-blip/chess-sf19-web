@@ -172,6 +172,11 @@ button.rec-on{background:linear-gradient(180deg,#f4b258,#cf8d2c)!important;color
 #bStart,#bEnd{background:var(--btnBg);color:var(--txt);font-size:1.07rem}
 #bFlip{background:var(--btnBg);color:var(--dim)}
 #bNewGame{background:var(--btnBg);color:var(--acc);border-color:var(--acc2)}
+/* ◀️ ย้อนกลับเกมก่อนหน้า — ปุ่มเล็ก (1/4 ของปุ่มเริ่มเกมใหม่) · disabled จนกว่าจะมีการเริ่มใหม่ */
+#bUndo{background:var(--btnBg);color:var(--acc);border-color:var(--acc2);font-size:.93rem}
+#bUndo:disabled{opacity:.38;cursor:not-allowed;color:var(--dim);border-color:var(--line);
+  background:var(--btnBg);box-shadow:none;filter:grayscale(1)}
+#bUndo:disabled:active{transform:none;background:var(--btnBg)}
 
 #pv{margin-top:8px;display:flex;flex-direction:column;gap:5px}
 .pvrow{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);
@@ -260,7 +265,8 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
   <div class="row">
     <button id="bRun" class="pri">▶ รัน</button>
     <button id="bFlip" class="sm">⇅ สลับฝั่ง</button>
-    <button id="bNewGame" class="sm" style="flex:0 0 34%">เริ่มเกมใหม่</button>
+    <button id="bUndo" class="sm" title="ย้อนกลับเกมก่อนหน้า (ใช้ได้ครั้งเดียวหลังเริ่มใหม่)" style="flex:0 0 6.5%" disabled>◀️</button>
+    <button id="bNewGame" class="sm" style="flex:0 0 26%">เริ่มเกมใหม่</button>
     <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" style="flex:0 0 16%">ธีม</button>
   </div>
   <div id="confirmNew" class="card">
@@ -796,12 +802,31 @@ $('bEnd').onclick=()=>navTo(fens.length-1, 'ไปตาสุดท้าย �
 $('bFlip').onclick=()=>{ flipped=!flipped; render(); renderPV(); };
 $('bNewGame').onclick=()=>{ $('confirmNew').style.display='block'; };
 $('bNewNo').onclick=()=>{ $('confirmNew').style.display='none'; };
+let prevGame=null;                       // สถานะเกมก่อน 'เริ่มเกมใหม่' ล่าสุด (เก็บได้ครั้งเดียว — ใช้ ◀️ แล้วล้าง)
+function updateUndoBtn(){ const b=$('bUndo'); if(b) b.disabled = !prevGame; }
+function snapshotGame(){
+  return { fens: fens.slice(), ucis: ucis.slice(), ptr: ptr, flipped: flipped,
+           lines: JSON.parse(JSON.stringify(lines)) };
+}
 function startNewGame(){
+  prevGame = snapshotGame();               // เก็บเกมเดิมไว้ก่อนรีเซ็ต (ครั้งล่าสุดเท่านั้น)
   game=new Chess(); fens=[game.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
   flipped=false; render(); renderPV(); updateTurnBtn(); statusEl.textContent='เกมใหม่';
+  updateUndoBtn();
   if(run) runAnalysis();
 }
 $('bNewYes').onclick=()=>{ $('confirmNew').style.display='none'; startNewGame(); };
+$('bUndo').onclick=()=>{                    // ย้อนกลับไปเกมที่ถูก 'เริ่มใหม่' ทิ้งไปล่าสุด (ใช้ได้ครั้งเดียว)
+  if(!prevGame) return;
+  fens = prevGame.fens.slice(); ucis = prevGame.ucis.slice(); ptr = prevGame.ptr;
+  flipped = prevGame.flipped; lines = JSON.parse(JSON.stringify(prevGame.lines));
+  sel=null; legal=[]; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
+  prevGame = null;
+  game = new Chess(fens[ptr]);
+  render(); renderPV(); updateTurnBtn(); updateUndoBtn();
+  statusEl.textContent='กลับไปเกมก่อนหน้าแล้ว';
+  if(run) runAnalysis();
+};
 function updateTurnBtn(){ const el=$('bTurn'); if(!el) return; const t=new Chess(fens[ptr]).turn(); el.textContent='ตา: '+(t==='w'?'ขาว':'ดำ'); }
 $('bSet').onclick=()=>{
   const v=$('fen').value.trim(); if(!v) return;
@@ -935,6 +960,13 @@ document.addEventListener('keydown', (e)=>{
   const tg = e.target && e.target.tagName;
   if(tg==='INPUT' || tg==='TEXTAREA') return;          // ไม่แย่งตอนพิมพ์
   const c = e.code || '';
+  const k = e.key || '';
+  // กล่องยืนยัน 'เริ่มเกมใหม่': Enter = ยืนยัน · ESC = ยกเลิก (เฉพาะตอนกล่องเปิด)
+  const cn=$('confirmNew');
+  if(cn && getComputedStyle(cn).display!=='none'){
+    if(c==='Enter' || c==='NumpadEnter' || k==='Enter'){ e.preventDefault(); $('bNewYes').onclick(); return; }
+    if(c==='Escape' || k==='Escape' || k==='Esc'){ e.preventDefault(); $('bNewNo').onclick(); return; }
+  }
   if(c==='ArrowLeft'){ e.preventDefault(); $('bBack').onclick(); }
   else if(c==='ArrowRight'){ e.preventDefault(); $('bFwd').onclick(); }
   else if(c==='Space' || c==='KeyG'){ e.preventDefault(); $('bRun').onclick(); }
