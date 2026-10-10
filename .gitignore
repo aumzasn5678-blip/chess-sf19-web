@@ -1,9 +1,4 @@
-# ของที่ดึงมาจากภายนอก (ไม่ใช่ผลงานเรา) — กู้คืนได้ด้วย get_lib.sh
-lib/stockfish.js
-lib/stockfish.wasm
-lib/chess.js
 lib/meta.json
-# ไฟล์ทดสอบ/ภาพชั่วคราว
 _appcheck.mjs
 shot-*.png
 __pycache__/
