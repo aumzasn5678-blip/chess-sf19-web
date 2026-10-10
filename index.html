@@ -174,7 +174,7 @@ button.rec-on{background:linear-gradient(180deg,#f4b258,#cf8d2c)!important;color
 #log::-webkit-scrollbar{width:6px;height:0}
 #log::-webkit-scrollbar-thumb{background:rgba(147,160,177,.4);border-radius:3px}
 #log b{color:var(--acc,#4ec46f);font-weight:800;font-size:1.24rem;margin-right:2px}
-#status{font-size:.79rem;color:var(--dim);margin-top:6px;min-height:14px}
+#status{display:none}   /* ซ่อน: ข้อความสถานะรวมอยู่ที่บรรทัดเดียว (#depthinfo) แล้ว */
 
 /* หลอดความลึก (range) ให้มีราง+สีเติมตามธีม */
 #depth{-webkit-appearance:none;appearance:none;height:30px;background:transparent;flex:1;min-width:0}
@@ -855,13 +855,14 @@ const I18N={
   fenHintHtml:'<b>FEN</b> = รหัสตำแหน่งกระดานปัจจุบัน (ใช้แชร์/วางต่อในโปรแกรมหมากรุกอื่น)<br><b>PGN</b> = บันทึกการเดินทั้งเกม (เอาไปให้คนอื่น/โปรแกรมวิเคราะห์ต่อได้)',
   eloFull:'{0} (เต็ม)', profPrefix:'โปรไฟล์: ',
   depInfo:'ความลึก {0}/{1}', depThinking:' กำลังคิด…', depReady2:' · พร้อม', depLast:'ความลึกสุดท้าย {0}',
+  depThink:'กำลังคิด… {0}/{1} · เพดาน {2} วิ', depReady:'พร้อม · ลึก {0}', depIdle:'พร้อม',
   white:'ขาว', black:'ดำ', bottomSuffix:' (ล่าง)', best:'ดีสุด',
-  stDoneEval:'วิเคราะห์จบ · ลึก {0}', stDoneRun:'วิเคราะห์จบ · ลึก {0} · พร้อมคิดใหม่เมื่อเดินหมาก',
-  stThinking:'กำลังคิด… (ลึก {0} · เพดาน {1} วิ)', stStopped:'หยุดแล้ว',
-  stMoved:'เดินแล้ว — กด ▶ รัน เพื่อวิเคราะห์', stNav:'{0} {1}',
+  stDoneEval:'พร้อม · ลึก {0}', stDoneRun:'พร้อม · ลึก {0}',
+  stThinking:'กำลังคิด… {0}/{1} · เพดาน {2} วิ', stStopped:'หยุดแล้ว',
+  stMoved:'เดินแล้ว', stNav:'{0} {1}',
   navStart:'ไปจุดเริ่มต้น ตา', navBack:'ย้อนไปตา', navFwd:'ไปข้างหน้า', navEnd:'ไปตาสุดท้าย ตา',
-  stNewGame:'เกมใหม่', stPrevGame:'กลับไปเกมก่อนหน้าแล้ว', stSetPos:'ตั้งตำแหน่งแล้ว ✓', stBadFen:'FEN/PGN ไม่ถูกต้อง',
-  stProfile:'โปรไฟล์ {0}: ลึก {1} · {2} ตัวเลือก', stNpv:'จำนวนตัวเลือก: {0} (กด ▶ รัน อีกครั้ง)', stCustom:'กำหนดเอง',
+  stNewGame:'เกมใหม่', stPrevGame:'กลับเกมก่อนหน้าแล้ว', stSetPos:'ตั้งตำแหน่งแล้ว ✓', stBadFen:'FEN/PGN ไม่ถูกต้อง',
+  stProfile:'โปรไฟล์ {0} · {1} ตัวเลือก', stNpv:'จำนวนตัวเลือก: {0}', stCustom:'กำหนดเอง',
   noticeResign:'⚠ เราใกล้ถูกรุกฆาต (M{0}) — แนะนำยอมแพ้',
   noticeCheckBlock:'⚠ คิงเราติดรุกอยู่ — หาตัวมาบังหรือกินตัวรุกได้',
   noticeCheckNoBlock:'⚠ คิงเราติดรุกอยู่ — หาตัวมาบังไม่ได้ ต้องขยับคิงรีบหนี',
@@ -966,13 +967,14 @@ const I18N={
   fenHintHtml:'<b>FEN</b> = a code for the current board position (share / paste into other chess apps)<br><b>PGN</b> = the full move record of the game (hand to others or an analysis tool)',
   eloFull:'{0} (max)', profPrefix:'Profile: ',
   depInfo:'Depth {0}/{1}', depThinking:' thinking…', depReady2:' · ready', depLast:'Last depth {0}',
+  depThink:'Thinking… {0}/{1} · cap {2}s', depReady:'Ready · depth {0}', depIdle:'Ready',
   white:'White', black:'Black', bottomSuffix:' (bottom)', best:'Best',
-  stDoneEval:'Analysis done · depth {0}', stDoneRun:'Analysis done · depth {0} · will re-analyse after a move',
-  stThinking:'Thinking… (depth {0} · cap {1}s)', stStopped:'Stopped',
-  stMoved:'Moved — press ▶ Run to analyse', stNav:'{0} {1}',
+  stDoneEval:'Ready · depth {0}', stDoneRun:'Ready · depth {0}',
+  stThinking:'Thinking… {0}/{1} · cap {2}s', stStopped:'Stopped',
+  stMoved:'Moved', stNav:'{0} {1}',
   navStart:'Go to start, move', navBack:'Back to move', navFwd:'Forward to move', navEnd:'Go to last move',
   stNewGame:'New game', stPrevGame:'Restored previous game', stSetPos:'Position set ✓', stBadFen:'Invalid FEN/PGN',
-  stProfile:'Profile {0}: depth {1} · {2} lines', stNpv:'Lines: {0} (press ▶ Run again)', stCustom:'Custom',
+  stProfile:'Profile {0} · {1} lines', stNpv:'Lines: {0}', stCustom:'Custom',
   noticeResign:'⚠ We are close to being checkmated (M{0}) — resignation advised',
   noticeCheckBlock:'⚠ Our king is in check — we can block or capture the attacker',
   noticeCheckNoBlock:'⚠ Our king is in check — cannot block, the king must move to escape',
@@ -1061,7 +1063,33 @@ let lastSub=null, lastStatus=null, lastEval={cp:0,mate:null};
 let statGame=null;                  // เกมที่กล่องสถิติกำลังแสดงอยู่ (ไว้ re-render ตอนสลับภาษา)
 let rpLastEval={cp:0,mate:null};    // ค่า eval ล่าสุดของหน้า replay (ไว้ refresh ป้ายตอนสลับภาษา)
 function setSub(key){ lastSub={key:key,args:Array.prototype.slice.call(arguments,1)}; subEl.textContent=t.apply(null,[key].concat(lastSub.args)); }
-function setStatus(key){ lastStatus={key:key,args:Array.prototype.slice.call(arguments,1)}; statusEl.textContent=t.apply(null,[key].concat(lastStatus.args)); }
+function setStatus(key){
+  const args=Array.prototype.slice.call(arguments,1);
+  lastStatus={key:key,args:args};
+  if(key==='stThinking'){ capMs=Math.round((+args[1]||0)*1000); renderStatusLine(); return; }      // บรรทัดกำลังคิด (ลึก realtime)
+  if(key==='stDoneRun'||key==='stDoneEval'){ renderStatusLine(); return; }                          // คิดจบ → กลับบรรทัด 'พร้อม · ลึก N'
+  flashStatus.apply(null,[key].concat(args));                                                       // เหตุการณ์อื่น → โชว์ชั่วคราว 2.5 วิ
+}
+/* ---- บรรทัดสถานะใต้หลอด HP: เหลือบรรทัดเดียว (#depthinfo) ---- */
+let statusTempUntil=0, statusTimer=null, capMs=0;
+function statusLineText(){
+  const cur=maxDepth(), tgt=+$('depth').value;
+  if(searching) return t('depThink', cur, tgt, (capMs/1000).toFixed(1));   // กำลังคิด… N/M · เพดาน … วิ
+  return cur? t('depReady', cur) : t('depIdle');                          // พร้อม · ลึก N (ยังไม่คิด = พร้อม)
+}
+function renderStatusLine(){                        // บรรทัดถาวร: กำลังคิด(ลึกเพิ่ม realtime) / พร้อม
+  const el=$('depthinfo'); if(!el) return;
+  if(Date.now()<statusTempUntil) return;            // มีข้อความเหตุการณ์ค้างอยู่ — อย่าทับ
+  el.textContent = statusLineText();
+}
+function flashStatus(key){                          // ข้อความเหตุการณ์: โชว์แทน ~2.5 วิ แล้วกลับบรรทัดเดิมเอง
+  const el=$('depthinfo'); if(!el) return;
+  el.textContent = t.apply(null,[key].concat(Array.prototype.slice.call(arguments,1)));
+  statusTempUntil = Date.now()+2500;
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(()=>{ statusTempUntil=0; renderStatusLine(); }, 2500);
+}
+function setEvent(key){ lastStatus={key:key,args:Array.prototype.slice.call(arguments,1)}; flashStatus.apply(null,[key].concat(lastStatus.args)); }
 function applyLang(){
   const L=(lang==='en')?'en':'th';
   document.documentElement.lang=L;
@@ -1143,12 +1171,7 @@ function paintSoon(){
   if(now-lastPaint>140){ lastPaint=now; renderPV(); return; }
   if(!paintTimer) paintTimer=setTimeout(()=>{ paintTimer=null; lastPaint=Date.now(); renderPV(); }, 140);
 }
-function updateDepthInfo(){
-  const cur=maxDepth(), tgt=+$('depth').value;
-  const el=$('depthinfo'); if(!el) return;
-  if(run||busy){ el.textContent = t('depInfo', cur, tgt) + (searching? t('depThinking') : t('depReady2')); }
-  else el.textContent = cur? t('depLast', cur) : '\u00a0';
-}
+function updateDepthInfo(){ renderStatusLine(); }    // บรรทัดเดียวใต้หลอด HP (กำลังคิด realtime / พร้อม)
 let sugRank={}, sqTagTxt={}, mateThreat=false, prevThreat=false;   // อันดับ+คะแนนบนช่อง · ธงเตือนใกล้โดนรุกฆาต
 function markTargets(){
   const showTags = (!hideHints) || run || busy;
@@ -1696,7 +1719,7 @@ function restorePrevGame(){                 // ย้อนกลับไปเ
   prevGame = null;
   game = new Chess(fens[ptr]);
   render(); renderPV(); updateTurnBtn(); updateUndoBtn(); saveGame();   // บันทึกกลับเป็นเกมที่คืนมาแล้ว
-  statusEl.textContent=t('stPrevGame');
+  statusEl.textContent=t('stPrevGame'); setStatus('stPrevGame');
   if(run) runAnalysis();
 }
 $('bUndo').onclick=()=>{ if(!prevGame) return; openConfirmUndo(); };   // เปิดกล่องยืนยันก่อน (ไม่ทำงานทันที)
@@ -1800,7 +1823,7 @@ function applyProfile(name){
 }
 document.querySelectorAll('.prof').forEach(b=>{
   b.onclick=()=>{ applyProfile(b.dataset.prof); if(busy) stopAnalysis();
-    const p=PROFILES[profName]; if(p) setStatus('stProfile', t(p.label), p.d, p.n); else setStatus('stCustom'); };
+    const p=PROFILES[profName]; if(p) setStatus('stProfile', t(p.label), p.n); else setStatus('stCustom'); };
 });
 $('depth').oninput=()=>{
   profName='custom'; profCap=null; updateProfUI(); lsSet(LSK.prof,'custom');
