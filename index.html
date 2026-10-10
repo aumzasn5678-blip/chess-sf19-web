@@ -152,12 +152,19 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
 
   <div class="row">
     <button id="bRun" class="pri">▶ รัน</button>
-    <button id="bTurn" class="sm" style="flex:0 0 34%">ตา: ขาว</button>
+    <button id="bNewGame" class="sm" style="flex:0 0 34%">เริ่มเกมใหม่</button>
   </div>
   <div class="row">
     <button id="bBack" class="sm">↶ ย้อนกลับ</button>
     <button id="bFwd" class="sm">↷ ไปข้างหน้า</button>
     <button id="bFlip" class="sm">⇅ กลับหัว</button>
+  </div>
+  <div id="confirmNew" class="card" style="display:none;border-color:#f5d327">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600">
+      <span style="flex:1">เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)</span>
+      <button id="bNewYes" class="sm" style="flex:0 0 28%;background:#4ec46f;color:#06200f;border-color:#3aa35a">ยืนยัน</button>
+      <button id="bNewNo" class="sm" style="flex:0 0 24%">ยกเลิก</button>
+    </div>
   </div>
 
   <div id="pv" style="display:none"></div>
@@ -188,7 +195,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
       <div class="row"><input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้ง"></div>
       <div class="row">
         <button id="bSet" class="sm">ตั้งตำแหน่ง</button>
-        <button id="bNew" class="sm">เกมใหม่</button>
+        <button id="bNew" class="sm" style="display:none">เกมใหม่</button>
         <button id="bCopy" class="sm">คัดลอก PGN</button>
       </div>
       <div class="tiny">กด ▶ รัน = วิเคราะห์ตำแหน่งปัจจุบันครั้งเดียว (กดอีกครั้ง = หยุด) · แตะแถวคำแนะนำ = เดินตามนั้น<br>
@@ -624,18 +631,10 @@ $('bBack').onclick=()=>{ if(ptr>0){ ptr--; sel=null; legal=[]; lines={}; render(
 $('bFwd').onclick=()=>{ if(ptr<fens.length-1){ ptr++; sel=null; legal=[]; lines={}; render(); renderPV(); updateTurnBtn();
   if(run) runAnalysis(); else statusEl.textContent='ไปข้างหน้า '+ptr; } };
 $('bFlip').onclick=()=>{ flipped=!flipped; render(); renderPV(); };
-$('bTurn').onclick=()=>{
-  const g=new Chess(fens[ptr]);
-  const f=g.fen().split(' ');
-  f[1] = f[1]==='w' ? 'b' : 'w';
-  f[3] = '-';                                  // ล้าง en passant (กัน FEN ไม่ถูกต้อง)
-  try{ g.load(f.join(' ')); }catch(e){ statusEl.textContent='สลับตาไม่ได้ในตำแหน่งนี้'; return; }
-  ucis=ucis.slice(0,ptr); fens=fens.slice(0,ptr+1);
-  fens[ptr]=g.fen(); sel=null; legal=[]; lines={};
-  render(); renderPV(); updateTurnBtn(); statusEl.textContent='ตั้งตาว่า: '+(g.turn()==='w'?'ขาว':'ดำ');
-  if(run) runAnalysis();
-};
-function updateTurnBtn(){ const t=new Chess(fens[ptr]).turn(); $('bTurn').textContent='ตา: '+(t==='w'?'ขาว':'ดำ'); }
+$('bNewGame').onclick=()=>{ $('confirmNew').style.display='block'; };
+$('bNewNo').onclick=()=>{ $('confirmNew').style.display='none'; };
+$('bNewYes').onclick=()=>{ $('confirmNew').style.display='none'; $('bNew').click(); };
+function updateTurnBtn(){ const el=$('bTurn'); if(!el) return; const t=new Chess(fens[ptr]).turn(); el.textContent='ตา: '+(t==='w'?'ขาว':'ดำ'); }
 $('bNew').onclick=()=>{ game=new Chess(); fens=[game.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
   flipped=false; render(); renderPV(); updateTurnBtn(); statusEl.textContent='เกมใหม่';
   if(run) runAnalysis(); };
@@ -660,13 +659,16 @@ function updateDepthUI(){
 }
 $('depth').oninput=()=>{ updateDepthUI(); if(busy) stopAnalysis(); };
 updateDepthUI();
-// คีย์บอร์ด (เล่นบนคอม): ← ย้อนกลับ · → ไปข้างหน้า · เว้นวรรค = รัน/หยุด
+// คีย์บอร์ด (เล่นบนคอม): ← ย้อนกลับ · → ไปข้างหน้า · เว้นวรรค/G = รัน-หยุด · F = กลับหัว
 document.addEventListener('keydown', (e)=>{
   const tg = e.target && e.target.tagName;
   if(tg==='INPUT' || tg==='TEXTAREA' || tg==='SELECT') return;
-  if(e.key==='ArrowLeft'){ e.preventDefault(); $('bBack').onclick(); }
-  else if(e.key==='ArrowRight'){ e.preventDefault(); $('bFwd').onclick(); }
-  else if(e.key===' '){ e.preventDefault(); $('bRun').onclick(); }
+  const k = e.key;
+  if(k==='ArrowLeft'){ e.preventDefault(); $('bBack').onclick(); }
+  else if(k==='ArrowRight'){ e.preventDefault(); $('bFwd').onclick(); }
+  else if(k===' ' || k==='g' || k==='G'){ e.preventDefault(); $('bRun').onclick(); }
+  else if(k==='f' || k==='F'){ e.preventDefault(); $('bFlip').onclick(); }
+  else if(k==='n' || k==='N'){ e.preventDefault(); $('bNewGame').onclick(); }
 });
 document.querySelectorAll('.npv').forEach(b=>{
   b.onclick=()=>{
