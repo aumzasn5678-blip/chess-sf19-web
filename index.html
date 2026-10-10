@@ -247,6 +247,9 @@ details .card{background:transparent;border:0;box-shadow:none;border-radius:0;pa
 label{color:var(--dim);font-size:.86rem;min-width:56px}
 select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
  border-radius:8px;padding:8px;font-size:.93rem;min-width:0}
+textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel2);color:var(--txt);
+ border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.9rem;font-family:inherit;
+ line-height:1.45;margin-top:6px;box-sizing:border-box;white-space:pre-wrap;word-break:break-word}
 .tiny,.hint{color:var(--dim);font-size:.79rem;line-height:1.5;margin-top:6px}
 .rec{color:#4ec46f;font-weight:700}
 #confirmNew{display:none;border-color:#f5d327}
@@ -372,6 +375,15 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
         <button id="bCopy" class="sm posbtn" data-i18n="bCopy">คัดลอก PGN</button>
         <button id="bCopyFen" class="sm posbtn" data-i18n="bCopyFen">คัดลอก FEN</button>
       </div>
+      <div class="row">
+        <button id="bShare" class="sm posbtn" data-i18n="bShare">🔗 แชร์ลิงก์ตำแหน่ง</button>
+      </div>
+      <div class="cardtitle" style="margin-top:10px" data-i18n="pgnTitle">นำเข้า PGN</div>
+      <textarea id="pgnIn" data-i18n-ph="pgnPh" placeholder="วาง PGN ที่นี่ (มีหรือไม่มี header ก็ได้)"></textarea>
+      <div class="row">
+        <button id="bImportPgn" class="sm pri" data-i18n="bImportPgn">นำเข้า PGN</button>
+      </div>
+      <div class="tiny" data-i18n-html="pgnHintHtml">วางบันทึกการเดิน (PGN) แล้วกด <b>นำเข้า PGN</b> เพื่อเปิดเกมนั้นมาวิเคราะห์ · รองรับทั้งแบบมี header และไม่มี · ถ้ามี FEN เริ่มต้นใน header จะใช้ด้วย</div>
       <div class="tiny" id="fenhint" data-i18n-html="fenHintHtml"><b>FEN</b> = รหัสตำแหน่งกระดานปัจจุบัน (ใช้แชร์/วางต่อในโปรแกรมหมากรุกอื่น)<br><b>PGN</b> = บันทึกการเดินทั้งเกม (เอาไปให้คนอื่น/โปรแกรมวิเคราะห์ต่อได้)</div>
     </div>
   </details>
@@ -393,6 +405,32 @@ let lines={}, job=0, busy=false, run=false, npvN=3, sugTo={};
 const LSK={depth:'chessDepth',npv:'chessNpv',elo:'chessElo',anim:'chessAnim',theme:'chessTheme',size:'chessSize',prof:'chessProf',hide:'chessHide',lang:'chessLang'};
 function lsGet(k,d){ try{ const v=localStorage.getItem(k); return v===null?d:v; }catch(e){ return d; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+/* ---------- จำเกมปัจจุบัน / คืนกลับเมื่อโหลดใหม่ (คีย์ chessGame · แยกจากค่าตั้งเดิม) ---------- */
+const LSK_GAME='chessGame';               // เก็บ {fens,ucis,ptr,flipped} — ไม่แตะคีย์ตั้งค่าเดิม (chessDepth/chessNpv/…)
+const MAX_SAVED_MOVES=300;                // ตัดการเดินเก่าที่เกิน 300 ตา กัน localStorage เต็ม (เกมยาวมาก)
+function saveGame(){
+  try{
+    let f=fens.slice(), u=ucis.slice(), p=ptr;
+    if(u.length>MAX_SAVED_MOVES){ const drop=u.length-MAX_SAVED_MOVES;
+      u=u.slice(drop); f=f.slice(drop); p=Math.max(0, p-drop); }
+    localStorage.setItem(LSK_GAME, JSON.stringify({v:1, fens:f, ucis:u, ptr:p, flipped:!!flipped}));
+  }catch(e){}
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem(LSK_GAME);
+    if(!raw) return false;
+    const d=JSON.parse(raw);
+    if(!d || !Array.isArray(d.fens) || !d.fens.length || !Array.isArray(d.ucis)) return false;
+    for(const fn of d.fens){ try{ new Chess(fn); }catch(e){ return false; } }   // FEN ใดเสีย = ไม่คืน (กันพัง)
+    if(d.fens.length!==d.ucis.length+1) return false;
+    fens=d.fens.slice(); ucis=d.ucis.slice();
+    ptr=Math.max(0, Math.min((d.ptr|0), fens.length-1));
+    flipped=!!d.flipped; game=new Chess(fens[ptr]);
+    return true;
+  }catch(e){ return false; }
+}
 
 /* ---------- i18n (ไทย = ค่าเริ่มต้น · English) ---------- */
 let lang='th';
@@ -441,7 +479,13 @@ const I18N={
   mateWin:'รุกฆาต — ชนะแล้ว ✓', mateWinSub:'ฝั่งบน (คู่แข่ง) ถูกรุกฆาต · แตะเพื่อปิด',
   mateLose:'โดนรุกฆาต — แพ้แล้ว ✗', mateLoseSub:'ฝั่งเรา (ล่าง) ถูกรุกฆาต · แตะเพื่อปิด',
   logEmpty:'— ยังไม่มีการเดิน —',
-  themeNibble:'ขาว Nibbler', themeBw:'ขาว-ดำ', themeBrown:'น้ำตาลเดิม', themeGreen:'เขียว'
+  themeNibble:'ขาว Nibbler', themeBw:'ขาว-ดำ', themeBrown:'น้ำตาลเดิม', themeGreen:'เขียว',
+  bShare:'🔗 แชร์ลิงก์ตำแหน่ง', shareTitle:'ตำแหน่งหมากรุก',
+  toastShareCopied:'คัดลอกลิงก์แล้ว ✓', toastShareFail:'คัดลอกลิงก์ไม่ได้ — ลิงก์อยู่ในช่องตำแหน่ง',
+  toastFenFromLink:'ตั้งตำแหน่งจากลิงก์แล้ว ✓', toastBadFenLink:'FEN จากลิงก์ไม่ถูกต้อง — เริ่มเกมปกติ',
+  pgnTitle:'นำเข้า PGN', pgnPh:'วาง PGN ที่นี่ (มีหรือไม่มี header ก็ได้)', bImportPgn:'นำเข้า PGN',
+  pgnHintHtml:'วางบันทึกการเดิน (PGN) แล้วกด <b>นำเข้า PGN</b> เพื่อเปิดเกมนั้นมาวิเคราะห์ · รองรับทั้งแบบมี header และไม่มี · ถ้ามี FEN เริ่มต้นใน header จะใช้ด้วย',
+  toastPgnImported:'นำเข้าสำเร็จ {0} ตา', toastPgnBad:'PGN ไม่ถูกต้อง'
  },
  en:{
   stReady:'Ready',
@@ -487,7 +531,13 @@ const I18N={
   mateWin:'Checkmate — You win ✓', mateWinSub:'The top side (opponent) is checkmated · tap to close',
   mateLose:'Checkmated — You lose ✗', mateLoseSub:'Our side (bottom) is checkmated · tap to close',
   logEmpty:'— no moves yet —',
-  themeNibble:'White Nibbler', themeBw:'White/Black', themeBrown:'Classic Brown', themeGreen:'Green'
+  themeNibble:'White Nibbler', themeBw:'White/Black', themeBrown:'Classic Brown', themeGreen:'Green',
+  bShare:'🔗 Share position link', shareTitle:'Chess position',
+  toastShareCopied:'Link copied ✓', toastShareFail:'Could not copy link — the link is in the position field',
+  toastFenFromLink:'Position set from link ✓', toastBadFenLink:'Invalid FEN in link — starting a normal game',
+  pgnTitle:'Import PGN', pgnPh:'Paste PGN here (with or without headers)', bImportPgn:'Import PGN',
+  pgnHintHtml:'Paste a move record (PGN) then press <b>Import PGN</b> to load that game for analysis · supports with or without headers · a starting FEN in the header is used too',
+  toastPgnImported:'Imported {0} moves', toastPgnBad:'Invalid PGN'
  }
 };
 function t(key){ const d=(I18N[lang]&&I18N[lang][key]); let s=(d!=null?d:(I18N.th[key]!=null?I18N.th[key]:key));
@@ -981,7 +1031,7 @@ function playUci(uci){
   ucis = ucis.slice(0,ptr); fens = fens.slice(0,ptr+1);
   ucis.push(uci); fens.push(g.fen()); ptr=fens.length-1;
   sel=null; legal=[];
-  render(); renderPV(); updateTurnBtn();
+  render(); renderPV(); updateTurnBtn(); saveGame();
   if(run) runAnalysis();                                  // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง
   else setStatus('stMoved');
 }
@@ -990,7 +1040,7 @@ function playUci(uci){
 function navTo(newPtr, label){
   if(newPtr===ptr) { return; }
   ptr=newPtr; sel=null; legal=[]; lines={}; sugTo={};
-  render(); renderPV(); updateTurnBtn();
+  render(); renderPV(); updateTurnBtn(); saveGame();
   if(run) runAnalysis(); else setStatus('stNav', t(label), ptr);
 }
 $('bRun').onclick=()=>{ if(run||busy) stopAnalysis(); else runAnalysis(); };
@@ -998,7 +1048,7 @@ $('bStart').onclick=()=>navTo(0, 'navStart');
 $('bBack').onclick=()=>{ if(ptr>0) navTo(ptr-1, 'navBack'); };
 $('bFwd').onclick=()=>{ if(ptr<fens.length-1) navTo(ptr+1, 'navFwd'); };
 $('bEnd').onclick=()=>navTo(fens.length-1, 'navEnd');
-$('bFlip').onclick=()=>{ flipped=!flipped; render(); renderPV(); };
+$('bFlip').onclick=()=>{ flipped=!flipped; render(); renderPV(); saveGame(); };
 $('bNewGame').onclick=()=>{ $('confirmNew').style.display='block'; };
 $('bNewNo').onclick=()=>{ $('confirmNew').style.display='none'; };
 let prevGame=null;                       // สถานะเกมก่อน 'เริ่มเกมใหม่' ล่าสุด (เก็บได้ครั้งเดียว — ใช้ ◀️ แล้วล้าง)
@@ -1011,7 +1061,7 @@ function startNewGame(){
   prevGame = snapshotGame();               // เก็บเกมเดิมไว้ก่อนรีเซ็ต (ครั้งล่าสุดเท่านั้น)
   game=new Chess(); fens=[game.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
   flipped=false; render(); renderPV(); updateTurnBtn(); setStatus('stNewGame');
-  updateUndoBtn();
+  updateUndoBtn(); saveGame();               // ล้างเกมที่จำไว้ (บันทึกเกมใหม่ทับ)
   if(run) runAnalysis();
 }
 $('bNewYes').onclick=()=>{ $('confirmNew').style.display='none'; startNewGame(); };
@@ -1022,7 +1072,7 @@ $('bUndo').onclick=()=>{                    // ย้อนกลับไปเ
   sel=null; legal=[]; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
   prevGame = null;
   game = new Chess(fens[ptr]);
-  render(); renderPV(); updateTurnBtn(); updateUndoBtn();
+  render(); renderPV(); updateTurnBtn(); updateUndoBtn(); saveGame();   // บันทึกกลับเป็นเกมที่คืนมาแล้ว
   statusEl.textContent=t('stPrevGame');
   if(run) runAnalysis();
 };
@@ -1032,7 +1082,7 @@ $('bSet').onclick=()=>{
   try{ const g=new Chess(); if(v.includes('/')) g.load(v); else g.loadPgn(v);
     fens=[g.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
     render(); renderPV(); updateTurnBtn();
-    setStatus('stSetPos');
+    setStatus('stSetPos'); saveGame();
     if(run) runAnalysis(); else toast(t('toastSetOkInfo'), true);
   }catch(e){ setStatus('stBadFen'); toast(t('stBadFen')); }
 };
@@ -1046,6 +1096,48 @@ $('bPaste').onclick=async()=>{
   try{ const txt=await navigator.clipboard.readText(); if(txt){ $('fen').value=txt.trim(); toast(t('toastPasted'), true); } }
   catch(e){ const txt=prompt(t('promptFen')); if(txt) $('fen').value=txt.trim(); }
 };
+/* ---------- แชร์ตำแหน่งเป็นลิงก์ (URL + ?fen=) ---------- */
+async function copyRaw(txt){                       // คัดลอกแบบไม่เด้ง toast (ใช้ตัดสินใจข้อความเอง)
+  try{ await navigator.clipboard.writeText(txt); return true; }catch(e){}
+  try{ const ta=document.createElement('textarea'); ta.value=txt;
+    ta.style.position='fixed'; ta.style.left='-9999px'; ta.style.top='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    const ok=document.execCommand('copy'); document.body.removeChild(ta); return ok;
+  }catch(e2){ return false; }
+}
+function shareUrlFor(fen){                          // ตัด query/hash เดิมออก ต่อ ?fen=<URL-encoded FEN>
+  const base=location.href.split('#')[0].split('?')[0];
+  return base+'?fen='+encodeURIComponent(fen);
+}
+$('bShare').onclick=async()=>{
+  const url=shareUrlFor(fens[ptr]);
+  document.body.dataset.lastShare=url;              // เก็บลิงก์ล่าสุดไว้ตรวจสอบ/ดีบัก
+  const ok=await copyRaw(url);                      // ทางคัดลอกลิงก์ (fallback ด้านในมีให้เสมอ)
+  if(ok) toast(t('toastShareCopied'), true);
+  else { $('fen').value=url; toast(t('toastShareFail'), true); }
+  if(navigator.share){ try{ await navigator.share({title:t('shareTitle'), url:url}); }catch(e){} }
+};
+/* ---------- นำเข้า PGN เข้ามาวิเคราะห์ ---------- */
+function importPgn(){
+  const txt=($('pgnIn').value||'').trim();
+  if(!txt) return;
+  try{
+    const g=new Chess();
+    g.loadPgn(txt);                                 // รองรับทั้งมี/ไม่มี header + FEN เริ่มต้นใน header
+    const hist=g.history({verbose:true});
+    if(!hist.length) throw new Error('no moves');
+    const f=[hist[0].before], u=[];                 // hist[0].before = FEN เริ่มต้นของเกมนี้
+    for(const m of hist){ u.push(m.from+m.to+(m.promotion||'')); f.push(m.after); }
+    fens=f; ucis=u; ptr=f.length-1; sel=null; legal=[];
+    lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
+    game=new Chess(fens[ptr]);
+    render(); renderPV(); updateTurnBtn(); updateUndoBtn(); saveGame();
+    setStatus('stSetPos');
+    toast(t('toastPgnImported', hist.length), true);
+    if(run) runAnalysis();
+  }catch(e){ toast(t('toastPgnBad')); }
+}
+$('bImportPgn').onclick=importPgn;
 /* ไฮไลท์ปุ่มที่คลิกล่าสุดในหมวด PGN/FEN (ขอบเรืองทองย้ายตามปุ่มล่าสุดเสมอ) */
 document.querySelectorAll('.posbtn').forEach(b=>{
   b.addEventListener('click', ()=>{
@@ -1202,7 +1294,38 @@ document.addEventListener('keydown', (e)=>{
   updateProfUI();
 })();
 
-startEngine(); render(); renderPV(); updateTurnBtn(); setEval(0,null); applyLang();
+/* ---------- ตำแหน่งจากลิงก์ (?fen= หรือ #fen=) + คืนเกมที่จำไว้ ---------- */
+function normalizeFen(v){
+  let s=String(v==null?'':v).trim();
+  if(s.indexOf('%')>=0){ try{ s=decodeURIComponent(s); }catch(e){} }
+  return s.replace(/\+/g,' ').replace(/_/g,' ').trim();     // '_' = ช่องว่าง (ลิงก์อ่านง่าย)
+}
+function fenFromUrl(){
+  try{
+    let v=null;
+    const q=(location.search||'').replace(/^\?/,'');
+    if(q){ try{ const sp=new URLSearchParams(q); if(sp.has('fen')) v=sp.get('fen'); }catch(e){} }
+    if(v==null && location.hash && location.hash.length>1){
+      const h=location.hash.replace(/^#/,'');
+      const m=h.match(/(?:^|&)fen=([^&]*)/i);
+      v = m ? m[1] : h;                                     // #fen=… หรือ #<FEN ตรง ๆ>
+    }
+    return (v==null ? null : normalizeFen(v));
+  }catch(e){ return null; }
+}
+(function restoreInitialState(){
+  const fromUrl = fenFromUrl();
+  if(fromUrl!=null){
+    try{ const g=new Chess(); g.load(fromUrl);              // FEN ต้องถูกต้อง ไม่งั้น throw
+      fens=[g.fen()]; ucis=[]; ptr=0; flipped=false; game=new Chess(fens[0]);
+      setTimeout(()=>toast(t('toastFenFromLink'), true), 350);
+      return;                                              // ตำแหน่งจากลิงก์ = มาก่อนเกมที่จำไว้
+    }catch(e){ setTimeout(()=>toast(t('toastBadFenLink')), 350); }
+  }
+  loadGame();                                              // มีข้อมูลเดิม → คืน · ไม่มี → เริ่มเกมใหม่ตามค่าปริยาย
+})();
+
+startEngine(); render(); renderPV(); updateTurnBtn(); updateUndoBtn(); setEval(0,null); applyLang();
 </script>
 </body>
 </html>
