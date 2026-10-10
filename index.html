@@ -1636,19 +1636,18 @@ async function gradeAfterMove(idx, ctx){
     finalizeGrade(idx, beforeBest, afterM, gap);
   }catch(e){}
 }
-/* วาดไอคอนเกรดบนช่องปลายทางของทุกตาที่เดินแล้ว (ค้างอยู่ตลอด; ล้างเมื่อเริ่มเกมใหม่) */
+/* วาดไอคอนเกรดบนช่องปลายทาง เฉพาะ 'ตาล่าสุด' ที่นำมาสู่ตำแหน่งที่กำลังดู (ptr) เท่านั้น — ไม่สะสม */
 function paintGrades(){
-  if(!moveGrades.length) return;
-  for(let i=0;i<ucis.length;i++){
-    const gr=moveGrades[i]; if(!gr) continue;
-    const dest=ucis[i].slice(2,4);
-    const cell=boardEl.querySelector('.sq[data-sq="'+dest+'"]');
-    if(!cell) continue;
-    const ic=document.createElement('span');
-    ic.className='gradico'; ic.dataset.grade=gr; ic.dataset.ply=String(i);
-    ic.style.backgroundImage="url('icons/"+gr+".png')";
-    cell.appendChild(ic);
-  }
+  if(!moveGrades.length || ptr<=0) return;   // จุดเริ่มต้น/ยังไม่มีการเดิน = ไม่มีไอคอน
+  const i=ptr-1;                             // ตาที่นำมาสู่ตำแหน่งปัจจุบัน
+  const gr=moveGrades[i]; if(!gr) return;
+  const dest=ucis[i].slice(2,4);
+  const cell=boardEl.querySelector('.sq[data-sq="'+dest+'"]');
+  if(!cell) return;
+  const ic=document.createElement('span');
+  ic.className='gradico'; ic.dataset.grade=gr; ic.dataset.ply=String(i);
+  ic.style.backgroundImage="url('icons/"+gr+".png')";
+  cell.appendChild(ic);
 }
 
 /* ---------- โหมด EDIT กระดาน (เต็มหน้าจอ) ---------- */
