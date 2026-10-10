@@ -34,12 +34,14 @@ header .sub{font-size:11px;color:var(--dim);margin-left:auto;text-align:right}
 .sq.cap::after{content:"";position:absolute;inset:6%;border-radius:50%;border:5px solid var(--hint);z-index:4}
 .sq.last{box-shadow:inset 0 0 0 3px rgba(240,160,75,.5)}
 .sq.chk{background:#c0392b!important}
-.sq.tgt1::before,.sq.tgt2::before,.sq.tgt3::before{content:"";position:absolute;inset:2px;border:2px dashed;border-radius:7px;z-index:2}
-.sq.tgt1::before{border-color:rgba(78,196,111,.95)}
-.sq.tgt2::before{border-color:rgba(245,211,39,.95)}
-.sq.tgt3::before{border-color:rgba(240,138,30,.95)}
-.sqtag{position:absolute;top:1px;right:3px;z-index:5;font-size:10px;font-weight:400;
- color:#111;text-shadow:0 0 2px #fff,0 0 3px #fff;pointer-events:none;font-variant-numeric:tabular-nums;letter-spacing:.2px}
+.sq.tgt1::before,.sq.tgt2::before,.sq.tgt3::before{content:"";position:absolute;inset:2px;border:1px dashed;border-radius:7px;z-index:2;opacity:.55}
+.sq.tgt1::before{border-color:#4ec46f}
+.sq.tgt2::before{border-color:#f5d327}
+.sq.tgt3::before{border-color:#f08a1e}
+.sqtag{position:absolute;top:2px;right:2px;z-index:5;font-size:10px;font-weight:400;
+ color:#0b0d10;pointer-events:none;font-variant-numeric:tabular-nums;line-height:1.25;
+ padding:0 3px;border-radius:4px;border:1px solid rgba(0,0,0,.35)}
+.sqtag1{background:#4ec46f} .sqtag2{background:#f5d327} .sqtag3{background:#f08a1e}
 .coord{position:absolute;font-size:9px;font-weight:700;color:rgba(0,0,0,.45)}
 .coord.f{left:3px;bottom:1px}.coord.r{right:3px;top:1px;color:rgba(255,255,255,.5)}
 #arrows{position:absolute;inset:0;pointer-events:none;z-index:3}
@@ -215,7 +217,7 @@ function markTargets(){
     el.classList.remove('tgt1','tgt2','tgt3');
     if(r) el.classList.add('tgt'+r);
     const old=el.querySelector('.sqtag'); if(old) old.remove();
-    if(r && sqTagTxt[r]){ const s=document.createElement('span'); s.className='sqtag';
+    if(r && sqTagTxt[r]){ const s=document.createElement('span'); s.className='sqtag sqtag'+r;
       s.textContent=sqTagTxt[r]; el.appendChild(s); }
   }
 }
@@ -291,14 +293,15 @@ function renderPV(){
     const bottom = sideToMove;                            // แถว = มุมมองฝ่ายที่กำลังเดิน (อ่านง่าย ไม่ต้องสลับหัว)
     const shownCp = bottom==='w'? whiteCp : -whiteCp;
     const shownMate = whiteMate==null? null : (bottom==='w'? whiteMate : -whiteMate);
-    const txt = shownMate!=null ? ('#'+shownMate) : ((shownCp>0?'+':'')+(shownCp/100).toFixed(2));
+    const txt = shownMate!=null ? ((shownMate>0?'+':'-')+'M'+Math.abs(shownMate))
+                                : ((shownCp>0?'+':'')+(shownCp/100).toFixed(2));
     const sans = toSan(fens[ptr], l.pv);
     const row=document.createElement('div');
     row.className='pvrow'+(k===1?' best':'');
     row.innerHTML=`<span class="n">${k}</span><span class="mv">${sans[0]||'?'}</span>
       <span class="sc ${shownCp>=0?'pos':'neg'}">${txt}</span>
       <span class="ln">${sans.slice(1).join(' ')}</span>`;
-    if(l.pv[0]){ const d2=l.pv[0].slice(2,4); sugTo[d2]=l.pv[0]; sugRank[d2]=k; sqTagTxt[k]=k+' '+txt; row.onclick=()=>playUci(l.pv[0]); }
+    if(l.pv[0]){ const d2=l.pv[0].slice(2,4); sugTo[d2]=l.pv[0]; sugRank[d2]=k; sqTagTxt[k]=txt; row.onclick=()=>playUci(l.pv[0]); }
     pvEl.appendChild(row);
     if(k===1) setEval(whiteCp, whiteMate);
   });
