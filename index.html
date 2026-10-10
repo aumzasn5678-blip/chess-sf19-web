@@ -233,9 +233,9 @@ let sugRank={}, sqTagTxt={}, mateThreat=false, prevThreat=false;   // อัน�
 function markTargets(){
   for(const el of boardEl.children){
     const sq=el.dataset.sq;
-    const rs = sel ? [] : (sugRank[sq] || []);
+    const rs = (sugRank[sq] || []);                 // ป้ายคะแนนโชว์ตลอด (แม้เลือกหมากอยู่)
     el.classList.remove('tgt1','tgt2','tgt3');
-    if(rs.length) el.classList.add('tgt'+rs[0]);
+    if(rs.length && !sel) el.classList.add('tgt'+rs[0]);
     el.querySelectorAll('.sqtag').forEach(x=>x.remove());
     rs.forEach((r,i)=>{
       if(!sqTagTxt[r]) return;
@@ -458,6 +458,7 @@ function render(){
   }
   if(g.inCheck()) for(const el of boardEl.children){ const p=g.get(el.dataset.sq); if(p&&p.type==='k'&&p.color===g.turn()) el.classList.add('chk','warnk'); }
   renderLog(g);
+  markTargets();                       // ให้ป้ายคะแนน/ออร่าคงอยู่ทุกครั้งที่วาดกระดานใหม่
 }
 function renderLog(){
   const g=new Chess(); const sans=[];                      // เล่นซ้ำจากเริ่ม เพื่อแปลงเป็น SAN
@@ -493,13 +494,13 @@ function onSquare(sq){
     toast('ยังไม่ถึงตา — ตอนนี้ตาสี'+(g.turn()==='w'?'ขาว':'ดำ'), true);
     return;
   }
-  if(p&&p.color===g.turn()){ sel=sq; legal=g.moves({square:sq,verbose:true}); render(); return; }
+  if(p&&p.color===g.turn()){ sel=sq; legal=g.moves({square:sq,verbose:true}); render(); markTargets(); return; }
   if(sel&&legal.some(m=>m.to===sq)){ playUci(sel+sq); return; }
   if(sel&&sq!==sel){
     toast(g.inCheck() ? 'เดินนี้ไม่ได้ — ติดรุกอยู่ ต้องแก้การถูกรุกก่อน'
                       : 'เดินนี้ไม่ได้ — หมากตัวนี้ไปช่องนั้นไม่ได้');
   }
-  sel=null; legal=[]; render();
+  sel=null; legal=[]; render(); markTargets();
 }
 function game_over(g){                       // จบเกมแล้ว? (รุกฆาต/อับ/เสมอ)
   if(!g.isGameOver()) return false;
