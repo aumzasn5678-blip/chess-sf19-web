@@ -324,7 +324,7 @@ function setEval(cp, mate){          // cp = มุมมองขาว (centip
   evalFill.style.background = bottomWhite ? 'rgba(255,255,255,.95)' : 'rgba(5,6,8,.95)';
   evalTxt.style.color = '#fff';
   evalTxt.style.textShadow = '0 1px 2px #000,0 0 4px #000';
-  evalTxt.textContent = mate!=null ? ('#'+mate) : ((val>0?'+':'')+(val/100).toFixed(1));
+  evalTxt.textContent = mate!=null ? ((mate>0?'+':'-')+'M'+Math.abs(mate)) : ((val>0?'+':'')+(val/100).toFixed(1));
   evalTxt.style.color = Math.abs(val)>150 ? '#fff' : '#e9edf2';
   const bl = bottom==='w' ? 'ขาว' : 'ดำ', ot = bottom==='w' ? 'ดำ' : 'ขาว';
   evalTag.textContent = bl + ' (ล่าง)'; evalTagR.textContent = ot;
@@ -375,7 +375,7 @@ function renderPV(){
       noticeRed = noticeGreen = noticeGrey = noticeYellow = '';
       const mResign = (bottomMate!=null && bottomMate<0);      // อีกฝั่งขึ้น M ใส่เรา = แนะนำยอมแพ้ (ให้ความสำคัญสูงสุด)
       if(mResign)
-        noticeGrey = 'อีกฝั่งขึ้น M ได้แล้ว (M'+Math.abs(bottomMate)+') — เล่นไม่คุ้มแล้ว แนะนำยอมแพ้';
+        noticeGrey = '⚠ เราใกล้ถูกรุกฆาต (M'+Math.abs(bottomMate)+') — แนะนำยอมแพ้';
       if(!mResign && !noticeRed && !noticeYellow && sideToMove===bb){
         const gNow=new Chess(fens[ptr]);
         if(gNow.inCheck()){
