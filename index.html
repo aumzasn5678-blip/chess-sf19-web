@@ -101,6 +101,8 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
     <div id="evaltxt">0.00</div>
   </div>
 
+  <div class="tiny" id="depthinfo" style="text-align:right;margin:4px 2px 0;font-variant-numeric:tabular-nums">&nbsp;</div>
+
   <div class="row">
     <button id="bRun" class="pri">▶ รัน</button>
     <button id="bTurn" class="sm" style="flex:0 0 34%">ตา: ขาว</button>
@@ -185,6 +187,23 @@ function parseInfo(line){
   const d=line.match(/ depth (\d+)/), mp=line.match(/ multipv (\d+)/), sc=line.match(/ score (cp|mate) (-?\d+)/), pv=line.match(/ pv (.+)$/);
   if(!mp||!sc||!pv) return;
   lines[+mp[1]]={depth:d?+d[1]:0, kind:sc[1], val:+sc[2], pv:pv[1].trim().split(/\s+/)};
+  paintSoon();                                   // อัปเดตหน้าจอแบบ realtime ระหว่างคิด
+}
+/* อัปเดตระหว่างคิด (จำกัด ~7 ครั้ง/วินาที — เบา ไม่กินแบต) */
+let lastPaint=0, paintTimer=null;
+function paintSoon(){
+  const now=Date.now();
+  if(now-lastPaint>140){ lastPaint=now; renderPV(); return; }
+  if(!paintTimer) paintTimer=setTimeout(()=>{ paintTimer=null; lastPaint=Date.now(); renderPV(); }, 140);
+}
+function updateDepthInfo(){
+  const cur=maxDepth(), tgt=+$('depth').value;
+  const el=$('depthinfo'); if(!el) return;
+  if(run||busy){ el.textContent = 'ความลึก '+cur+'/'+tgt+(searching?' กำลังคิด…':' · พร้อม'); }
+  else el.textContent = cur? ('ความลึกสุดท้าย '+cur) : '\u00a0';
+}
+function markTargets(){
+  for(const el of boardEl.children){ const sq=el.dataset.sq; el.classList.toggle('tgt', !sel && !!sugTo[sq]); }
 }
 function maxDepth(){ const v=Object.values(lines).map(l=>l.depth); return v.length?Math.max(...v):0; }
 function autoTime(d){ return Math.max(120, Math.min(25000, Math.round(d*d*40))); }  // เวลาคิด = ตามความลึกเอง (dynamic)
@@ -208,7 +227,7 @@ function stopAnalysis(){
   if(engine) engine.postMessage('stop');
   searching=false; busy=false; run=false;
   arrowsEl.innerHTML=''; sugTo={};              // เอาลูกศร/กรอบเป้าหมายออกเมื่อไม่ได้กดรัน
-  render();
+  render(); updateDepthInfo();
   $('bRun').classList.remove('on'); $('bRun').textContent='▶ รัน'; statusEl.textContent='หยุดแล้ว';
 }
 
@@ -248,7 +267,7 @@ function toSan(fen, ucis){
 function renderPV(){
   const keys=Object.keys(lines).map(Number).sort((a,b)=>a-b);
   pvEl.innerHTML=''; sugTo={};
-  if(!keys.length){ arrowsEl.innerHTML=''; return; }
+  if(!keys.length){ arrowsEl.innerHTML=''; updateDepthInfo(); return; }
   const sideToMove = new Chess(fens[ptr]).turn();
   keys.forEach((k,idx)=>{
     const l=lines[k];
@@ -270,7 +289,7 @@ function renderPV(){
     if(k===1) setEval(whiteCp, whiteMate);
   });
   drawArrows(keys.slice(0,3));
-  render();                                  // วาดกรอบเป้าหมาย (จุดที่แตะแล้วเดินได้เลย)
+  markTargets(); updateDepthInfo();          // กรอบเป้าหมาย + เลขความลึก (realtime)
 }
 
 /* ---------- ลูกศร ---------- */
