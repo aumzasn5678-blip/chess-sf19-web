@@ -443,6 +443,8 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
     <div class="sub" id="sub"></div>
   </header>
 
+  <div id="boardWrap"><div id="board"></div><svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg><div id="promo" role="group" aria-label="Promotion"></div></div>
+
   <div id="evalwrap">
     <div id="evalhalf"></div><div id="evalfill"></div><div id="evalmid"></div>
     <div id="evaltag"></div><div id="evaltagr"></div>
@@ -450,8 +452,6 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
   </div>
 
   <div class="tiny" id="depthinfo" style="text-align:right;margin:4px 2px 0;font-variant-numeric:tabular-nums">&nbsp;</div>
-
-  <div id="boardWrap" style="margin-top:8px"><div id="board"></div><svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg><div id="promo" role="group" aria-label="Promotion"></div></div>
 
   <div id="notice"></div>
 
@@ -604,7 +604,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
     <div class="tiny" id="installBody"></div>
     <div class="row"><button id="bInstall" class="sm pri" data-i18n="installBtn" style="display:none">ติดตั้งเลย</button></div>
   </div>
-  <div id="confirmUpdate" class="cbox cbcenter" role="dialog" aria-labelledby="confirmUpdateMsg" style="display:none">
+  <div id="confirmUpdate" class="cbox" role="dialog" aria-labelledby="confirmUpdateMsg" style="display:none">
     <div class="cmsg" id="confirmUpdateMsg" data-i18n="confirmUpdateMsg">อัปเดตแอพ? (ล้างแคชและโหลดเวอร์ชันล่าสุด)</div>
     <div class="cbtns">
       <button id="bUpdateYes" class="pri cyes" data-i18n="yes">ยืนยัน</button>
@@ -1653,7 +1653,7 @@ function positionConfirmBox(cn){               // ล็อกขอบบน: �
   const bw=$('boardWrap');
   const log=$('log');
   const gap=6;
-  const eb=bw?bw.getBoundingClientRect().bottom:0;                 // ขอบล่างกระดาน (หลอด HP อยู่เหนือกระดานแล้ว)
+  const eb=bw?bw.getBoundingClientRect().bottom:0;                 // ขอบล่างกระดาน (หลอด HP อยู่ใต้กระดาน)
   const lt=log?log.getBoundingClientRect().top:window.innerHeight;  // ขอบบนแถว log
   const h=cn.offsetHeight;
   let top=eb+gap;                                                   // วางใต้กระดานทันที
@@ -1661,7 +1661,7 @@ function positionConfirmBox(cn){               // ล็อกขอบบน: �
   if(top<4) top=4;
   cn.style.top=Math.round(top)+'px';
 }
-function positionConfirmNew(){ positionConfirmBox($('confirmNew')); positionConfirmBox($('confirmUndo')); }
+function positionConfirmNew(){ positionConfirmBox($('confirmNew')); positionConfirmBox($('confirmUndo')); positionConfirmBox($('confirmUpdate')); }
 function boxOpen(cn){ return !!cn && getComputedStyle(cn).display!=='none'; }
 function closeConfirmBoxes(){ const n=$('confirmNew'), u=$('confirmUndo'); if(n) n.style.display='none'; if(u) u.style.display='none'; }
 function openConfirmNew(){ const u=$('confirmUndo'); if(u) u.style.display='none'; const cn=$('confirmNew'); if(!cn) return; cn.style.display='block'; positionConfirmBox(cn); }
@@ -2997,7 +2997,7 @@ function wireInstall(){
 }
 
 /* ---------- อัปเดตแอพ: ล้าง service worker + caches ทั้งหมด แล้วรีโหลดด้วย cache-buster ---------- */
-function openConfirmUpdate(){ const cn=$('confirmUpdate'); if(!cn) return; cn.style.display='block'; }
+function openConfirmUpdate(){ const cn=$('confirmUpdate'); if(!cn) return; cn.style.display='block'; positionConfirmBox(cn); }
 function closeConfirmUpdate(){ const cn=$('confirmUpdate'); if(cn) cn.style.display='none'; }
 async function doUpdateApp(){                 // ยืนยันแล้ว: ยกเลิก SW + ลบ caches + โหลดใหม่ (ข้ามแคช)
   closeConfirmUpdate();
