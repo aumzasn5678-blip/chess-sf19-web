@@ -67,7 +67,7 @@ header .sub{font-size:.86rem;color:var(--dim);margin-left:auto;text-align:right}
 .sq.dark .coord{color:rgba(255,255,255,.88);text-shadow:0 0 2px rgba(0,0,0,.55)}
 body.hidehints .coord{display:none}          /* โหมดซ่อนการชี้นำ = ไม่แสดงตัวเลขพิกัดกระดาน */
 #arrows{position:absolute;inset:0;pointer-events:none;z-index:3}
-#boardWrap .ghost{position:absolute;width:12.5%;height:12.5%;object-fit:contain;z-index:6;
+#boardWrap .ghost,#rpBoardWrap .ghost{position:absolute;width:12.5%;height:12.5%;object-fit:contain;z-index:6;
  pointer-events:none;transition:transform .17s ease-out;will-change:transform;
  filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
 
@@ -364,7 +364,8 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
 #statClose{flex:0 0 auto;padding:6px 12px;font-size:1rem}
 .statCols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
 .statCol{background:#0f141b;border:1px solid var(--line);border-radius:11px;padding:8px;min-width:0}
-.statCol h4{margin:0 0 6px;font-size:.9rem;text-align:center;color:var(--txt)}
+.statCol h4{margin:0 0 6px;font-size:.9rem;text-align:center;color:var(--txt);overflow-wrap:anywhere}
+.statCol.mine{box-shadow:inset 0 0 0 1px var(--acc,#4ec46f)}
 .statRow{display:grid;grid-template-columns:19px 1fr auto;align-items:center;gap:5px;font-size:.78rem;color:var(--dim);padding:1px 0}
 .statRow img{width:17px;height:17px;object-fit:contain}
 .statRow .sgn{overflow-wrap:anywhere;line-height:1.15}
@@ -373,6 +374,21 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
 .statAcc{margin-top:7px;padding-top:6px;border-top:1px dashed var(--line);font-size:.82rem;color:var(--dim);text-align:center}
 .statAcc b{display:block;color:var(--acc,#4ec46f);font-size:1.3rem;font-variant-numeric:tabular-nums}
 @media (max-width:340px){.statCols{grid-template-columns:1fr}}
+
+/* ---------- ป้ายฝั่งของผู้เล่น (ด้านล่างกระดาน) + ป้ายผล (จากตำแหน่งสุดท้าย) ---------- */
+.sidePill,.resPill{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;
+  border-radius:999px;padding:2px 8px;border:1px solid var(--line);white-space:nowrap;line-height:1.5}
+.sidePill{background:#0f141b;color:var(--txt)}
+.sidePill .dot{width:9px;height:9px;border-radius:50%;border:1px solid #8a939c;flex:0 0 auto}
+.sidePill.w .dot{background:#f3f6f9}
+.sidePill.b .dot{background:#15181c}
+.resPill.win{color:#7ee29a;border-color:#2f6b45;background:#12271b}
+.resPill.lose{color:#ff9d8f;border-color:#7a2f28;background:#2a1512}
+.resPill.draw{color:#c3ccd6;border-color:#4a525c;background:#191d23}
+.resPill.unfinished{color:#93a1b0;border-color:#39404a;background:#141a20}
+.histBadges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.statResRow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin:2px 0 7px}
+.rpSidePill{margin:0 2px 8px}
 
 /* ---------- การ์ดติดตั้งเป็นแอพ (PWA) ---------- */
 .installCard{background:linear-gradient(180deg,#1b2a33,#141f26)!important;border-color:#2e4a56!important}
@@ -629,6 +645,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <button id="rpClose" class="sm" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
     </div>
     <div class="rpname" id="rpName"></div>
+    <div id="rpSide" class="sidePill rpSidePill"></div>
     <div id="rpBoardWrap"><div id="rpBoard"></div><svg id="rpArrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div>
     <div id="rpEvalwrap">
       <div id="rpEvalHalf"></div><div id="rpEvalFill"></div><div id="rpEvalMid"></div>
@@ -646,6 +663,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <button id="rpRun" class="pri" data-i18n="rpPlay">▶ เล่น</button>
       <button id="rpFlip" class="sm" data-i18n="bFlip" style="flex:0 0 24%">⇅ สลับฝั่ง</button>
     </div>
+    <div class="row"><button id="rpAnim" class="sm togg" data-i18n="animOn" style="flex:1">อนิเมชันหมาก: เปิด</button></div>
     <div class="card">
       <div class="row" style="margin-top:2px">
         <label style="min-width:64px" data-i18n="rpDelayLbl">ดีเลย์/ตา</label>
@@ -786,7 +804,7 @@ const I18N={
   toastFenFromLink:'ตั้งตำแหน่งจากลิงก์แล้ว ✓', toastBadFenLink:'FEN จากลิงก์ไม่ถูกต้อง — เริ่มเกมปกติ',
   pgnTitle:'นำเข้า PGN', pgnPh:'วาง PGN ที่นี่ (มีหรือไม่มี header ก็ได้)', bImportPgn:'นำเข้า PGN',
   pgnHintHtml:'วางบันทึกการเดิน (PGN) แล้วกด <b>นำเข้า PGN</b> เพื่อเปิดเกมนั้นมาวิเคราะห์ · รองรับทั้งแบบมี header และไม่มี · ถ้ามี FEN เริ่มต้นใน header จะใช้ด้วย',
-  toastPgnImported:'นำเข้าสำเร็จ {0} ตา', toastPgnBad:'PGN ไม่ถูกต้อง',
+  toastPgnImported:'นำเข้าสำเร็จ {0} ตา', toastPgnImportedN:'นำเข้าสำเร็จ {0} เกม (ข้าม {1})', toastPgnBad:'PGN ไม่ถูกต้อง',
   bEdit:'✎ แก้ไขกระดาน',
   legendTitle:'คำอธิบายไอคอนเกรดการเดิน',
   gBook:'Book — ตาอยู่ในตำราเปิดหมากมาตรฐาน',
@@ -834,6 +852,9 @@ const I18N={
   installIosBody:'แตะปุ่ม แชร์ (□↑) ด้านล่าง แล้วเลือก “เพิ่มไปที่หน้าจอโฮม” (Add to Home Screen)',
   installAndroidBody:'แตะปุ่มด้านล่างเพื่อติดตั้งแอพลงเครื่อง (ไม่ต้องผ่าน App Store)',
   installDesktopBody:'ใช้เมนูของเบราว์เซอร์ (⋮ หรือไอคอนติดตั้งในแถบที่อยู่) แล้วเลือก “ติดตั้ง” (Install)',
+  sideYour:'ฝั่งนี้', statYourSide:'(ฝั่งนี้)', rpYourSide:'ฝั่งนี้ (ของผู้เล่น)',
+  resWin:'ชนะ', resLose:'แพ้', resDraw:'เสมอ', resUnfinished:'ยังไม่จบ',
+  resNote:'ผลคำนวณจากตำแหน่งสุดท้ายที่บันทึกไว้เท่านั้น (ไม่นับการยอมแพ้/หมดเวลา)',
   installBtn:'ติดตั้งเลย', installUnavailable:'เบราว์เซอร์นี้ยังไม่รองรับการติดตั้งอัตโนมัติ'
  },
  en:{
@@ -886,7 +907,7 @@ const I18N={
   toastFenFromLink:'Position set from link ✓', toastBadFenLink:'Invalid FEN in link — starting a normal game',
   pgnTitle:'Import PGN', pgnPh:'Paste PGN here (with or without headers)', bImportPgn:'Import PGN',
   pgnHintHtml:'Paste a move record (PGN) then press <b>Import PGN</b> to load that game for analysis · supports with or without headers · a starting FEN in the header is used too',
-  toastPgnImported:'Imported {0} moves', toastPgnBad:'Invalid PGN',
+  toastPgnImported:'Imported {0} moves', toastPgnImportedN:'Imported {0} games ({1} skipped)', toastPgnBad:'Invalid PGN',
   bEdit:'✎ Edit board',
   legendTitle:'Move-grade icon legend',
   gBook:'Book — the move follows standard opening theory',
@@ -932,8 +953,11 @@ const I18N={
   toastExportAll:'Downloaded file {0}', toastCopiedAll:'Copied all history ✓', toastCopyPgnOk:'Copied this game’s PGN ✓',
   bInstall:'📲 Install as app', installIosTitle:'Install on iPhone / iPad (Safari)',
   installIosBody:'Tap the Share button (□↑) below, then choose “Add to Home Screen”',
-  installAndroidBody:'Tap the button below to install the app on your device (no App Store needed)',
+  installAndroidBody:'Tap the button below to install this app on your device (no App Store needed).',
   installDesktopBody:'Use your browser menu (⋮ or the install icon in the address bar) and choose “Install”',
+  sideYour:'your side', statYourSide:'(your side)', rpYourSide:'your side (player)',
+  resWin:'Win', resLose:'Loss', resDraw:'Draw', resUnfinished:'Unfinished',
+  resNote:'Result from the last saved position only (resign/timeout not counted)',
   installBtn:'Install now', installUnavailable:'This browser does not support automatic installation'
  }
 };
@@ -953,7 +977,8 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder=t(el.dataset.i18nPh); });
   document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('on', b.dataset.lang===L));
   const br=$('bRun'); if(br) br.textContent=(run||busy)?t('bStop'):t('bRun');
-  refreshAnimBtn(); refreshHideBtn(); refreshEloUI(); updateProfUI(); updateDepthInfo();
+  refreshAnimBtn(); refreshHideBtn(); refreshEloUI(); updateProfUI(); updateDepthInfo(); refreshRpAnimBtn();
+  try{ refreshInstallUI(); }catch(e){}
   if(lastSub) setSub.apply(null,[lastSub.key].concat(lastSub.args));
   if(lastStatus) setStatus.apply(null,[lastStatus.key].concat(lastStatus.args));
   renderLog(); setEval(lastEval.cp, lastEval.mate); renderPV(); checkGameEnd();
@@ -1675,7 +1700,11 @@ $('elo').oninput=()=>{
 let animOn = true;
 function refreshAnimBtn(){ const b=$('animBtn'); if(b){ b.textContent=t(animOn?'animOn':'animOff');
   b.classList.toggle('on3', animOn); b.classList.toggle('off3', !animOn); } }
-$('animBtn').onclick=()=>{ animOn=!animOn; lsSet(LSK.anim, animOn?'1':'0'); refreshAnimBtn(); toast(t('toastAnim', t(animOn?'onWord':'offWord')), true); };
+$('animBtn').onclick=()=>{ animOn=!animOn; lsSet(LSK.anim, animOn?'1':'0'); refreshAnimBtn(); refreshRpAnimBtn(); toast(t('toastAnim', t(animOn?'onWord':'offWord')), true); };
+/* ปุ่มอนิเมชันหมากในหน้า replay — ใช้ค่า animOn ร่วมกับหน้าหลัก (คีย์ localStorage เดียวกัน) */
+function refreshRpAnimBtn(){ const b=$('rpAnim'); if(b){ b.textContent=t(animOn?'animOn':'animOff');
+  b.classList.toggle('on3', animOn); b.classList.toggle('off3', !animOn); } }
+$('rpAnim').onclick=()=>{ animOn=!animOn; lsSet(LSK.anim, animOn?'1':'0'); refreshAnimBtn(); refreshRpAnimBtn(); toast(t('toastAnim', t(animOn?'onWord':'offWord')), true); };
 function refreshHideBtn(){ const b=$('hideBtn'); if(b){ b.textContent=t(hideHints?'hideOn':'hideOff');
     b.classList.toggle('on3', hideHints); b.classList.toggle('off3', !hideHints); }
   document.body.classList.toggle('hidehints', hideHints); }         // ซ่อนตัวเลขพิกัดบนกระดานด้วย
@@ -2068,6 +2097,14 @@ function defaultGameName(){
   const d=new Date(); const p=n=>String(n).padStart(2,'0');
   return (lang==='en'?'Game ':'เกม ')+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
 }
+/* ชื่อเกมที่ระบบตั้งให้ (auto) = 'เกม <วันที่>' หรือ 'Game <วันที่>' — แสดงตามภาษาปัจจุบันเสมอ · ชื่อที่ผู้ใช้ตั้งเองห้ามแตะ */
+const AUTO_NAME_RE=/^(?:เกม|Game)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2})$/;
+function displayGameName(name){
+  const s=String(name==null?'':name);
+  const m=s.match(AUTO_NAME_RE);
+  if(m) return (lang==='en'?'Game ':'เกม ')+m[1];
+  return s;
+}
 function histAddCurrent(auto){     // เก็บเกมปัจจุบันลงประวัติ (ต้องมี ≥1 ตา)
   if(!ucis || ucis.length<1){ if(!auto) toast(t('toastHistEmpty')); return; }
   const grades=moveGrades.slice();
@@ -2110,11 +2147,21 @@ function renderHist(){
   view.forEach(gm=>{
     const item=document.createElement('div'); item.className='histItem'; item.dataset.id=gm.id;
     const head=document.createElement('div'); head.className='histHead';
-    const nm=document.createElement('div'); nm.className='histName'; nm.textContent=gm.name||t('histUntitled');
+    const nm=document.createElement('div'); nm.className='histName'; nm.textContent=displayGameName(gm.name)||t('histUntitled');
     const dt=document.createElement('div'); dt.className='histDate'; dt.textContent=fmtDate(gm.savedAt);
     head.appendChild(nm); head.appendChild(dt); item.appendChild(head);
     const meta=document.createElement('div'); meta.className='histMeta';
     meta.textContent=t('histMovesCount', (gm.ucis||[]).length); item.appendChild(meta);
+    // ป้ายฝั่งของผู้เล่น (ด้านล่างกระดาน) + ป้ายผล (คำนวณจากตำแหน่งสุดท้าย)
+    const mine=playerColorOf(gm), res=gameResult(gm);
+    const badges=document.createElement('div'); badges.className='histBadges';
+    const sp=document.createElement('span'); sp.className='sidePill '+mine;
+    const dot=document.createElement('span'); dot.className='dot'; sp.appendChild(dot);
+    sp.appendChild(document.createTextNode(sideLabel(mine)+' · '+t('sideYour')));
+    badges.appendChild(sp);
+    const rpl=document.createElement('span'); rpl.className='resPill '+res; rpl.textContent=resLabel(res);
+    badges.appendChild(rpl);
+    item.appendChild(badges);
     const sum=document.createElement('div'); sum.className='histSum';
     const counts=gradeCounts(gm.grades);
     const keys=GRADE_ORDER.filter(g=>counts[g]);
@@ -2154,26 +2201,78 @@ function exportPgn(gm){
   const out=$('histPgnOut'); if(out) out.value=txt;
   copyText(txt);                        // คัดลอกอัตโนมัติ (fallback: ข้อความอยู่ในช่อง)
 }
+function splitPgnGames(txt){                    // แยกข้อความ PGN ที่มีหลายเกม → อาร์เรย์ชังก์ต่อเกม
+  const lines=String(txt||'').replace(/\r\n?/g,'\n').split('\n');
+  const games=[]; let cur=[]; let sawMove=false;
+  for(const ln of lines){
+    const isTag=/^\s*\[[A-Za-z]/.test(ln);
+    if(isTag){
+      if(sawMove && cur.length){ games.push(cur.join('\n').trim()); cur=[]; sawMove=false; }   // เจอ header ใหม่หลังการเดิน = เกมใหม่
+      cur.push(ln);
+    }else{
+      cur.push(ln);
+      if(ln.trim()!=='') sawMove=true;
+    }
+  }
+  if(cur.length) games.push(cur.join('\n').trim());
+  return games.map(s=>s.trim()).filter(Boolean);
+}
+function parsePgnGames(txt){                     // แยกเป็นหลายเกม แล้ว parse ทีละเกม (คืน null สำหรับเกมที่พัง)
+  return splitPgnGames(txt).map(chunk=>{
+    try{
+      // ตัดเครื่องหมาย '*' ในส่วน movetext (ไฟล์ที่แอพส่งออกมี '*' ซ้ำได้ / '*' ไม่กระทบกติกา) — เก็บ header ไว้ครบ
+      const clean=chunk.split('\n').map(l=> /^\s*\[/.test(l) ? l : l.replace(/\*/g,' ')).join('\n');
+      const g=new Chess(); g.loadPgn(clean);
+      const hm=g.history({verbose:true}); if(!hm.length) return null;
+      const f=[hm[0].before], u=[];
+      for(const m of hm){ u.push(m.from+m.to+(m.promotion||'')); f.push(m.after); }
+      let name=null; const me=chunk.match(/\[Event\s+"([^"]*)"\]/i);
+      if(me && me[1] && me[1]!=='?') name=me[1];
+      return {fens:f, ucis:u, name:name};
+    }catch(e){ return null; }
+  });
+}
 function importPgnToHist(openNow){
   const txt=($('histPgn') && $('histPgn').value||'').trim(); if(!txt) return;
-  try{
-    const g=new Chess(); g.loadPgn(txt);
-    const hm=g.history({verbose:true});
-    if(!hm.length) throw new Error('no moves');
-    const f=[hm[0].before], u=[];
-    for(const m of hm){ u.push(m.from+m.to+(m.promotion||'')); f.push(m.after); }
-    const gm={ id:newId(), name:defaultGameName(), savedAt:Date.now(), fens:f, ucis:u,
-      grades:new Array(u.length).fill(null), flipped:false };
-    hist.unshift(gm); const removed=histTrim(); histPersist(); renderHist();
-    if(removed>0) toast(t('toastHistTrimmed', removed), true); else toast(t('toastPgnImported', hm.length), true);
-    if(openNow) openReplayFromGame(gm, 0);
-  }catch(e){ toast(t('toastPgnBad')); }
+  const parsed=parsePgnGames(txt);
+  const ok=parsed.filter(Boolean), skipped=parsed.length-ok.length;
+  if(!ok.length){ toast(t('toastPgnBad')); return; }
+  let firstGm=null;
+  for(let i=ok.length-1;i>=0;i--){                 // unshift ย้อนกลับเพื่อให้ลำดับในไฟล์คงเดิม (เกมแรก = ใหม่สุด)
+    const p=ok[i];
+    const gm={ id:newId(), name:(p.name||defaultGameName()), savedAt:Date.now(), fens:p.fens, ucis:p.ucis,
+      grades:new Array(p.ucis.length).fill(null), flipped:false };
+    hist.unshift(gm); if(i===0) firstGm=gm;
+  }
+  const removed=histTrim(); histPersist(); renderHist();
+  if(ok.length>1) toast(t('toastPgnImportedN', ok.length, skipped), true);
+  else if(removed>0) toast(t('toastHistTrimmed', removed), true);
+  else toast(t('toastPgnImported', ok[0].ucis.length), true);
+  if(openNow) openReplayFromGame(firstGm||hist[0], 0);
 }
 
 /* ---------- หน้าเล่นย้อนหลัง (replay) — เล่นอัตโนมัติตาม log ล้วน (ไม่วิเคราะห์สด) ---------- */
 let rpFens=[], rpUcis=[], rpGrades=[], rpPtr=0, rpFlipped=false, rpName='', rpSrcId=null;
 let rpPlaying=false, rpTimer=null, rpDelay=(()=>{ const v=+lsGet(LSK.rpDelay, 2); return (v>=1&&v<=10)? v : 2; })();
 
+function rpAnimateMove(from,to){                 // อนิเมชันหมากในหน้า replay — ข้ามเมื่อปิดอนิเมชัน
+  if(!animOn) return;
+  const b=$('rpBoard'), wrap=$('rpBoardWrap'); if(!b||!wrap) return;
+  const cf=b.querySelector('.sq[data-sq="'+from+'"]'), ct=b.querySelector('.sq[data-sq="'+to+'"]');
+  if(!cf||!ct) return;
+  const pimg=ct.querySelector('img.pcimg'); if(!pimg) return;
+  const wr=wrap.getBoundingClientRect(), fr=cf.getBoundingClientRect(), tr=ct.getBoundingClientRect();
+  if(!wr.width||!wr.height) return;
+  const ax=(fr.left+fr.width/2-wr.left)/wr.width*100, ay=(fr.top+fr.height/2-wr.top)/wr.height*100;
+  const bx=(tr.left+tr.width/2-wr.left)/wr.width*100, by=(tr.top+tr.height/2-wr.top)/wr.height*100;
+  const ghost=document.createElement('img'); ghost.className='pcimg ghost'; ghost.alt=''; ghost.src=pimg.src;
+  ghost.style.left=ax+'%'; ghost.style.top=ay+'%'; ghost.style.transform='translate(-50%,-50%)';
+  wrap.appendChild(ghost);
+  requestAnimationFrame(()=>{ ghost.style.transform='translate(-50%,-50%) translate('+((bx-ax)/100*wr.width).toFixed(1)+'px,'+((by-ay)/100*wr.height).toFixed(1)+'px)'; });
+  const kill=()=>{ if(ghost.parentNode) ghost.parentNode.removeChild(ghost); };
+  ghost.addEventListener('transitionend',kill,{once:true});
+  setTimeout(kill,300);
+}
 function rpRender(){
   const b=$('rpBoard'); if(!b||!rpFens.length) return;
   const g=new Chess(rpFens[rpPtr]);
@@ -2192,9 +2291,12 @@ function rpRender(){
     b.appendChild(d);
   }
   if(g.inCheck()) for(const el of b.children){ const p=g.get(el.dataset.sq); if(p&&p.type==='k'&&p.color===g.turn()) el.classList.add('chk','warnk'); }
+  if(last) rpAnimateMove(last[0], last[1]);
   rpPaintGrade();
   rpRenderLog();
-  const nm=$('rpName'); if(nm) nm.textContent = rpName || t('rpTitle');
+  const nm=$('rpName'); if(nm) nm.textContent = displayGameName(rpName) || t('rpTitle');
+  const sb=$('rpSide'); if(sb){ const mc=rpFlipped?'b':'w'; sb.className='sidePill rpSidePill '+mc;
+    sb.innerHTML='<span class="dot"></span>'+sideLabel(mc)+' · '+t('rpYourSide'); }
   rpUpdateButtons();
 }
 function rpPaintGrade(){
@@ -2304,23 +2406,36 @@ function rpSetDelay(n){ n=+n; if(!(n>=1&&n<=10)) return; rpDelay=Math.round(n*2)
 function rpImportPgn(){
   const txt=($('rpPgn') && $('rpPgn').value||'').trim(); if(!txt) return;
   try{
-    const g=new Chess(); g.loadPgn(txt);
-    const hm=g.history({verbose:true});
-    if(!hm.length) throw new Error('no moves');
-    const f=[hm[0].before], u=[];
-    for(const m of hm){ u.push(m.from+m.to+(m.promotion||'')); f.push(m.after); }
-    rpFens=f; rpUcis=u; rpGrades=new Array(u.length).fill(null); rpPtr=0; rpName='';
+    const list=parsePgnGames(txt); const first=list.find(Boolean);
+    if(!first) throw new Error('no moves');
+    const f=first.fens, u=first.ucis;
+    rpFens=f; rpUcis=u; rpGrades=new Array(u.length).fill(null); rpPtr=0; rpName=first.name||'';
     rpPlaying=false; if(rpTimer){ clearTimeout(rpTimer); rpTimer=null; }
     rpRender();
-    toast(t('toastPgnImported', hm.length), true);
+    toast(t('toastPgnImported', u.length), true);
     if($('rpSaveChk') && $('rpSaveChk').checked){
-      const gm={ id:newId(), name:defaultGameName(), savedAt:Date.now(), fens:f.slice(), ucis:u.slice(),
+      const gm={ id:newId(), name:(first.name||defaultGameName()), savedAt:Date.now(), fens:f.slice(), ucis:u.slice(),
         grades:new Array(u.length).fill(null), flipped:false };
       hist.unshift(gm); const removed=histTrim(); histPersist();
       if(removed>0) toast(t('toastHistTrimmed', removed), true);
     }
   }catch(e){ toast(t('toastPgnBad')); }
 }
+/* ---------- ฝั่งของผู้เล่น (ด้านล่างกระดาน) + ผลจากตำแหน่งสุดท้าย (กติกา chess.js) ---------- */
+function playerColorOf(gm){ return (gm && gm.flipped) ? 'b' : 'w'; }
+function sideLabel(c){ return c==='w' ? t('statWhite') : t('statBlack'); }
+function gameResult(gm){
+  try{
+    const fs=(gm&&gm.fens)||[]; if(!fs.length) return 'unfinished';
+    const g=new Chess(fs[fs.length-1]);            // ตำแหน่งสุดท้ายที่บันทึกไว้
+    const player=playerColorOf(gm);
+    if(g.isCheckmate()){ const winner = g.turn()==='w' ? 'b' : 'w'; return winner===player ? 'win' : 'lose'; }
+    if(g.isStalemate() || g.isDraw() || g.isInsufficientMaterial()) return 'draw';
+    return 'unfinished';
+  }catch(e){ return 'unfinished'; }
+}
+const RES_KEY={win:'resWin',lose:'resLose',draw:'resDraw',unfinished:'resUnfinished'};
+function resLabel(r){ return t(RES_KEY[r]||'resUnfinished'); }
 /* ---------- สรุปสถิติต่อเกม (แยกขาว/ดำ) ---------- */
 const GRADE_NAME_KEY={book:'gnBook',brilliant:'gnBrilliant',great:'gnGreat',best:'gnBest',excellent:'gnExcellent',good:'gnGood',inaccuracy:'gnInaccuracy',mistake:'gnMistake',blunder:'gnBlunder',miss:'gnMiss',forced:'gnForced'};
 const GRADE_ACC={book:0,brilliant:0,best:0,great:0,forced:0,excellent:8,good:25,inaccuracy:80,mistake:180,blunder:450,miss:350};
@@ -2345,24 +2460,30 @@ function gameStats(gm){
 function openStats(gm){
   if(!gm) return;
   const st=gameStats(gm);
-  const nm=$('statName'); if(nm) nm.textContent=(gm.name? gm.name+' · ' : '')+t('statTitle');
-  const colHtml=c=>{
+  const mine=playerColorOf(gm), other=(mine==='w'?'b':'w'), res=gameResult(gm);
+  const nm=$('statName'); if(nm) nm.textContent=(gm.name? displayGameName(gm.name)+' · ' : '')+t('statTitle');
+  const colHtml=(c,isMine)=>{
     const s=st[c];
     let rows='';
     GRADE_ORDER.forEach(g=>{ const n=s.counts[g]||0;
       rows+='<div class="statRow'+(n?'':' zero')+'"><img src="icons/'+g+'.png" alt=""><span class="sgn">'+t(GRADE_NAME_KEY[g])+'</span><b>'+n+'</b></div>'; });
     const acc = (s.acc==null) ? '—' : (s.acc+'%');
-    return '<div class="statCol"><h4>'+(c==='w'?t('statWhite'):t('statBlack'))+' ('+s.n+')</h4>'+rows
+    return '<div class="statCol'+(isMine?' mine':'')+'"><h4>'+sideLabel(c)+' ('+s.n+')'
+      +(isMine?' · '+t('statYourSide'):'')+'</h4>'+rows
       +'<div class="statAcc">'+t('statAccuracy')+'<b>'+acc+'</b></div></div>';
   };
   const body=$('statBody');
-  if(body) body.innerHTML='<div class="statCols">'+colHtml('w')+colHtml('b')+'</div>'
-    +'<div class="tiny" style="text-align:center">'+t('statMoves')+': '+((gm.ucis||[]).length)+'</div>';
+  if(body) body.innerHTML=
+      '<div class="statResRow"><span class="sidePill '+mine+'"><span class="dot"></span>'+sideLabel(mine)+' · '+t('sideYour')+'</span>'
+    + '<span class="resPill '+res+'">'+resLabel(res)+'</span></div>'
+    + '<div class="statCols">'+colHtml(mine,true)+colHtml(other,false)+'</div>'
+    + '<div class="tiny" style="text-align:center">'+t('statMoves')+': '+((gm.ucis||[]).length)+'</div>'
+    + '<div class="tiny" style="text-align:center;opacity:.8">'+t('resNote')+'</div>';
   const v=$('statView'); if(v) v.classList.add('show');
 }
 function closeStats(){ const v=$('statView'); if(v) v.classList.remove('show'); }
-function mainGameForStats(){ return { name:'', fens:fens.slice(), ucis:ucis.slice(), grades:moveGrades.slice() }; }
-function replayGameForStats(){ return { name:rpName, fens:rpFens.slice(), ucis:rpUcis.slice(), grades:rpGrades.slice() }; }
+function mainGameForStats(){ return { name:'', fens:fens.slice(), ucis:ucis.slice(), grades:moveGrades.slice(), flipped:!!flipped }; }
+function replayGameForStats(){ return { name:rpName, fens:rpFens.slice(), ucis:rpUcis.slice(), grades:rpGrades.slice(), flipped:!!rpFlipped }; }
 
 /* ---------- ส่งออก/แชร์ PGN ---------- */
 function movetextOnly(gm){
@@ -2374,7 +2495,9 @@ function pgnBlock(gm){
   const d=new Date(gm.savedAt||Date.now()); const p=n=>String(n).padStart(2,'0');
   const date=d.getFullYear()+'.'+p(d.getMonth()+1)+'.'+p(d.getDate());
   const esc=s=>String(s==null?'':s).replace(/"/g,'\\"');
-  return '[Event "'+esc(gm.name||'?')+'"]\n[Site "chess-sf19-web"]\n[Date "'+date+'"]\n[White "?"]\n[Black "?"]\n[Result "*"]\n\n'+movetextOnly(gm)+'\n*';
+  const mt=movetextOnly(gm).trim();
+  const hasRes=/(\*|1-0|0-1|1\/2-1\/2)$/.test(mt.replace(/\s+$/,''));
+  return '[Event "'+esc(gm.name||'?')+'"]\n[Site "chess-sf19-web"]\n[Date "'+date+'"]\n[White "?"]\n[Black "?"]\n[Result "*"]\n\n'+mt+(hasRes?'':' *')+'\n';
 }
 function buildAllPgn(){ return (hist||[]).map(pgnBlock).join('\n\n'); }
 function downloadText(name, txt){
