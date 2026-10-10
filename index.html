@@ -539,6 +539,7 @@ function renderPV(){
   pvEl.innerHTML=''; sugTo={}; sugRank={}; sqTagTxt={};
   if(!keys.length){ arrowsEl.innerHTML=''; updateDepthInfo(); updateNotices(); return; }
   const sideToMove = new Chess(fens[ptr]).turn();
+  let baseTagCp = null;                     // คะแนนของ 'เส้นที่ดีที่สุด' (อันดับ 1 ของงานนี้) = ฐานเทียบส่วนต่างป้าย .sqtag
   keys.forEach((k,idx)=>{
     const l=lines[k];
     let cp = l.kind==='cp' ? l.val : null, mate = l.kind==='mate' ? l.val : null;
@@ -549,6 +550,15 @@ function renderPV(){
     const shownMate = whiteMate==null? null : (bottom==='w'? whiteMate : -whiteMate);
     const txt = shownMate!=null ? ((shownMate>0?'+':'-')+'M'+Math.abs(shownMate))
                                 : ((shownCp>0?'+':'')+(shownCp/100).toFixed(2));
+    if(k===1) baseTagCp = (cp==null) ? null : shownCp;   // เก็บฐานเทียบจาก pv อันดับ 1 ของงานล่าสุด (cp เท่านั้น)
+    // ป้ายบนช่องเป้าหมาย (.sqtag) = 'ส่วนต่างเทียบเส้นที่ดีที่สุด' ไม่ใช่คะแนนรวม
+    let tagTxt = txt;                                     // เส้น mate คงสัญลักษณ์ M ตามเดิม
+    if(shownMate==null && baseTagCp!=null){               // เป็นเกมปกติ + มีฐานให้เทียบ
+      let d = (shownCp - baseTagCp)/100;                  // หน่วยตัวเบี้ย (centipawn/100)
+      let t = d.toFixed(2);
+      if(t==='-0.00') t='0.00';                           // ต่างกันไม่ถึง 0.005 -> 0.00
+      tagTxt = t;
+    }
     const sans = toSan(fens[ptr], l.pv);
     const row=document.createElement('div');
     row.className='pvrow'+(k===1?' best':'');
@@ -557,7 +567,7 @@ function renderPV(){
       <span class="ln">${sans.slice(1).join(' ')}</span>`;
     if(l.pv[0]){ const d2=l.pv[0].slice(2,4);
       if(!sugTo[d2]) sugTo[d2]=l.pv[0];                 // หลายตัวเลือกชนช่องเดียวกัน = เอาอันดับดีที่สุด (เลขน้อยสุด)
-      (sugRank[d2] = sugRank[d2] || []).push(k); sqTagTxt[k]=txt; row.onclick=()=>playUci(l.pv[0]); }
+      (sugRank[d2] = sugRank[d2] || []).push(k); sqTagTxt[k]=tagTxt; row.onclick=()=>playUci(l.pv[0]); }
     pvEl.appendChild(row);
     if(k===1){ setEval(whiteCp, whiteMate);
       // ---- เตือนจากมุมมอง 'ฝั่งล่าง = ฝั่งเรา' ----
