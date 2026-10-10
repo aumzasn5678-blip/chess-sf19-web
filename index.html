@@ -79,6 +79,16 @@ button.sm{font-size:13px;padding:10px 4px}
 #log::-webkit-scrollbar{display:none;height:0;width:0}
 #log b{color:var(--txt);font-weight:600}
 
+/* หลอดความลึก (range) ให้มีราง+สีเติมเหมือนหลอดอื่น */
+#depth{-webkit-appearance:none;appearance:none;height:30px;background:transparent;flex:1;min-width:0}
+#depth::-webkit-slider-runnable-track{height:9px;border-radius:5px;border:1px solid var(--line);
+ background:linear-gradient(90deg,#4ec46f 0 var(--p,60%),#39404a var(--p,60%) 100%)}
+#depth::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-8px;border-radius:50%;
+ background:#f3f6f9;border:3px solid #4ec46f;box-shadow:0 1px 4px rgba(0,0,0,.6)}
+#depth::-moz-range-track{height:9px;border-radius:5px;background:#39404a}
+#depth::-moz-range-progress{height:9px;border-radius:5px;background:#4ec46f}
+#depth::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#f3f6f9;border:3px solid #4ec46f}
+
 #pv{margin-top:8px;display:flex;flex-direction:column;gap:5px}
 .pvrow{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);
  border-radius:9px;padding:8px 10px;font-size:14px}
@@ -643,9 +653,21 @@ $('bCopy').onclick=async()=>{
   try{ await navigator.clipboard.writeText(txt); statusEl.textContent='คัดลอกแล้ว ✓'; }
   catch(e){ $('fen').value=txt; statusEl.textContent='คัดลอกอัตโนมัติไม่ได้ — ข้อความอยู่ในช่องตำแหน่ง'; }
 };
-$('depth').oninput=()=>{ const d=+$('depth').value;
+function updateDepthUI(){
+  const el=$('depth'), d=+el.value;
+  el.style.setProperty('--p', ((d-1)/19*100).toFixed(1)+'%');
   $('depthv').textContent = d + ' · ≈' + (autoTime(d)/1000).toFixed(1) + 'วิ';
-  if(busy) stopAnalysis(); };
+}
+$('depth').oninput=()=>{ updateDepthUI(); if(busy) stopAnalysis(); };
+updateDepthUI();
+// คีย์บอร์ด (เล่นบนคอม): ← ย้อนกลับ · → ไปข้างหน้า · เว้นวรรค = รัน/หยุด
+document.addEventListener('keydown', (e)=>{
+  const tg = e.target && e.target.tagName;
+  if(tg==='INPUT' || tg==='TEXTAREA' || tg==='SELECT') return;
+  if(e.key==='ArrowLeft'){ e.preventDefault(); $('bBack').onclick(); }
+  else if(e.key==='ArrowRight'){ e.preventDefault(); $('bFwd').onclick(); }
+  else if(e.key===' '){ e.preventDefault(); $('bRun').onclick(); }
+});
 document.querySelectorAll('.npv').forEach(b=>{
   b.onclick=()=>{
     npvN = +b.dataset.npv;
