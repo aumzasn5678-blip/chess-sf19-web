@@ -261,11 +261,10 @@ function setNotice(kind, text){
   el.className=kind; el.textContent=text;
 }
 function updateNotices(){
-  if(!Object.keys(lines).length){ setNotice('', ''); return; }   // ยังไม่มีผลวิเคราะห์ = ไม่ต้องเตือน
   if(noticeRed){ setNotice('red', noticeRed); return; }
   if(noticeGreen){ setNotice('green', noticeGreen); return; }
   if(noticeGrey){ setNotice('grey', noticeGrey); return; }
-  setNotice('', '');
+  if(!Object.keys(lines).length) setNotice('', '');    // ไม่มีผลวิเคราะห์ + ไม่มีอะไรเตือน = ล้าง
 }
 function maxDepth(){ const v=Object.values(lines).map(l=>l.depth); return v.length?Math.max(...v):0; }
 function autoTime(d){ return Math.max(120, Math.min(25000, Math.round(d*d*40))); }  // เวลาคิด = ตามความลึกเอง (dynamic)
