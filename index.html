@@ -111,6 +111,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
     <button id="bFlip" class="sm">⇅ กลับหัว</button>
   </div>
 
+  <div class="tiny" id="pvhint" style="margin:8px 2px 0">คะแนนมองจาก <b>ฝ่ายที่กำลังเดิน</b> (+ = ฝ่ายนั้นได้เปรียบ · แถว 1 = ดีสุด)</div>
   <div id="pv"></div>
   <div id="log"></div>
   <div id="status"></div>
@@ -254,7 +255,7 @@ function renderPV(){
     let cp = l.kind==='cp' ? l.val : null, mate = l.kind==='mate' ? l.val : null;
     const whiteCp = cp==null ? (mate>0? 9999 : -9999) : (sideToMove==='w'? cp : -cp);
     const whiteMate = mate==null ? null : (sideToMove==='w'? mate : -mate);
-    const bottom = bottomColor();
+    const bottom = sideToMove;                            // แถว = มุมมองฝ่ายที่กำลังเดิน (อ่านง่าย ไม่ต้องสลับหัว)
     const shownCp = bottom==='w'? whiteCp : -whiteCp;
     const shownMate = whiteMate==null? null : (bottom==='w'? whiteMate : -whiteMate);
     const txt = shownMate!=null ? ('#'+shownMate) : ((shownCp>0?'+':'')+(shownCp/100).toFixed(2));
@@ -280,7 +281,7 @@ function sqCenter(sq){
 }
 function drawArrows(keys){
   arrowsEl.innerHTML='';
-  const colors=['#57c785','#f0a04b','#4ea1f0'];
+  const colors=['#4ec46f','#f5d327','#f08a1e'];   // 1=เขียว 2=เหลือง 3=ส้ม
   const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
   colors.forEach((c,i)=>{ const m=document.createElementNS('http://www.w3.org/2000/svg','marker');
     m.setAttribute('id','ah'+i); m.setAttribute('viewBox','0 0 10 10'); m.setAttribute('refX','7');
