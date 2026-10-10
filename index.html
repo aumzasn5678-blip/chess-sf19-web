@@ -70,10 +70,9 @@ body.hidehints .coord{display:none}          /* โหมดซ่อนกา�
 #boardWrap .ghost,#rpBoardWrap .ghost{position:absolute;width:12.5%;height:12.5%;object-fit:contain;z-index:6;
  pointer-events:none;transition:transform .17s ease-out;will-change:transform;
  filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
-#board .pcimg.animating,#rpBoard .pcimg.animating{z-index:7;will-change:transform;
- filter:drop-shadow(0 5px 6px rgba(0,0,0,.5))}
+#board .pcimg.animating,#rpBoard .pcimg.animating{z-index:7;will-change:transform}
 .pcimg.caught{position:absolute;inset:5%;width:90%;height:90%;object-fit:contain;pointer-events:none;
- z-index:0;transition:opacity .14s ease-out}
+ z-index:0;transition:opacity .1s linear}
 
 /* แถบเลือกตัวหมากโปรโมท — พื้นสี accent ของธีมกระดาน · รูปหมาก 4 ตัว (ควีน/เรือ/บิชอป/ม้า) */
 #promo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;display:none;
@@ -1477,7 +1476,7 @@ const animEls=new Set();
 let animCount=0;                       // นับจำนวนครั้งที่สไลด์เริ่มจริง (ใช้ยืนยันการทดสอบ)
 function resetAnimEl(el){ if(!el) return;
   if(el._doneT){ clearTimeout(el._doneT); el._doneT=null; }
-  el.style.transition=''; el.style.transform=''; el.classList.remove('animating');
+  el.style.transition=''; el.style.transform=''; el.style.willChange=''; el.classList.remove('animating');
   el._dx=null; el._dy=null; try{ delete el.dataset.animTo; delete el.dataset.animPly; }catch(e){}
 }
 function pruneAnims(){ animEls.forEach(el=>{ if(!el.isConnected){ resetAnimEl(el); animEls.delete(el); } }); }
@@ -1490,12 +1489,14 @@ function clearStrayGhosts(){
 function rearmSlide(el){
   if(!el || el._dx==null || !el.classList.contains('animating')) return;
   if(el._doneT) clearTimeout(el._doneT);
-  el._doneT=setTimeout(()=>{ if(el._done) el._done(); }, 350);
+  el._doneT=setTimeout(()=>{ if(el._done) el._done(); }, 420);
+  el.style.willChange='transform';
   el.style.transition='none';
-  el.style.transform='translate('+el._dx.toFixed(1)+'px,'+el._dy.toFixed(1)+'px)';
-  void el.offsetWidth;                                          // บังคับ reflow
-  requestAnimationFrame(()=>{ if(!el.classList.contains('animating')) return;
-    el.style.transition='transform .2s cubic-bezier(.22,.61,.36,1)'; el.style.transform='translate(0,0)'; });
+  el.style.transform='translate('+el._dx.toFixed(2)+'px,'+el._dy.toFixed(2)+'px)';
+  void el.offsetWidth;                                          // บังคับ reflow (commit จุดเริ่มต้น)
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{         // double rAF: การันตี 1 เฟรมที่ช่องเดิมก่อนเริ่มไถล
+    if(!el.classList.contains('animating')) return;
+    el.style.transition='transform .2s cubic-bezier(.22,.61,.36,1)'; el.style.transform='translate(0,0)'; }));
 }
 /* เลื่อนหมากจริงใน cell ปลายทาง (ต้องวาดกระดานใหม่ที่ตำแหน่งใหม่ก่อนเรียก) */
 function slidePiece(board, from, to){
@@ -1512,17 +1513,20 @@ function slidePiece(board, from, to){
   img.dataset.animTo=to; img.dataset.animPly=String(board===boardEl ? (ptr-1) : '');
   img._dx=dx; img._dy=dy;
   img.classList.add('animating');
-  img.style.transition='none';
-  img.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)';
+  img.style.willChange='transform';
+  img.style.transition='none';                                 // เฟส 1: ปิดทรานซิชัน แล้วชดเชยตำแหน่งกลับไปที่ช่องเดิม
+  img.style.transform='translate('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px)';
   animEls.add(img);
-  void img.offsetWidth;                                        // บังคับ reflow ให้จุดเริ่มต้นติดก่อน
-  requestAnimationFrame(()=>{ img.style.transition='transform .2s cubic-bezier(.22,.61,.36,1)'; img.style.transform='translate(0,0)'; });
+  void img.offsetWidth;                                        // บังคับ reflow: commit เฟส 1 'ก่อน' บราวเซอร์วาด (ห้ามโผล่ที่ปลายทาง)
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{        // เฟส 2: double rAF การันตี 1 เฟรมที่ช่องเดิม แล้วค่อยเปิดทรานซิชันไถล
+    if(!img.classList.contains('animating')) return;
+    img.style.transition='transform .2s cubic-bezier(.22,.61,.36,1)'; img.style.transform='translate(0,0)'; }));
   const done=()=>{ resetAnimEl(img); animEls.delete(img); img.removeEventListener('transitionend',done); };
   img._done=done;
   img.addEventListener('transitionend',done);
-  img._doneT=setTimeout(()=>{ if(img._done) img._done(); }, 350);   // timeout กันค้าง
+  img._doneT=setTimeout(()=>{ if(img._done) img._done(); }, 420);   // timeout กันค้าง (ครอบ double rAF + 200ms)
 }
-/* หมากที่ถูกกิน = จางหายเร็ว ๆ (~140ms) ชิ้นเดียว ไม่หายวับ */
+/* หมากที่ถูกกิน = จางหายเร็ว ๆ (~100ms) ชิ้นเดียว ไม่หายวับ */
 function fadeCaptured(board, sq, color, type){
   if(!animOn || !board || !sq) return;
   const cell=board.querySelector('.sq[data-sq="'+sq+'"]'); if(!cell) return;
@@ -1531,7 +1535,7 @@ function fadeCaptured(board, sq, color, type){
   img.src='pieces/'+(color==='b'?'_':'')+String(type).toUpperCase()+'.png';
   cell.appendChild(img);
   requestAnimationFrame(()=>{ img.style.opacity='0'; });
-  setTimeout(()=>{ if(img.parentNode) img.parentNode.removeChild(img); }, 190);
+  setTimeout(()=>{ if(img.parentNode) img.parentNode.removeChild(img); }, 120);
 }
 function animateMove(from,to){ slidePiece(boardEl, from, to); }
 /* ล้างคำแนะนำทั้งหมดทันทีแบบ synchronous — 'เดินปุ๊บ ลูกศรหายปั๊บ'
