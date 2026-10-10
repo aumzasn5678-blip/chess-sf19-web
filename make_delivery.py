@@ -3,8 +3,8 @@ SRC = r"E:\Hermes_workbench\50_research\2026-10-10_chess-app"
 DST = r"C:\Users\poxii\Desktop\Chess-SF19-เว็บแอพ"
 
 os.makedirs(DST, exist_ok=True)
-SKIP = {"get_lib.sh", "setup.py", "test_logic.mjs", "test_browser.py", "test_scan.py",
-        "_appcheck.mjs", "meta.json", "make_delivery.py", "backup_github.sh"}
+SKIP = {"get_lib.sh", "setup.py", "test_logic.mjs", "test_browser.py", "test_scan.py", "test_noauto.py",
+        "test_pieces.py", "_appcheck.mjs", "meta.json", "make_delivery.py", "backup_github.sh"}
 for f in ("shot-2p.png", "shot-sf.png", "shot-scan.png", "shot-scan2.png"):
     SKIP.add(f)
 copied = []
@@ -32,16 +32,16 @@ set "IP="
 for /f "tokens=2 delims=:" %%A in ('ipconfig ^| findstr /i "IPv4"') do (echo %%A | findstr "192.168" >nul && set "IP=%%A")
 set "IP=%IP: =%"
 echo.
-echo    บนเครื่องนี้ :  http://localhost:8099
-if defined IP echo    บน iPhone   :  http://%IP%:8099
+echo    บนเครื่องนี้ :  http://localhost:8100
+if defined IP echo    บน iPhone   :  http://%IP%:8100
 echo.
 echo    วิธีใช้บน iPhone: เปิด Safari ^> พิมพ์ที่อยู่บรรทัดบน
 echo                      ^> ปุ่มแชร์ ^> "เพิ่มไปที่หน้าจอโฮม"
 echo.
 echo    *** อย่าปิดหน้าต่างนี้ ถ้ายังใช้อยู่ (ปิด = เซิร์ฟเวอร์หยุด) ***
 echo.
-start "" http://localhost:8099
-python -m http.server 8099 --bind 0.0.0.0
+start "" http://localhost:8100
+python -m http.server 8100 --bind 0.0.0.0
 pause
 '''
 
@@ -53,8 +53,8 @@ README = """Chess Scan — วิเคราะห์หมากรุกด�
 เปิดใช้ยังไง
 ------------
 1. ดับเบิลคลิก "เปิดแอพหมากรุก.bat" -> จะเห็นที่อยู่ 2 บรรทัด
-   - บนเครื่องนี้ : http://localhost:8099
-   - บน iPhone   : http://<ไอพี-คอม>:8099
+   - บนเครื่องนี้ : http://localhost:8100
+   - บน iPhone   : http://<ไอพี-คอม>:8100
 2. บน iPhone: ต่อ Wi-Fi วงเดียวกับคอม -> เปิด Safari -> พิมพ์ที่อยู่ในบรรทัดที่ 2
 3. อยากได้เป็นไอคอนแอพ: ปุ่มแชร์ (สี่เหลี่ยมลูกศรขึ้น) -> "เพิ่มไปที่หน้าจอโฮม"
    (ตอนนี้ต้องเปิดคอมค้างไว้ ถ้าอยากใช้ตอนออกไปข้างนอกโดยไม่ต้องเปิดคอม = เอาแอพขึ้นเว็บ)
