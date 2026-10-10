@@ -356,8 +356,6 @@ function renderPV(){
       noticeRed = noticeGreen = noticeGrey = '';
       if(bottomMate!=null && bottomMate<0)
         noticeRed = '⚠ อีกฝั่งขึ้น M ได้แล้ว (M'+Math.abs(bottomMate)+') — เราใกล้ถูกรุกฆาต';
-      else if(bottomMate!=null && bottomMate>0)
-        noticeGreen = '✓ เราขึ้น M ได้แล้ว (M'+bottomMate+') — อีกฝั่งใกล้ถูกรุกฆาต';
       if(!noticeRed && !noticeGreen && sideToMove===bb){
         const gNow=new Chess(fens[ptr]);
         if(gNow.inCheck()){
