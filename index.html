@@ -295,9 +295,18 @@ summary:active{transform:scale(.98)}
 #settings>summary{background:linear-gradient(180deg,#2a3543,#1f2833);color:#c3d0de;border:1px solid #3d4a59;box-shadow:0 3px 10px rgba(0,0,0,.3)}
 #settings>summary:hover{filter:brightness(1.12)}
 #settings[open]>summary{background:linear-gradient(180deg,#3b82f6,#2f6fd0);color:#04122e;border-color:#2563eb;box-shadow:0 0 0 2px rgba(59,130,246,.45),0 5px 16px rgba(59,130,246,.35)}
-#posPanel>summary{background:linear-gradient(180deg,#20302a,#18251f);color:#a8d8bb;border:1px solid #33513f;box-shadow:0 3px 10px rgba(0,0,0,.3)}
-#posPanel>summary:hover{filter:brightness(1.12)}
-#posPanel[open]>summary{background:linear-gradient(180deg,#4ec46f,#34a55b);color:#04170b;border-color:#2f8f4e;box-shadow:0 0 0 2px rgba(78,196,111,.45),0 5px 16px rgba(78,196,111,.35)}
+/* แถวคู่: [ นำเข้า/ส่งออก (ครึ่งซ้าย) | อัปเดตแอพ (ครึ่งขวา) ] — คนละปุ่ม แยกกล่อง ชัดเจน · เนื้อหาแผงกางเต็มความกว้างใต้แถวคู่ */
+#posPanel>summary{background:transparent;border:0;box-shadow:none;padding:0;gap:8px;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}
+#posPanel>summary .posBtn{min-width:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+  padding:12px 9px;border-radius:12px;font-size:.95rem;font-weight:600;letter-spacing:.2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:linear-gradient(180deg,#20302a,#18251f);color:#a8d8bb;border:1px solid #33513f;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+#posPanel>summary .posBtn:hover{filter:brightness(1.12)}
+#posPanel[open]>summary .posBtn{background:linear-gradient(180deg,#4ec46f,#34a55b);color:#04170b;border-color:#2f8f4e;box-shadow:0 0 0 2px rgba(78,196,111,.45),0 5px 16px rgba(78,196,111,.35)}
+#posPanel>summary .posBtn:active{transform:scale(.98)}
+#posPanel>summary #bUpdate{min-width:0;box-sizing:border-box;font-size:.95rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card{background:linear-gradient(180deg,var(--panel2) 0%,var(--panel) 100%);border:1px solid var(--line);border-radius:15px;padding:10px;margin-top:8px;box-shadow:0 8px 22px rgba(0,0,0,.3)}
 .card .row{margin:7px 0}
 details .card{background:transparent;border:0;box-shadow:none;border-radius:0;padding:6px 12px 12px}
@@ -638,7 +647,7 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
 
 
   <details id="posPanel">
-    <summary data-i18n="sumPos">📋 นำเข้า/ส่งออก</summary>
+    <summary><span class="posBtn sm" data-i18n="sumPos">📋 นำเข้า/ส่งออก</span><button id="bUpdate" class="sm updbtn" data-i18n="bUpdate">🔄 อัปเดตแอพ</button></summary>
     <div class="card">
       <div class="row">
         <input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้งตำแหน่ง" data-i18n-ph="fenPh">
@@ -672,9 +681,6 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <button id="bUpdateYes" class="pri cyes" data-i18n="yes">ยืนยัน</button>
       <button id="bUpdateNo" class="cno" data-i18n="no">ยกเลิก</button>
     </div>
-  </div>
-  <div class="row" id="updRow" style="margin-top:10px">
-    <button id="bUpdate" class="sm updbtn" data-i18n="bUpdate" style="flex:1">🔄 อัปเดตแอพ</button>
   </div>
 </div>
 
@@ -3165,7 +3171,7 @@ async function doUpdateApp(){                 // ยืนยันแล้ว:
   location.replace(url);                       // รีโหลดด้วย cache-buster ⇒ ได้โค้ดเวอร์ชันล่าสุดแน่ ๆ
 }
 function wireUpdate(){
-  const bu=$('bUpdate'); if(bu) bu.onclick=openConfirmUpdate;
+  const bu=$('bUpdate'); if(bu) bu.onclick=(e)=>{ e.stopPropagation(); openConfirmUpdate(); };
   const buy=$('bUpdateYes'); if(buy) buy.onclick=doUpdateApp;
   const bun=$('bUpdateNo'); if(bun) bun.onclick=closeConfirmUpdate;
 }
