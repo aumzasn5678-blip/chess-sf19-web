@@ -403,6 +403,7 @@ function startEngine(){
 function parseInfo(line){
   const d=line.match(/ depth (\d+)/), mp=line.match(/ multipv (\d+)/), sc=line.match(/ score (cp|mate) (-?\d+)/), pv=line.match(/ pv (.+)$/);
   if(!mp||!sc||!pv) return;
+  if(!searching) return;                         // ผลค้างจากการค้นหาเก่า (หลัง stop/เดินหมาก) — ทิ้ง กันลูกศรเด้งกลับ
   lines[+mp[1]]={depth:d?+d[1]:0, kind:sc[1], val:+sc[2], pv:pv[1].trim().split(/\s+/)};
   paintSoon();                                   // อัปเดตหน้าจอแบบ realtime ระหว่างคิด
 }
@@ -774,14 +775,25 @@ function animateMove(from,to){
   img.addEventListener('transitionend',kill,{once:true});
   setTimeout(kill,320);
 }
+/* ล้างคำแนะนำทั้งหมดทันทีแบบ synchronous — 'เดินปุ๊บ ลูกศรหายปั๊บ'
+   (ไม่รออนิเมชัน/รอบวิเคราะห์ใหม่; เคลียร์ state ก่อนวาดใหม่เพื่อไม่ให้ป้ายเก่าค้าง) */
+function clearHints(){
+  lines={}; sugTo={}; sugRank={}; sqTagTxt={};   // เคลียร์ state คำแนะนำทั้งหมด
+  arrowsEl.innerHTML='';                          // ลบ SVG ลูกศรออกทันที
+  sel=null; legal=[];
+  render();                                       // วาดกระดานใหม่ (ไม่มีออร่าเก่า)
+  renderPV();                                      // ว่าง ⇒ แผงคำแนะนำ + ป้ายคะแนน/กรอบเป้าหมายหายทันที
+  markTargets();
+}
 function playUci(uci){
   const g=new Chess(fens[ptr]);
   const m=g.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]||'q'});
   if(!m) return;
+  clearHints();                                          // ← ลูกศร/กรอบ/ป้ายหายปั๊บทันที "ก่อน" อนิเมชันและรอบวิเคราะห์ใหม่
   animateMove(uci.slice(0,2), uci.slice(2,4));           // อนิเมชันเลื่อนหมาก (เบา ๆ)
   ucis = ucis.slice(0,ptr); fens = fens.slice(0,ptr+1);
   ucis.push(uci); fens.push(g.fen()); ptr=fens.length-1;
-  sel=null; legal=[]; lines={}; sugTo={};
+  sel=null; legal=[];
   render(); renderPV(); updateTurnBtn();
   if(run) runAnalysis();                                  // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง
   else statusEl.textContent='เดินแล้ว — กด ▶ รัน เพื่อวิเคราะห์';
