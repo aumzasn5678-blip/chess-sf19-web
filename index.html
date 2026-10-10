@@ -85,6 +85,11 @@ button.sm{font-size:13px;padding:10px 4px}
 .pvrow .ln{font-size:11px;color:var(--dim);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:40%}
 .pvrow.best{border-color:var(--ok)}
 .sc.pos{color:var(--ok)}.sc.neg{color:var(--bad)}
+#notice{display:none;margin-top:6px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);
+ font-size:12.5px;font-weight:600;text-align:center;line-height:1.35}
+#notice.red{border-color:#e0402f;background:rgba(224,64,47,.14);color:#ff9d8f;display:block}
+#notice.green{border-color:#4ec46f;background:rgba(78,196,111,.14);color:#93e5ab;display:block}
+#notice.grey{border-color:#8a93a3;background:rgba(138,147,163,.13);color:#c8d0db;display:block}
 #status{font-size:11px;color:var(--dim);margin-top:6px;min-height:14px}
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 54px);transform:translate(-50%,-8px);
  z-index:99;background:#c0392b;color:#fff;font-size:13px;font-weight:600;padding:9px 14px;border-radius:10px;
@@ -118,6 +123,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
   </div>
 
   <div class="tiny" id="depthinfo" style="text-align:right;margin:4px 2px 0;font-variant-numeric:tabular-nums">&nbsp;</div>
+  <div id="notice"></div>
 
   <div class="row">
     <button id="bRun" class="pri">▶ รัน</button>
@@ -228,15 +234,38 @@ function markTargets(){
     if(r && sqTagTxt[r]){ const s=document.createElement('span'); s.className='sqtag sqtag'+r;
       s.textContent=sqTagTxt[r]; el.appendChild(s); }
   }
-  // เตือนคิงฝ่ายที่กำลังเดิน: ถูกบังคับรุกฆาต -> เรืองแสงแดงกระพริบ
+  // เตือนคิง: ติดรุกที่หาตัวมาบังไม่ได้ หรือใกล้โดนรุกฆาต -> เรืองแสงแดงกระพริบ
   const g2=new Chess(fens[ptr]);
+  const inChk = g2.inCheck();
   for(const el of boardEl.children){
     const p=g2.get(el.dataset.sq);
     if(!p||p.type!=='k'||p.color!==g2.turn()) continue;
-    const inChk = g2.inCheck(), warn = inChk || mateThreat;
-    el.classList.toggle('warnk', warn);
+    el.classList.toggle('warnk', inChk || bottomIsBeingMated);
     if(inChk) el.classList.add('chk'); else el.classList.remove('chk');
   }
+}
+function canBlockCheck(g){          // ติดรุกอยู่: มีตาที่ไม่ใช่ 'คิงหนี' ที่แก้รุกได้ไหม (บัง/กินตัวรุก)
+  try{
+    for(const m of g.moves({verbose:true})){
+      if(m.piece==='k') continue;
+      const c=new Chess(g.fen()); c.move({from:m.from,to:m.to,promotion:'q'});
+      if(!c.inCheck()) return true;
+    }
+  }catch(e){}
+  return false;
+}
+let bottomIsBeingMated=false, noticeRed='', noticeGreen='', noticeGrey='', prevRed=false, prevGreen=false, prevGrey=false;
+function setNotice(kind, text){
+  const el=$('notice'); if(!el) return;
+  if(!kind){ el.className=''; el.textContent=''; return; }
+  el.className=kind; el.textContent=text;
+}
+function updateNotices(){
+  if(!Object.keys(lines).length){ setNotice('', ''); return; }   // ยังไม่มีผลวิเคราะห์ = ไม่ต้องเตือน
+  if(noticeRed){ setNotice('red', noticeRed); return; }
+  if(noticeGreen){ setNotice('green', noticeGreen); return; }
+  if(noticeGrey){ setNotice('grey', noticeGrey); return; }
+  setNotice('', '');
 }
 function maxDepth(){ const v=Object.values(lines).map(l=>l.depth); return v.length?Math.max(...v):0; }
 function autoTime(d){ return Math.max(120, Math.min(25000, Math.round(d*d*40))); }  // เวลาคิด = ตามความลึกเอง (dynamic)
@@ -300,7 +329,7 @@ function toSan(fen, ucis){
 function renderPV(){
   const keys=Object.keys(lines).map(Number).sort((a,b)=>a-b);
   pvEl.innerHTML=''; sugTo={}; sugRank={}; sqTagTxt={};
-  if(!keys.length){ arrowsEl.innerHTML=''; updateDepthInfo(); return; }
+  if(!keys.length){ arrowsEl.innerHTML=''; updateDepthInfo(); updateNotices(); return; }
   const sideToMove = new Chess(fens[ptr]).turn();
   keys.forEach((k,idx)=>{
     const l=lines[k];
@@ -321,11 +350,32 @@ function renderPV(){
     if(l.pv[0]){ const d2=l.pv[0].slice(2,4); sugTo[d2]=l.pv[0]; sugRank[d2]=k; sqTagTxt[k]=txt; row.onclick=()=>playUci(l.pv[0]); }
     pvEl.appendChild(row);
     if(k===1){ setEval(whiteCp, whiteMate);
-      mateThreat = (shownMate!=null && shownMate<0);      // ฝ่ายที่กำลังเดินกำลังจะโดนรุกฆาต
-      if(mateThreat){ statusEl.className='warn';
-        statusEl.textContent='⚠ ระวัง! ถูกบังคับรุกฆาตใน '+Math.abs(shownMate)+' ตา';
-        if(!prevThreat) toast('⚠ ระวัง! อีก '+Math.abs(shownMate)+' ตาจะถูกรุกฆาต (คิงขึ้นแสงแดง)'); }
-      prevThreat = mateThreat; }
+      // ---- เตือนจากมุมมอง 'ฝั่งล่าง = ฝั่งเรา' ----
+      const bb = bottomColor(), moverIsBottom = (sideToMove===bb);
+      const bottomMate = (shownMate==null) ? null : (moverIsBottom? shownMate : -shownMate);
+      const bottomCp   = moverIsBottom ? shownCp : -shownCp;
+      bottomIsBeingMated = (bottomMate!=null && bottomMate<0);
+      mateThreat = bottomIsBeingMated;
+      noticeRed = noticeGreen = noticeGrey = '';
+      if(bottomMate!=null && bottomMate<0)
+        noticeRed = '⚠ อีกฝั่งขึ้น M ได้แล้ว (M'+Math.abs(bottomMate)+') — เราใกล้ถูกรุกฆาต';
+      else if(bottomMate!=null && bottomMate>0)
+        noticeGreen = '✓ เราขึ้น M ได้แล้ว (M'+bottomMate+') — อีกฝั่งใกล้ถูกรุกฆาต';
+      else if(bottomCp <= -500)
+        noticeGrey = 'เสียเปรียบ '+(bottomCp/100).toFixed(1)+' — เล่นไม่คุ้มแล้ว แนะนำยอมแพ้';
+      if(!noticeRed && !noticeGreen){
+        const gNow=new Chess(fens[ptr]);
+        if(gNow.inCheck()){
+          const canB = canBlockCheck(gNow);
+          noticeRed = '⚠ คิง'+(gNow.turn()==='w'?'ขาว':'ดำ')+' ติดรุกอยู่ — ' +
+            (canB ? 'หาตัวมาบังหรือกินตัวรุกได้' : 'หาตัวมาบังไม่ได้ ต้องขยับคิงรีบหนี');
+        }
+      }
+      updateNotices();
+      if(noticeRed && !prevRed) toast(noticeRed);
+      if(noticeGreen && !prevGreen) toast(noticeGreen, true);
+      if(noticeGrey && !prevGrey) toast('เสียเปรียบมาก — เล่นไม่คุ้มแล้ว แนะนำให้ยอมแพ้', true);
+      prevRed = !!noticeRed; prevGreen = !!noticeGreen; prevGrey = !!noticeGrey; }
   });
   drawArrows(keys.slice(0,3));
   markTargets(); updateDepthInfo();          // กรอบเป้าหมาย + เลขความลึก (realtime)
