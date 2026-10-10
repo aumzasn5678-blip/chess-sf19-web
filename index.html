@@ -369,10 +369,12 @@ function renderPV(){
       const bottomCp   = moverIsBottom ? shownCp : -shownCp;
       bottomIsBeingMated = (bottomMate!=null && bottomMate<0);
       mateThreat = bottomIsBeingMated;
-      noticeRed = noticeGreen = noticeGrey = '';
+      noticeRed = noticeGreen = noticeGrey = noticeYellow = '';
       if(bottomMate!=null && bottomMate<0)
-        noticeRed = '⚠ อีกฝั่งขึ้น M ได้แล้ว (M'+Math.abs(bottomMate)+') — เราใกล้ถูกรุกฆาต';
-      if(!noticeRed && !noticeGreen && sideToMove===bb){
+        noticeGrey = 'อีกฝั่งขึ้น M ได้แล้ว (M'+Math.abs(bottomMate)+') — เล่นไม่คุ้มแล้ว แนะนำยอมแพ้';
+      else if(bottomCp <= -500)
+        noticeGrey = 'เสียเปรียบ '+(bottomCp/100).toFixed(1)+' — เล่นไม่คุ้มแล้ว แนะนำยอมแพ้';
+      if(!noticeRed && !noticeYellow && sideToMove===bb){
         const gNow=new Chess(fens[ptr]);
         if(gNow.inCheck()){
           const canB = canBlockCheck(gNow);
@@ -383,8 +385,9 @@ function renderPV(){
       }
       updateNotices();
       if(noticeRed && !prevRed) toast(noticeRed);
-      if(noticeGreen && !prevGreen) toast(noticeGreen, true);
-      prevRed = !!noticeRed; prevGreen = !!noticeGreen; }
+      if(noticeYellow && !prevYellow) toast(noticeYellow);
+      if(noticeGrey && !prevGrey) toast(noticeGrey, true);
+      prevRed = !!noticeRed; prevYellow = !!noticeYellow; prevGrey = !!noticeGrey; }
   });
   drawArrows(keys.slice(0,3));
   markTargets(); updateDepthInfo();          // กรอบเป้าหมาย + เลขความลึก (realtime)
