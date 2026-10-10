@@ -382,8 +382,10 @@ function playUci(uci){
 
 /* ---------- ปุ่ม ---------- */
 $('bRun').onclick=()=>{ if(run||busy) stopAnalysis(); else runAnalysis(); };
-$('bBack').onclick=()=>{ if(ptr>0){ ptr--; sel=null; legal=[]; render(); renderPV(); updateTurnBtn(); statusEl.textContent='ย้อนไปตา '+(ptr); } };
-$('bFwd').onclick=()=>{ if(ptr<fens.length-1){ ptr++; sel=null; legal=[]; render(); renderPV(); updateTurnBtn(); statusEl.textContent='ไปข้างหน้า '+(ptr); } };
+$('bBack').onclick=()=>{ if(ptr>0){ ptr--; sel=null; legal=[]; lines={}; render(); renderPV(); updateTurnBtn();
+  if(run) runAnalysis(); else statusEl.textContent='ย้อนไปตา '+ptr; } };
+$('bFwd').onclick=()=>{ if(ptr<fens.length-1){ ptr++; sel=null; legal=[]; lines={}; render(); renderPV(); updateTurnBtn();
+  if(run) runAnalysis(); else statusEl.textContent='ไปข้างหน้า '+ptr; } };
 $('bFlip').onclick=()=>{ flipped=!flipped; render(); renderPV(); };
 $('bTurn').onclick=()=>{
   const g=new Chess(fens[ptr]);
@@ -394,6 +396,7 @@ $('bTurn').onclick=()=>{
   ucis=ucis.slice(0,ptr); fens=fens.slice(0,ptr+1);
   fens[ptr]=g.fen(); sel=null; legal=[]; lines={};
   render(); renderPV(); updateTurnBtn(); statusEl.textContent='ตั้งตาว่า: '+(g.turn()==='w'?'ขาว':'ดำ');
+  if(run) runAnalysis();
 };
 function updateTurnBtn(){ const t=new Chess(fens[ptr]).turn(); $('bTurn').textContent='ตา: '+(t==='w'?'ขาว':'ดำ'); }
 $('bNew').onclick=()=>{ game=new Chess(); fens=[game.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={};
