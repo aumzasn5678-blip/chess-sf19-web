@@ -254,6 +254,42 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
 .rec{color:#4ec46f;font-weight:700}
 #confirmNew{display:none;border-color:#f5d327}
 #confirmNew .inner{display:flex;align-items:center;gap:8px;font-size:.93rem;font-weight:600}
+
+/* ---------- ไอคอนเกรดการเดิน (chess.com style) บนช่องปลายทาง ---------- */
+.gradico{position:absolute;right:1px;bottom:1px;width:21px;height:21px;z-index:4;pointer-events:none;
+  background-size:contain;background-repeat:no-repeat;background-position:center;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+@media (max-width:360px){.gradico{width:17px;height:17px}}
+#legend{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.legrow{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--dim);line-height:1.35}
+.legico{width:19px;height:19px;flex:0 0 auto;object-fit:contain}
+
+/* ---------- ปุ่ม 'แก้ไขกระดาน' บนจอหลัก ---------- */
+.editbtn{background:linear-gradient(180deg,#a855f7,#7e3ff2)!important;color:#fff!important;border-color:#6d34d6!important;
+  box-shadow:0 5px 16px rgba(168,85,247,.35)!important}
+.editbtn:active{background:linear-gradient(180deg,#9a48e6,#6f34d9)!important}
+
+/* ---------- โหมด EDIT กระดาน (เต็มหน้าจอ) ---------- */
+#editView{position:fixed;inset:0;z-index:200;display:none;overflow-y:auto;overflow-x:hidden;
+  background:radial-gradient(900px 500px at 50% -8%,#18212b 0%,var(--bg) 62%);-webkit-overflow-scrolling:touch}
+#editView.show{display:block}
+#editInner{max-width:calc(var(--boardmax,420px) + 22px);margin:0 auto;padding:calc(env(safe-area-inset-top) + 8px) 10px calc(env(safe-area-inset-bottom) + 22px)}
+.edhead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.edhead h2{font-size:1.2rem;margin:0;flex:1}
+#editBoardWrap{position:relative;width:100%;max-width:var(--boardmax,420px);margin:0 auto;aspect-ratio:1/1;
+  border-radius:14px;overflow:hidden;border:1px solid #c9d3e0;box-shadow:0 10px 26px rgba(0,0,0,.42)}
+#editBoard{position:absolute;inset:0;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr)}
+#editTray{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:6px}
+#editTray .traybtn{flex:none;padding:4px;height:auto;aspect-ratio:1/1;border-radius:10px;background:var(--panel2);border:1px solid var(--line);min-width:0}
+#editTray .traybtn img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+#editTray .traybtn.on{box-shadow:0 0 0 2px var(--acc),0 0 10px var(--accGlow);border-color:var(--acc)}
+#editTray .traybtn.erase{font-size:1.25rem;display:flex;align-items:center;justify-content:center;color:var(--dim)}
+#editTray .traybtn.erase.on{background:#e5534b;color:#fff;border-color:#a52f28;box-shadow:0 0 0 2px rgba(229,83,75,.5)}
+.esel{font-weight:700;background:transparent!important;color:var(--dim);border-color:var(--line)}
+.esel.on{background:linear-gradient(180deg,var(--acc),var(--acc2))!important;color:var(--accInk);border-color:var(--acc2);box-shadow:0 0 0 2px var(--accGlow)}
+#editDel:disabled{opacity:.4}
+#editSelInfo{min-height:14px}
+@media (max-width:360px){#editTray{grid-template-columns:repeat(6,1fr)}}
 </style>
 </head>
 <body>
@@ -288,6 +324,9 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
     <button id="bRun" class="pri">▶ รัน</button>
     <button id="bFlip" class="sm" data-i18n="bFlip" style="flex:0 0 21.5%">⇅ สลับฝั่ง</button>
     <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" data-i18n-title="tTheme" data-i18n="bTheme" style="flex:0 0 16%">ธีม</button>
+  </div>
+  <div class="row">
+    <button id="bEdit" class="sm editbtn" data-i18n="bEdit" style="flex:1">✎ แก้ไขกระดาน</button>
   </div>
   <div id="confirmNew" class="card">
     <div class="inner">
@@ -360,6 +399,22 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <div class="row"><button id="hideBtn" class="sm togg">ซ่อนการชี้นำ: ปิด</button></div>
       <div class="tiny" data-i18n-html="footerHint">กด ▶ รัน = วิเคราะห์ตำแหน่งปัจจุบัน (กดอีกครั้ง = หยุด) · แตะช่องปลายลูกศร = เดินตามนั้นทันที<br>
       แตะหมาก = เลือก · จุดฟ้า = ที่เดินได้ · เข้าป้อม: แตะคิงแล้วแตะเรือ (กฎสากลเต็มรูปแบบ)</div>
+
+      <div class="cardtitle" style="margin-top:12px" data-i18n="legendTitle">คำอธิบายไอคอนเกรดการเดิน</div>
+      <div id="legend">
+        <div class="legrow"><img src="icons/book.png" class="legico" alt=""><span data-i18n="gBook"></span></div>
+        <div class="legrow"><img src="icons/brilliant.png" class="legico" alt=""><span data-i18n="gBrilliant"></span></div>
+        <div class="legrow"><img src="icons/great.png" class="legico" alt=""><span data-i18n="gGreat"></span></div>
+        <div class="legrow"><img src="icons/best.png" class="legico" alt=""><span data-i18n="gBest"></span></div>
+        <div class="legrow"><img src="icons/excellent.png" class="legico" alt=""><span data-i18n="gExcellent"></span></div>
+        <div class="legrow"><img src="icons/good.png" class="legico" alt=""><span data-i18n="gGood"></span></div>
+        <div class="legrow"><img src="icons/inaccuracy.png" class="legico" alt=""><span data-i18n="gInaccuracy"></span></div>
+        <div class="legrow"><img src="icons/mistake.png" class="legico" alt=""><span data-i18n="gMistake"></span></div>
+        <div class="legrow"><img src="icons/blunder.png" class="legico" alt=""><span data-i18n="gBlunder"></span></div>
+        <div class="legrow"><img src="icons/miss.png" class="legico" alt=""><span data-i18n="gMiss"></span></div>
+        <div class="legrow"><img src="icons/forced.png" class="legico" alt=""><span data-i18n="gForced"></span></div>
+      </div>
+      <div class="tiny" data-i18n-html="legendNote">หมายเหตุ: ไอคอน Brilliant และ Book เป็นการประเมินแบบ "ใกล้เคียง" (approximate)</div>
     </div>
   </details>
 
@@ -389,6 +444,47 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
   </details>
 </div>
 
+<div id="editView">
+  <div id="editInner">
+    <div class="edhead">
+      <h2 data-i18n="editTitle">✎ แก้ไขกระดาน</h2>
+      <button id="editBack" class="sm" data-i18n="editBack" style="flex:0 0 auto;padding:10px 14px">↩ กลับ</button>
+    </div>
+    <div id="editBoardWrap"><div id="editBoard"></div></div>
+    <div class="cardtitle" style="margin-top:10px" data-i18n="editTrayT">ถาดหมาก</div>
+    <div id="editTray"></div>
+    <div class="row">
+      <button id="editDel" class="sm" data-i18n="editDel">🗑 ลบหมากที่เลือก</button>
+      <button id="editClear" class="sm" data-i18n="editClear">ล้างกระดาน</button>
+    </div>
+    <div class="cardtitle" style="margin-top:10px" data-i18n="editTurnT">ฝ่ายที่เดิน</div>
+    <div class="row" id="editTurnSel">
+      <button class="sm esel" data-turn="w" data-i18n="white">ขาว</button>
+      <button class="sm esel" data-turn="b" data-i18n="black">ดำ</button>
+    </div>
+    <div class="cardtitle" style="margin-top:10px" data-i18n="editCastleT">สิทธิ์เข้าป้อม (Castling)</div>
+    <div class="row" id="editCastle">
+      <button class="sm esel" data-cas="K">K</button>
+      <button class="sm esel" data-cas="Q">Q</button>
+      <button class="sm esel" data-cas="k">k</button>
+      <button class="sm esel" data-cas="q">q</button>
+    </div>
+    <div class="cardtitle" style="margin-top:10px" data-i18n="editFenT">FEN</div>
+    <div class="row"><input type="text" id="editFen" data-i18n-ph="editFenPh" placeholder="วาง FEN แล้วกด อ่าน FEN"></div>
+    <div class="row">
+      <button id="editLoadFen" class="sm" data-i18n="editLoadFen">อ่าน FEN</button>
+      <button id="editCopyFen" class="sm" data-i18n="editCopyFen">คัดลอก FEN</button>
+    </div>
+    <div class="tiny" id="editSelInfo">&nbsp;</div>
+    <div class="row" style="margin-top:12px">
+      <button id="editUse" class="pri" data-i18n="editUse">✓ ใช้งานตำแหน่งนี้</button>
+    </div>
+    <div class="row">
+      <button id="editBack2" class="sm" data-i18n="editCancel">ยกเลิก / กลับ</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { Chess } from './lib/chess.js';
 const $ = id => document.getElementById(id);
@@ -400,6 +496,12 @@ let flipped=false;                 // ⇅ กลับหัว (ไม่สล
 let sel=null, legal=[];
 let fens=[game.fen()], ptr=0, ucis=[];   // ประวัติสำหรับย้อน/ไปข้างหน้า
 let lines={}, job=0, busy=false, run=false, npvN=3, sugTo={};
+/* ---------- สถานะเกรดการเดิน + โหมดแก้ไขกระดาน (ประกาศที่นี่ กัน TDZ ตอน loadGame/render) ---------- */
+let moveGrades=[];                 // moveGrades[i] = เกรดของ ucis[i] (book/brilliant/…)
+let gradeRunCtx=null;              // บริบทเกรดที่รอผลวิเคราะห์รอบถัดไป (ตอนโหมดรัน)
+let evalCb=null, evalBuf=null;     // micro-eval สั้น ๆ เพื่อคิดเกรดเมื่อไม่มีผล MultiPV
+let BOOK_SET=null;                 // Set ของตำราเปิดหมาก (book/openings.json)
+let editOn=false, editMap={}, editTurn='w', editCastle={K:false,Q:false,k:false,q:false}, editSel=null, editBoardSel=null;
 
 /* ---------- ค่าตั้ง (จำใน localStorage) ---------- */
 const LSK={depth:'chessDepth',npv:'chessNpv',elo:'chessElo',anim:'chessAnim',theme:'chessTheme',size:'chessSize',prof:'chessProf',hide:'chessHide',lang:'chessLang'};
@@ -411,10 +513,10 @@ const LSK_GAME='chessGame';               // เก็บ {fens,ucis,ptr,flipped
 const MAX_SAVED_MOVES=300;                // ตัดการเดินเก่าที่เกิน 300 ตา กัน localStorage เต็ม (เกมยาวมาก)
 function saveGame(){
   try{
-    let f=fens.slice(), u=ucis.slice(), p=ptr;
+    let f=fens.slice(), u=ucis.slice(), p=ptr, gr=moveGrades.slice();
     if(u.length>MAX_SAVED_MOVES){ const drop=u.length-MAX_SAVED_MOVES;
-      u=u.slice(drop); f=f.slice(drop); p=Math.max(0, p-drop); }
-    localStorage.setItem(LSK_GAME, JSON.stringify({v:1, fens:f, ucis:u, ptr:p, flipped:!!flipped}));
+      u=u.slice(drop); f=f.slice(drop); gr=gr.slice(drop); p=Math.max(0, p-drop); }
+    localStorage.setItem(LSK_GAME, JSON.stringify({v:1, fens:f, ucis:u, ptr:p, flipped:!!flipped, grades:gr}));
   }catch(e){}
 }
 function loadGame(){
@@ -426,6 +528,9 @@ function loadGame(){
     for(const fn of d.fens){ try{ new Chess(fn); }catch(e){ return false; } }   // FEN ใดเสีย = ไม่คืน (กันพัง)
     if(d.fens.length!==d.ucis.length+1) return false;
     fens=d.fens.slice(); ucis=d.ucis.slice();
+    moveGrades = Array.isArray(d.grades) ? d.grades.slice() : [];
+    while(moveGrades.length<ucis.length) moveGrades.push(null);
+    moveGrades.length=ucis.length;
     ptr=Math.max(0, Math.min((d.ptr|0), fens.length-1));
     flipped=!!d.flipped; game=new Chess(fens[ptr]);
     return true;
@@ -485,7 +590,28 @@ const I18N={
   toastFenFromLink:'ตั้งตำแหน่งจากลิงก์แล้ว ✓', toastBadFenLink:'FEN จากลิงก์ไม่ถูกต้อง — เริ่มเกมปกติ',
   pgnTitle:'นำเข้า PGN', pgnPh:'วาง PGN ที่นี่ (มีหรือไม่มี header ก็ได้)', bImportPgn:'นำเข้า PGN',
   pgnHintHtml:'วางบันทึกการเดิน (PGN) แล้วกด <b>นำเข้า PGN</b> เพื่อเปิดเกมนั้นมาวิเคราะห์ · รองรับทั้งแบบมี header และไม่มี · ถ้ามี FEN เริ่มต้นใน header จะใช้ด้วย',
-  toastPgnImported:'นำเข้าสำเร็จ {0} ตา', toastPgnBad:'PGN ไม่ถูกต้อง'
+  toastPgnImported:'นำเข้าสำเร็จ {0} ตา', toastPgnBad:'PGN ไม่ถูกต้อง',
+  bEdit:'✎ แก้ไขกระดาน',
+  legendTitle:'คำอธิบายไอคอนเกรดการเดิน',
+  gBook:'Book — ตาอยู่ในตำราเปิดหมากมาตรฐาน',
+  gBrilliant:'Brilliant (!!) — ตาดีที่สุด + เสียสละหมากอย่างชาญฉลาด',
+  gGreat:'Great (!) — ตาดีมาก ดีกว่าทางเลือกอื่นชัดเจน',
+  gBest:'Best (★) — ตาที่เอนจินเห็นว่าดีที่สุด',
+  gMiss:'Miss (✗) — พลาดโอกาสโจมตี/ tactic ที่มีให้เล่น',
+  gBlunder:'Blunder (??) — ตาพลาดร้ายแรง',
+  gMistake:'Mistake (?) — ตาเสียเปรียบชัดเจน',
+  gInaccuracy:'Inaccuracy (?!) — ตาไม่แม่น เริ่มคลาดเคลื่อน',
+  gExcellent:'Excellent (👍) — ตาดีมาก ใกล้ดีที่สุด',
+  gGood:'Good (✓) — ตาดี ใช้ได้',
+  gForced:'Forced (→) — ตาบังคับ (มีตาถูกกฎหมายเดียว)',
+  legendNote:'หมายเหตุ: ไอคอน <b>Brilliant</b> และ <b>Book</b> เป็นการประเมินแบบ "ใกล้เคียง" (approximate) ไม่ใช่มาตรฐานเดียวกับ chess.com เป๊ะ',
+  editTitle:'✎ แก้ไขกระดาน', editBack:'↩ กลับ', editCancel:'ยกเลิก / กลับ',
+  editTrayT:'ถาดหมาก (แตะหมาก แล้วแตะช่องเพื่อวาง)', editErase:'ยางลบ',
+  editDel:'🗑 ลบหมากที่เลือก', editClear:'ล้างกระดาน',
+  editTurnT:'ฝ่ายที่เดิน', editCastleT:'สิทธิ์เข้าป้อม (Castling)',
+  editFenT:'FEN', editFenPh:'วาง FEN แล้วกด อ่าน FEN',
+  editLoadFen:'อ่าน FEN', editCopyFen:'คัดลอก FEN',
+  editUse:'✓ ใช้งานตำแหน่งนี้', editFenLoaded:'อ่าน FEN แล้ว ✓', editSelected:'เลือก:'
  },
  en:{
   stReady:'Ready',
@@ -537,7 +663,28 @@ const I18N={
   toastFenFromLink:'Position set from link ✓', toastBadFenLink:'Invalid FEN in link — starting a normal game',
   pgnTitle:'Import PGN', pgnPh:'Paste PGN here (with or without headers)', bImportPgn:'Import PGN',
   pgnHintHtml:'Paste a move record (PGN) then press <b>Import PGN</b> to load that game for analysis · supports with or without headers · a starting FEN in the header is used too',
-  toastPgnImported:'Imported {0} moves', toastPgnBad:'Invalid PGN'
+  toastPgnImported:'Imported {0} moves', toastPgnBad:'Invalid PGN',
+  bEdit:'✎ Edit board',
+  legendTitle:'Move-grade icon legend',
+  gBook:'Book — the move follows standard opening theory',
+  gBrilliant:'Brilliant (!!) — best move plus a sound sacrifice',
+  gGreat:'Great (!) — a very strong move, clearly better than the alternatives',
+  gBest:'Best (★) — the engine’s top move',
+  gMiss:'Miss (✗) — missed a clear attacking chance / tactic',
+  gBlunder:'Blunder (??) — a serious blunder',
+  gMistake:'Mistake (?) — a clearly losing move',
+  gInaccuracy:'Inaccuracy (?!) — an imprecise move',
+  gExcellent:'Excellent (👍) — very good, close to best',
+  gGood:'Good (✓) — a fine move',
+  gForced:'Forced (→) — the only legal move',
+  legendNote:'Note: the <b>Brilliant</b> and <b>Book</b> badges are approximate assessments, not identical to chess.com’s standards',
+  editTitle:'✎ Edit board', editBack:'↩ Back', editCancel:'Cancel / Back',
+  editTrayT:'Piece tray (tap a piece, then tap a square)', editErase:'Eraser',
+  editDel:'🗑 Delete selected', editClear:'Clear board',
+  editTurnT:'Side to move', editCastleT:'Castling rights',
+  editFenT:'FEN', editFenPh:'Paste FEN then press Load FEN',
+  editLoadFen:'Load FEN', editCopyFen:'Copy FEN',
+  editUse:'✓ Use this position', editFenLoaded:'FEN loaded ✓', editSelected:'Selected:'
  }
 };
 function t(key){ const d=(I18N[lang]&&I18N[lang][key]); let s=(d!=null?d:(I18N.th[key]!=null?I18N.th[key]:key));
@@ -560,6 +707,10 @@ function applyLang(){
   if(lastSub) setSub.apply(null,[lastSub.key].concat(lastSub.args));
   if(lastStatus) setStatus.apply(null,[lastStatus.key].concat(lastStatus.args));
   renderLog(); setEval(lastEval.cp, lastEval.mate); renderPV(); checkGameEnd();
+  const _tt=$('toast'); if(_tt){ _tt.classList.remove('show'); _tt.textContent=''; }          // ล้างข้อความ toast เก่า กันเศษภาษาอื่นค้าง
+  const _er=document.querySelector('#editTray .traybtn.erase');                                 // ป้ายยางลบในโหมดแก้ไข ต้องเปลี่ยนตามภาษาเสมอ
+  if(_er){ _er.title=t('editErase'); _er.setAttribute('aria-label', t('editErase')); }
+  if(editOn) renderEdit();          // อัปเดตข้อความในโหมดแก้ไขกระดานตามภาษา
   if(promoPending) openPromo(promoPending.from, promoPending.to);   // อัปเดต label/aria ของแถบโปรโมทตามภาษา
 }
 function setLang(l){ lang=(l==='en')?'en':'th'; lsSet(LSK.lang, lang); applyLang(); }
@@ -583,11 +734,22 @@ function startEngine(){
   engine.onmessage = ev =>{
     const line = typeof ev.data==='string' ? ev.data : (ev.data&&ev.data.text)||'';
     if(line==='uciok'){ ready=true; setSub('stReady'); applyElo(); return; }
-    if(line.startsWith('info ')) parseInfo(line);
+    if(line.startsWith('info ')){
+      if(evalCb){ const sc=line.match(/ score (cp|mate) (-?\d+)/); if(sc){ evalBuf={kind:sc[1],val:+sc[2]}; } return; }
+      parseInfo(line); return;
+    }
     if(line.startsWith('bestmove')){
-      if(!searching) return;                    // ผลของงานเก่า (หลัง stop) — ทิ้ง
+      if(evalCb){ const cb=evalCb; evalCb=null; const b=evalBuf; evalBuf=null;
+        try{ engine.postMessage('setoption name MultiPV value '+npvN); }catch(e){}
+        cb(b); return; }                                     // ผลของ micro-eval (คิดเกรด) — ไม่แตะแผงวิเคราะห์
+      if(!searching) return;                                 // ผลของงานเก่า (หลัง stop) — ทิ้ง
       searching=false;
       renderPV(); setStatus(run?'stDoneRun':'stDoneEval', maxDepth());
+      if(gradeRunCtx && lines[1]){                           // โหมดรัน: คิดเกรดของตาที่เพิ่งเดินจากผลรอบใหม่
+        const c=gradeRunCtx; gradeRunCtx=null;
+        finalizeGrade(c.idx, c.beforeBestCp, -evalToCp(lines[1].kind, lines[1].val), c.gapCp);
+      }
+      return;
     }
   };
   engine.postMessage('uci');
@@ -866,6 +1028,7 @@ function render(){
     boardEl.appendChild(d);
   }
   if(g.inCheck()) for(const el of boardEl.children){ const p=g.get(el.dataset.sq); if(p&&p.type==='k'&&p.color===g.turn()) el.classList.add('chk','warnk'); }
+  paintGrades();                       // ไอคอนเกรดการเดินบนช่องปลายทาง (ค้างอยู่ทุกครั้งที่วาดใหม่)
   renderLog(g);
   markTargets();                       // ให้ป้ายคะแนน/ออร่าคงอยู่ทุกครั้งที่วาดกระดานใหม่
   checkGameEnd();
@@ -1026,14 +1189,27 @@ function playUci(uci){
   const g=new Chess(fens[ptr]);
   const m=g.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]||'q'});
   if(!m) return;
+  const gctx=captureGradeCtx(uci);                       // จับคะแนนก่อนเดิน (ต้องทำก่อน clearHints ล้าง lines)
   clearHints();                                          // ← ลูกศร/กรอบ/ป้ายหายปั๊บทันที "ก่อน" อนิเมชันและรอบวิเคราะห์ใหม่
   animateMove(uci.slice(0,2), uci.slice(2,4));           // อนิเมชันเลื่อนหมาก (เบา ๆ)
+  moveGrades = moveGrades.slice(0, ptr);                 // ตัดเกรดของตาที่ถูกเขียนทับ (ถ้าเดินใหม่หลังย้อน)
+  gradeRunCtx = null;
   ucis = ucis.slice(0,ptr); fens = fens.slice(0,ptr+1);
   ucis.push(uci); fens.push(g.fen()); ptr=fens.length-1;
   sel=null; legal=[];
   render(); renderPV(); updateTurnBtn(); saveGame();
-  if(run) runAnalysis();                                  // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง
-  else setStatus('stMoved');
+  const idx=ucis.length-1;
+  if(run){
+    gradeRunCtx={ idx:idx, beforeBestCp:gctx.beforeBestCp, gapCp:gctx.gapCp };   // รอผลวิเคราะห์รอบใหม่ แล้วคิดเกรด
+    runAnalysis();                                  // โหมดรันค้าง: วิเคราะห์ตำแหน่งใหม่ให้เอง
+  } else {
+    setStatus('stMoved');
+    if(gctx.matchedVal!=null){                      // ตาที่เดินอยู่ในลิสต์ MultiPV อยู่แล้ว = รู้ผลทันที
+      finalizeGrade(idx, gctx.beforeBestCp, gctx.matchedVal, gctx.gapCp);
+    } else {
+      gradeAfterMove(idx, gctx);                    // ไม่อยู่ในลิสต์ → ประเมินสั้น ๆ (depth ~11, ≤1.5 วิ) แล้วค่อยคิดเกรด
+    }
+  }
 }
 
 /* ---------- ปุ่มเดิน/กด ---------- */
@@ -1055,11 +1231,13 @@ let prevGame=null;                       // สถานะเกมก่อน
 function updateUndoBtn(){ const b=$('bUndo'); if(b) b.disabled = !prevGame; }
 function snapshotGame(){
   return { fens: fens.slice(), ucis: ucis.slice(), ptr: ptr, flipped: flipped,
+           grades: moveGrades.slice(),
            lines: JSON.parse(JSON.stringify(lines)) };
 }
 function startNewGame(){
   prevGame = snapshotGame();               // เก็บเกมเดิมไว้ก่อนรีเซ็ต (ครั้งล่าสุดเท่านั้น)
   game=new Chess(); fens=[game.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
+  moveGrades=[]; gradeRunCtx=null;         // ล้างไอคอนเกรดทั้งหมดเมื่อเริ่มเกมใหม่
   flipped=false; render(); renderPV(); updateTurnBtn(); setStatus('stNewGame');
   updateUndoBtn(); saveGame();               // ล้างเกมที่จำไว้ (บันทึกเกมใหม่ทับ)
   if(run) runAnalysis();
@@ -1069,6 +1247,7 @@ $('bUndo').onclick=()=>{                    // ย้อนกลับไปเ
   if(!prevGame) return;
   fens = prevGame.fens.slice(); ucis = prevGame.ucis.slice(); ptr = prevGame.ptr;
   flipped = prevGame.flipped; lines = JSON.parse(JSON.stringify(prevGame.lines));
+  moveGrades = prevGame.grades ? prevGame.grades.slice() : [];
   sel=null; legal=[]; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
   prevGame = null;
   game = new Chess(fens[ptr]);
@@ -1081,6 +1260,7 @@ $('bSet').onclick=()=>{
   const v=$('fen').value.trim(); if(!v) return;
   try{ const g=new Chess(); if(v.includes('/')) g.load(v); else g.loadPgn(v);
     fens=[g.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
+    moveGrades=[]; gradeRunCtx=null;
     render(); renderPV(); updateTurnBtn();
     setStatus('stSetPos'); saveGame();
     if(run) runAnalysis(); else toast(t('toastSetOkInfo'), true);
@@ -1130,6 +1310,7 @@ function importPgn(){
     for(const m of hist){ u.push(m.from+m.to+(m.promotion||'')); f.push(m.after); }
     fens=f; ucis=u; ptr=f.length-1; sel=null; legal=[];
     lines={}; sugTo={}; sugRank={}; sqTagTxt={}; mateThreat=false; prevThreat=false;
+    moveGrades=[]; gradeRunCtx=null;
     game=new Chess(fens[ptr]);
     render(); renderPV(); updateTurnBtn(); updateUndoBtn(); saveGame();
     setStatus('stSetPos');
@@ -1252,6 +1433,7 @@ document.addEventListener('keydown', (e)=>{
   if(tg==='INPUT' || tg==='TEXTAREA') return;          // ไม่แย่งตอนพิมพ์
   const c = e.code || '';
   const k = e.key || '';
+  if(editOn && (c==='Escape'||k==='Escape'||k==='Esc')){ e.preventDefault(); closeEdit(); return; }   // โหมดแก้ไข: ESC = กลับ
   // แถบเลือกตัวหมากโปรโมท: กด q/r/b/n เพื่อเลือก (ESC = ยกเลิก ไม่เดิน)
   if(promoPending){
     const pk=(e.key||'').toLowerCase();
@@ -1317,13 +1499,266 @@ function fenFromUrl(){
   const fromUrl = fenFromUrl();
   if(fromUrl!=null){
     try{ const g=new Chess(); g.load(fromUrl);              // FEN ต้องถูกต้อง ไม่งั้น throw
-      fens=[g.fen()]; ucis=[]; ptr=0; flipped=false; game=new Chess(fens[0]);
+      fens=[g.fen()]; ucis=[]; ptr=0; flipped=false; game=new Chess(fens[0]); moveGrades=[];
       setTimeout(()=>toast(t('toastFenFromLink'), true), 350);
       return;                                              // ตำแหน่งจากลิงก์ = มาก่อนเกมที่จำไว้
     }catch(e){ setTimeout(()=>toast(t('toastBadFenLink')), 350); }
   }
   loadGame();                                              // มีข้อมูลเดิม → คืน · ไม่มี → เริ่มเกมใหม่ตามค่าปริยาย
 })();
+
+/* ==================================================================
+   ไอคอนเกรดการเดิน (สไตล์ chess.com) + โหมดแก้ไขกระดาน
+   ================================================================== */
+const GRADE_ORDER=['book','brilliant','great','best','miss','blunder','mistake','inaccuracy','excellent','good','forced'];
+const _PIECE_VAL={p:1,n:3,b:3,r:5,q:9,k:0};
+
+/* โหลดตำราเปิดหมากครั้งเดียวเป็น Set (คีย์ = FEN 3 ฟิลด์แรก) */
+fetch('book/openings.json').then(r=>r.json()).then(d=>{
+  const arr = Array.isArray(d) ? d : (Array.isArray(d.keys) ? d.keys : Object.keys(d));
+  BOOK_SET=new Set(arr);
+}).catch(()=>{});
+function posKeyOf(fen){ return String(fen).split(' ').slice(0,3).join(' '); }
+function bookHas(fen){ return !!(BOOK_SET && BOOK_SET.has(posKeyOf(fen))); }
+
+/* แปลงคะแนนเอนจิน (cp/mate) -> ตัวเลขเทียบหน่วย 'เซนติเบี้ย' (มาก = ฝ่ายที่ถึงตาได้เปรียบ) */
+function evalToCp(kind,val){
+  if(kind==='cp') return val;
+  return val>0 ? (100000 - Math.abs(val)*100) : (-100000 + Math.abs(val)*100);
+}
+function materialOf(g,color){
+  let m=0;
+  for(const row of g.board()) for(const c of row) if(c && c.color===color) m += (_PIECE_VAL[c.type]||0);
+  return m;
+}
+/* เป็นการเสียสละจริงไหม: หมากที่มูฟ (ตัวใหญ่ ≥ ม้า) ถูกกินได้ + วัสดุสุทธิลด ≥1 + ไม่มี recapture ทันที */
+function isSacrifice(gBefore, move, afterMoverCp){
+  if(!move || (_PIECE_VAL[move.piece]||0) < 3) return false;
+  if(afterMoverCp==null || afterMoverCp < -50) return false;      // หลังตานี้ต้องไม่เสียเปรียบ
+  const after=new Chess(gBefore.fen());
+  try{ if(!after.move({from:move.from,to:move.to,promotion:move.promotion||'q'})) return false; }catch(e){ return false; }
+  const to=move.to;
+  const caps=after.moves({verbose:true}).filter(x=>x.to===to && x.captured);
+  if(!caps.length) return false;                                  // ฝ่ายตรงข้ามกินหมากที่มูฟไม่ได้ = ไม่ใช่การเสียสละ
+  const mover=gBefore.turn();
+  const matBefore=materialOf(gBefore, mover);
+  const capG=new Chess(after.fen());
+  try{ if(!capG.move({from:caps[0].from,to:caps[0].to,promotion:caps[0].promotion||'q'})) return false; }catch(e){ return false; }
+  const matAfter=materialOf(capG, mover);
+  if(matBefore-matAfter < 1) return false;                        // วัสดุสุทธิต้องลดอย่างน้อย 1 แต้ม
+  const recaps=capG.moves({verbose:true}).filter(x=>x.to===caps[0].to && x.captured);
+  if(recaps.length) return false;                                 // มี recapture ทันที = ไม่นับ
+  return true;
+}
+/* จับคะแนนจาก MultiPV ของตำแหน่งก่อนเดิน (เรียกก่อน clearHints) */
+function captureGradeCtx(uci){
+  const bl=lines, mover=new Chess(fens[ptr]).turn();
+  let beforeBestCp=null, gapCp=null, matchedVal=null;
+  if(bl[1]) beforeBestCp=evalToCp(bl[1].kind, bl[1].val);          // มุมมองฝ่ายที่เดิน
+  if(bl[1] && bl[2]) gapCp = evalToCp(bl[1].kind,bl[1].val) - evalToCp(bl[2].kind,bl[2].val);
+  for(const k in bl){ const l=bl[k]; if(l && l.pv && l.pv[0]===uci){ matchedVal=evalToCp(l.kind,l.val); break; } }
+  return { beforeBestCp:beforeBestCp, gapCp:gapCp, matchedVal:matchedVal, mover:mover };
+}
+/* ตัดสินเกรดตามเกณฑ์ (ก่อนBest/afterMoverCp = เซนติเบี้ย มุมมองฝ่ายที่เดิน) */
+function classifyMove(gBefore, move, beforeBestCp, afterMoverCp, gapCp, fenAfter){
+  const legal=gBefore.moves({verbose:true});
+  const forced = legal.length<=1;
+  let loss=null;
+  if(beforeBestCp!=null && afterMoverCp!=null) loss=(beforeBestCp-afterMoverCp)/100;
+  const isBook = bookHas(fenAfter);
+  // 1) book (ข้อยกเว้น: ถ้าเป็น mistake/blunder ชัดเจน ไม่ตีเป็น book)
+  if(isBook && !(loss!=null && loss>1.2)) return 'book';
+  // 2) brilliant
+  if(loss!=null && loss<=0.05 && legal.length>1 && beforeBestCp!=null && (beforeBestCp/100)<8.0 && isSacrifice(gBefore, move, afterMoverCp))
+    return 'brilliant';
+  // 3) great
+  if(loss!=null && loss<=0.1 && !(move===null)){
+    const gapBig=(gapCp!=null && gapCp>=100), moverLosing=(beforeBestCp!=null && beforeBestCp<0);
+    if(gapBig || moverLosing) return 'great';
+  }
+  // 4) best
+  if(loss!=null && loss<=0.05) return 'best';
+  // 5) miss (มี tactic ให้เล่นแต่ไม่เล่น)
+  if(loss!=null && loss>=1.5 && beforeBestCp!=null && beforeBestCp>=100) return 'miss';
+  // 6-10) ตามช่วง loss
+  if(loss!=null && loss>2.4) return 'blunder';
+  if(loss!=null && loss>1.2) return 'mistake';
+  if(loss!=null && loss>0.6) return 'inaccuracy';
+  if(loss!=null && loss<=0.25) return 'excellent';
+  if(loss!=null && loss<=0.6) return 'good';
+  // 11) forced (ตาบังคับ) — เมื่อไม่มีคะแนนให้ตัดสิน
+  if(forced) return 'forced';
+  return null;
+}
+/* เก็บเกรดจริงของตา idx (เรียกได้ทั้งจาก matched/run/micro-eval) */
+function finalizeGrade(idx, beforeBestCp, afterMoverCp, gapCp){
+  try{
+    if(idx<0 || idx>=ucis.length) return;
+    const uci=ucis[idx];
+    const gBefore=new Chess(fens[idx]);
+    const move=gBefore.moves({verbose:true}).find(m=>m.from===uci.slice(0,2)&&m.to===uci.slice(2,4));
+    const grade=classifyMove(gBefore, move, beforeBestCp, afterMoverCp, gapCp, fens[idx+1]);
+    moveGrades[idx]=grade||null;
+    render(); saveGame();
+  }catch(e){}
+}
+/* ประเมินสั้น ๆ (depth ~11, ≤1.5 วิ) — คืนค่าเซนติเบี้ยมุมมองฝ่ายที่ถึงตาในตำแหน่งนั้น */
+function engineReady(){ return !!(engine && ready); }
+function microEval(fen, depth){
+  return new Promise(resolve=>{
+    if(!engineReady()){ resolve(null); return; }
+    evalBuf={kind:null,val:null}; evalCb=resolve;
+    try{
+      engine.postMessage('setoption name MultiPV value 1');
+      engine.postMessage('position fen '+fen);
+      engine.postMessage('go depth '+(depth||11)+' movetime 1500');
+    }catch(e){ evalCb=null; resolve(null); }
+  });
+}
+async function microEvalMover(fen, stm){
+  const b=await microEval(fen, 11);
+  if(!b || b.kind==null) return null;
+  return evalToCp(b.kind, b.val);        // UCI = มุมมองฝ่ายที่ถึงตาใน fen นั้นอยู่แล้ว
+}
+async function gradeAfterMove(idx, ctx){
+  try{
+    let beforeBest=ctx.beforeBestCp, gap=ctx.gapCp;
+    if(beforeBest==null && engineReady()){
+      const stm=new Chess(fens[idx]).turn();
+      beforeBest=await microEvalMover(fens[idx], stm);
+    }
+    let afterM=null;
+    if(engineReady()){
+      const stm2=new Chess(fens[idx+1]).turn();
+      const v=await microEvalMover(fens[idx+1], stm2);
+      afterM = (v==null? null : -v);      // มุมมองฝ่ายที่เดิน = ตรงข้ามกับฝ่ายที่ถึงตาหลังเดิน
+    }
+    finalizeGrade(idx, beforeBest, afterM, gap);
+  }catch(e){}
+}
+/* วาดไอคอนเกรดบนช่องปลายทางของทุกตาที่เดินแล้ว (ค้างอยู่ตลอด; ล้างเมื่อเริ่มเกมใหม่) */
+function paintGrades(){
+  if(!moveGrades.length) return;
+  for(let i=0;i<ucis.length;i++){
+    const gr=moveGrades[i]; if(!gr) continue;
+    const dest=ucis[i].slice(2,4);
+    const cell=boardEl.querySelector('.sq[data-sq="'+dest+'"]');
+    if(!cell) continue;
+    const ic=document.createElement('span');
+    ic.className='gradico'; ic.dataset.grade=gr; ic.dataset.ply=String(i);
+    ic.style.backgroundImage="url('icons/"+gr+".png')";
+    cell.appendChild(ic);
+  }
+}
+
+/* ---------- โหมด EDIT กระดาน (เต็มหน้าจอ) ---------- */
+function editPieceSrc(color,type){ return 'pieces/'+(color==='b'?'_':'')+type.toUpperCase()+'.png'; }
+function editToFen(){
+  const rows=[];
+  for(let rank=8;rank>=1;rank--){
+    let s='', empty=0;
+    for(let f=0;f<8;f++){
+      const sq='abcdefgh'[f]+rank, v=editMap[sq];
+      if(v){ if(empty){ s+=empty; empty=0; } const p=v[1]; s += (v[0]==='b'? p.toLowerCase() : p.toUpperCase()); }
+      else empty++;
+    }
+    if(empty) s+=empty;
+    rows.push(s);
+  }
+  let cas=(editCastle.K?'K':'')+(editCastle.Q?'Q':'')+(editCastle.k?'k':'')+(editCastle.q?'q':'');
+  if(!cas) cas='-';
+  return rows.join('/')+' '+editTurn+' '+cas+' - 0 1';
+}
+function openEdit(){
+  try{
+    const f=fens[ptr]; const g=new Chess(f);
+    editMap={};
+    for(const row of g.board()) for(const c of row) if(c) editMap[c.square]=c.color+c.type;
+    editTurn=g.turn();
+    const cas=(f.split(' ')[2]||'-');
+    editCastle={K:cas.includes('K'),Q:cas.includes('Q'),k:cas.includes('k'),q:cas.includes('q')};
+  }catch(e){ editMap={}; editTurn='w'; editCastle={K:false,Q:false,k:false,q:false}; }
+  editSel=null; editBoardSel=null; editOn=true;
+  const ev=$('editView'); if(ev) ev.classList.add('show');
+  document.body.classList.add('editing');
+  renderEdit();
+}
+function closeEdit(){ editOn=false; const ev=$('editView'); if(ev) ev.classList.remove('show'); document.body.classList.remove('editing'); }
+function renderEdit(){
+  if(!editOn) return;
+  const b=$('editBoard'); if(!b) return;
+  b.innerHTML='';
+  for(let r=0;r<8;r++) for(let f=0;f<8;f++){
+    const sq='abcdefgh'[f]+(8-r);
+    const d=document.createElement('div');
+    d.className='sq '+((f+r)%2?'dark':'light'); d.dataset.sq=sq;
+    const v=editMap[sq];
+    if(v){ const im=document.createElement('img'); im.className='pcimg'; im.alt=''; im.src=editPieceSrc(v[0],v[1]); d.appendChild(im); }
+    if(editBoardSel===sq) d.classList.add('sel');
+    d.onclick=()=>editTapSquare(sq);
+    b.appendChild(d);
+  }
+  const tr=$('editTray'); tr.innerHTML='';
+  const order=[['w','q'],['w','r'],['w','b'],['w','n'],['w','p'],['w','k'],['b','q'],['b','r'],['b','b'],['b','n'],['b','p'],['b','k']];
+  order.forEach(function(pp){
+    const c=pp[0], p=pp[1], key=c+p;
+    const btn=document.createElement('button'); btn.type='button';
+    btn.className='traybtn'+(editSel===key?' on':''); btn.dataset.piece=key;
+    const im=document.createElement('img'); im.alt=''; im.src=editPieceSrc(c,p); btn.appendChild(im);
+    btn.onclick=()=>{ editSel=(editSel===key?null:key); editBoardSel=null; renderEdit(); };
+    tr.appendChild(btn);
+  });
+  const er=document.createElement('button'); er.type='button';
+  er.className='traybtn erase'+(editSel==='erase'?' on':''); er.textContent='⌫';
+  er.title=t('editErase'); er.setAttribute('aria-label', t('editErase'));
+  er.onclick=()=>{ editSel=(editSel==='erase'?null:'erase'); editBoardSel=null; renderEdit(); };
+  tr.appendChild(er);
+  document.querySelectorAll('#editTurnSel .esel').forEach(x=>x.classList.toggle('on', x.dataset.turn===editTurn));
+  document.querySelectorAll('#editCastle .esel').forEach(x=>x.classList.toggle('on', !!editCastle[x.dataset.cas]));
+  const ef=$('editFen'); if(ef && document.activeElement!==ef) ef.value=editToFen();
+  const del=$('editDel'); if(del) del.disabled=!editBoardSel;
+  const si=$('editSelInfo'); if(si) si.textContent = editBoardSel ? (t('editSelected')+' '+editBoardSel) : '\u00a0';
+}
+function editTapSquare(sq){
+  if(editSel==='erase'){ if(editMap[sq]){ delete editMap[sq]; } editBoardSel=null; renderEdit(); return; }
+  if(editSel){ editMap[sq]=editSel; editSel=null; renderEdit(); return; }   // วางแล้วปลดปล่อย เพื่อให้แตะหมากบนกระดานเพื่อเลือก 'ลบ' ได้
+  editBoardSel = editMap[sq] ? (editBoardSel===sq?null:sq) : null;
+  renderEdit();
+}
+function loadEditFen(){
+  const v=($('editFen').value||'').trim(); if(!v) return;
+  try{
+    const g=new Chess(); g.load(v);
+    editMap={}; for(const row of g.board()) for(const c of row) if(c) editMap[c.square]=c.color+c.type;
+    editTurn=g.turn();
+    const cas=(v.split(' ')[2]||'-');
+    editCastle={K:cas.includes('K'),Q:cas.includes('Q'),k:cas.includes('k'),q:cas.includes('q')};
+    editSel=null; editBoardSel=null; renderEdit(); toast(t('editFenLoaded'), true);
+  }catch(e){ toast(t('stBadFen')); }
+}
+function useEditPosition(){
+  const fen=editToFen();
+  try{ const g=new Chess(); g.load(fen);
+    fens=[g.fen()]; ucis=[]; ptr=0; sel=null; legal=[]; lines={}; sugTo={}; sugRank={}; sqTagTxt={};
+    moveGrades=[]; gradeRunCtx=null; mateThreat=false; prevThreat=false; game=new Chess(fens[0]);
+    render(); renderPV(); updateTurnBtn(); saveGame();
+    closeEdit();
+    setStatus('stSetPos');
+    if(run) runAnalysis(); else toast(t('toastSetOkInfo'), true);
+  }catch(e){ toast(t('stBadFen')); }
+}
+function wireEdit(){
+  const bE=$('bEdit'); if(bE) bE.onclick=openEdit;
+  ['editBack','editBack2'].forEach(id=>{ const e=$(id); if(e) e.onclick=closeEdit; });
+  const c=$('editClear'); if(c) c.onclick=()=>{ editMap={}; editBoardSel=null; renderEdit(); };
+  const u=$('editUse'); if(u) u.onclick=useEditPosition;
+  const lf=$('editLoadFen'); if(lf) lf.onclick=loadEditFen;
+  const cf=$('editCopyFen'); if(cf) cf.onclick=()=>copyText(editToFen());
+  const dl=$('editDel'); if(dl) dl.onclick=()=>{ if(editBoardSel){ delete editMap[editBoardSel]; editBoardSel=null; renderEdit(); } };
+  document.querySelectorAll('#editTurnSel .esel').forEach(b=>{ b.onclick=()=>{ editTurn=b.dataset.turn; renderEdit(); }; });
+  document.querySelectorAll('#editCastle .esel').forEach(b=>{ b.onclick=()=>{ editCastle[b.dataset.cas]=!editCastle[b.dataset.cas]; renderEdit(); }; });
+}
+wireEdit();
 
 startEngine(); render(); renderPV(); updateTurnBtn(); updateUndoBtn(); setEval(0,null); applyLang();
 </script>

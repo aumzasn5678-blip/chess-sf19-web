@@ -1,11 +1,13 @@
 // sw.js — แคชแอพไว้ใช้ออฟไลน์ (ต้องเปิดผ่าน https หรือ localhost)
 // นโยบาย: หน้า index.html = ดึงจากเน็ตก่อน (ได้เวอร์ชันใหม่เสมอ), ไฟล์ lib = cache ก่อน (เร็ว/ออฟไลน์)
-const CACHE = "chess-scan-v2";
+const CACHE = "chess-scan-v3";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-512.png"];
 const LIBS = ["lib/chess.js", "lib/stockfish.js", "lib/stockfish.wasm"];
+const ICONS = ["icons/book.png","icons/brilliant.png","icons/great.png","icons/best.png","icons/excellent.png","icons/good.png","icons/inaccuracy.png","icons/mistake.png","icons/blunder.png","icons/miss.png","icons/forced.png"];
+const BOOK = ["book/openings.json"];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE.concat(LIBS))).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE.concat(LIBS).concat(ICONS).concat(BOOK))).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", (e) => {
   e.waitUntil(caches.keys()
