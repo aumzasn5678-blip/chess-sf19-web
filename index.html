@@ -303,11 +303,9 @@ function setEval(cp, mate){          // cp = มุมมองขาว (centip
   evalHalf.style.background = leftIsWhite
     ? 'linear-gradient(to right,#dfe6ee 0 50%,#1b1e23 50% 100%)'
     : 'linear-gradient(to right,#1b1e23 0 50%,#dfe6ee 50% 100%)';
-  const pct = Math.max(2, Math.min(98, 50 + 48*Math.tanh(val/400)));   // 50% = เสมอ
-  evalFill.style.left = '50%';
-  evalFill.style.width = (pct-50)+'%';
-  evalFill.style.background = leftIsWhite ? 'rgba(87,199,133,.85)' : 'rgba(87,199,133,.85)';
-  if(pct<50){ evalFill.style.left = pct+'%'; evalFill.style.width = (50-pct)+'%'; }
+  const pct = Math.max(2, Math.min(98, 50 + 48*Math.tanh(val/400)));   // หลอด HP ของฝั่งล่าง (เต็ม = ฝั่งล่างได้เปรียบสุด)
+  evalFill.style.left = '0%';
+  evalFill.style.width = pct + '%';
   evalTxt.textContent = mate!=null ? ('#'+mate) : ((val>0?'+':'')+(val/100).toFixed(1));
   evalTxt.style.color = Math.abs(val)>150 ? '#fff' : '#e9edf2';
   const bl = bottom==='w' ? 'ขาว' : 'ดำ', ot = bottom==='w' ? 'ดำ' : 'ขาว';
@@ -360,21 +358,18 @@ function renderPV(){
         noticeRed = '⚠ อีกฝั่งขึ้น M ได้แล้ว (M'+Math.abs(bottomMate)+') — เราใกล้ถูกรุกฆาต';
       else if(bottomMate!=null && bottomMate>0)
         noticeGreen = '✓ เราขึ้น M ได้แล้ว (M'+bottomMate+') — อีกฝั่งใกล้ถูกรุกฆาต';
-      else if(bottomCp <= -500)
-        noticeGrey = 'เสียเปรียบ '+(bottomCp/100).toFixed(1)+' — เล่นไม่คุ้มแล้ว แนะนำยอมแพ้';
-      if(!noticeRed && !noticeGreen){
+      if(!noticeRed && !noticeGreen && sideToMove===bb){
         const gNow=new Chess(fens[ptr]);
         if(gNow.inCheck()){
           const canB = canBlockCheck(gNow);
-          noticeRed = '⚠ คิง'+(gNow.turn()==='w'?'ขาว':'ดำ')+' ติดรุกอยู่ — ' +
+          noticeRed = '⚠ คิงเราติดรุกอยู่ — ' +
             (canB ? 'หาตัวมาบังหรือกินตัวรุกได้' : 'หาตัวมาบังไม่ได้ ต้องขยับคิงรีบหนี');
         }
       }
       updateNotices();
       if(noticeRed && !prevRed) toast(noticeRed);
       if(noticeGreen && !prevGreen) toast(noticeGreen, true);
-      if(noticeGrey && !prevGrey) toast('เสียเปรียบมาก — เล่นไม่คุ้มแล้ว แนะนำให้ยอมแพ้', true);
-      prevRed = !!noticeRed; prevGreen = !!noticeGreen; prevGrey = !!noticeGrey; }
+      prevRed = !!noticeRed; prevGreen = !!noticeGreen; }
   });
   drawArrows(keys.slice(0,3));
   markTargets(); updateDepthInfo();          // กรอบเป้าหมาย + เลขความลึก (realtime)
