@@ -152,9 +152,9 @@ button.rec-on{background:linear-gradient(180deg,#f4b258,#cf8d2c)!important;color
 .prof.on[data-prof="normal"]{background:#3b82f6!important;color:#04122e;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.45),0 0 12px rgba(59,130,246,.5)}
 .prof.on[data-prof="deep"]{background:#a855f7!important;color:#1e0533;border-color:#a855f7;box-shadow:0 0 0 2px rgba(168,85,247,.45),0 0 12px rgba(168,85,247,.5)}
 
-/* ปุ่มเลือกภาษา ไทย/English — เลือก=สีค้าง (ไทย=แดง #e5534b · English=น้ำเงิน #3b82f6) · ไม่เลือก=เทาจาง */
+/* ปุ่มเลือกภาษา ไทย/English — เลือก=สีค้าง (ไทย=เหลือง #f5d327 · English=น้ำเงิน #3b82f6) · ไม่เลือก=เทาจาง */
 .lang{font-weight:700;background:transparent!important;color:var(--dim);border-color:var(--line);transition:background .15s,color .15s,border-color .15s,box-shadow .15s}
-.lang.on[data-lang="th"]{background:#e5534b!important;color:#fff;border-color:#e5534b;box-shadow:0 0 0 2px rgba(229,83,75,.45),0 0 12px rgba(229,83,75,.5)}
+.lang.on[data-lang="th"]{background:linear-gradient(180deg,#f5d327,#d4a90f)!important;color:#241d00!important;border-color:#d4a90f;box-shadow:0 0 0 2px rgba(245,211,39,.5),0 0 12px rgba(245,211,39,.55);text-shadow:none}
 .lang.on[data-lang="en"]{background:#3b82f6!important;color:#04122e;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.45),0 0 12px rgba(59,130,246,.5)}
 
 /* ปุ่มสลับ (อนิเมชัน/ซ่อนการชี้นำ) — เปิด=เขียว · ปิด=แดง (สไตล์เดียวกับปุ่มรัน) */
@@ -272,6 +272,8 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
 .cyes:active{filter:brightness(.93)}
 .cno{background:linear-gradient(180deg,#e5534b,#d13f36)!important;color:#fff!important;border-color:#b23a30!important;box-shadow:0 4px 14px rgba(229,83,75,.4)!important}
 .cno:active{filter:brightness(.93)}
+/* กล่องยืนยัน 'ลบประวัติทั้งหมด' — จัดกลางจอ อยู่เหนือหน้า #histView (z-index 190) และไม่ล้นขอบ 390px */
+.cbox.cbcenter{top:50%;left:50%;transform:translate(-50%,-50%);z-index:260;width:min(420px,calc(100vw - 22px));max-height:calc(100vh - 24px);overflow:auto}
 
 /* ---------- ไอคอนเกรดการเดิน (chess.com style) บนช่องปลายทาง ---------- */
 .gradico{position:absolute;right:1px;bottom:1px;width:21px;height:21px;z-index:4;pointer-events:none;
@@ -341,6 +343,15 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
 .histBtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .histBtns button{flex:1 1 40%;font-size:.88rem;padding:9px 4px}
 .histBtns button.del{color:#ff9d8f;border-color:#7a2f28}
+/* ---------- เลือกหลายเกม (เช็คบ็อกซ์ + ไฮไลท์การ์ดที่เลือก) ---------- */
+.histpick{display:flex;align-items:center;align-self:center;flex:0 0 auto;cursor:pointer;user-select:none;-webkit-user-select:none}
+.histpick input{width:24px;height:24px;flex:0 0 auto;margin:0;accent-color:var(--acc);cursor:pointer}
+.histItem.sel{border:2px solid var(--acc);padding:9px;
+  background:linear-gradient(180deg,var(--accGlow),var(--accGlow)),linear-gradient(180deg,var(--panel2),var(--panel));
+  box-shadow:0 0 0 2px var(--accGlow),0 0 16px var(--accGlow),0 8px 22px rgba(0,0,0,.3)}
+.delall{background:linear-gradient(180deg,#e5534b,#d13f36)!important;color:#fff!important;border-color:#b23a30!important;
+  box-shadow:0 4px 14px rgba(229,83,75,.35)!important;font-weight:700}
+#histExportSel:disabled,#histCopySel:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.6)}
 .logg{width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin:0 2px}
 .rpname{font-size:.92rem;color:var(--dim);margin:2px 2px 8px;overflow-wrap:anywhere}
 #rpBoardWrap{position:relative;width:100%;max-width:var(--boardmax,420px);margin:0 auto;aspect-ratio:1/1;
@@ -652,7 +663,18 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       <button id="histExportAll" class="sm" data-i18n="histExportAll">⬇ ส่งออกทั้งประวัติ (.pgn)</button>
       <button id="histCopyAll" class="sm" data-i18n="histCopyAll">📋 คัดลอกทั้งหมด</button>
     </div>
+    <div class="row">
+      <button id="histSelAll" class="sm" data-i18n="histSelAll">เลือกทั้งหมด</button>
+      <button id="histSelNone" class="sm" data-i18n="histSelNone">ล้างที่เลือก</button>
+    </div>
+    <div class="row">
+      <button id="histExportSel" class="sm" disabled>⬇ ส่งออก PGN ที่เลือก (0)</button>
+      <button id="histCopySel" class="sm" disabled>📋 คัดลอก PGN ที่เลือก (0)</button>
+    </div>
     <div id="histList"></div>
+    <div class="row">
+      <button id="histDelAll" class="sm delall" data-i18n="histDelAll">🗑 ลบประวัติทั้งหมด</button>
+    </div>
     <div class="card">
       <div class="cardtitle" data-i18n="histImportTitle">นำเข้า PGN เข้าประวัติ</div>
       <textarea id="histPgn" data-i18n-ph="pgnPh" placeholder="วาง PGN ที่นี่ (มีหรือไม่มี header ก็ได้)"></textarea>
@@ -665,6 +687,13 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
       </div>
       <div class="cardtitle" style="margin-top:10px" data-i18n="histPgnOutT">PGN ที่ส่งออกล่าสุด</div>
       <textarea id="histPgnOut" readonly data-i18n-ph="histPgnOutPh" placeholder="— ยังไม่มีการส่งออก —"></textarea>
+    </div>
+  </div>
+  <div id="confirmDelAll" class="cbox cbcenter" role="dialog" aria-labelledby="confirmDelAllMsg">
+    <div class="cmsg" id="confirmDelAllMsg" data-i18n="confirmDelAllMsg">ลบประวัติทั้งหมด? (ลบทุกเกม ถาวร)</div>
+    <div class="cbtns">
+      <button id="bDelAllYes" class="pri cyes" data-i18n="yes">ยืนยัน</button>
+      <button id="bDelAllNo" class="cno" data-i18n="no">ยกเลิก</button>
     </div>
   </div>
 </div>
@@ -881,6 +910,11 @@ const I18N={
   histNone:'— ไม่พบเกมที่ตรงกับคำค้น —',
   histStats:'ดูสถิติ', histCopyPgn:'📋 คัดลอก PGN ทั้งเกม', histCopyShort:'📋 คัดลอก PGN',
   histExportAll:'⬇ ส่งออกทั้งประวัติ (.pgn)', histCopyAll:'📋 คัดลอกทั้งหมด',
+  histSelAll:'เลือกทั้งหมด', histSelNone:'ล้างที่เลือก',
+  histExportSelN:'⬇ ส่งออก PGN ที่เลือก ({0})', histCopySelN:'📋 คัดลอก PGN ที่เลือก ({0})',
+  histDelAll:'🗑 ลบประวัติทั้งหมด', confirmDelAllMsg:'ลบประวัติทั้งหมด? (ลบทุกเกม ถาวร)',
+  toastDelAll:'ลบประวัติทั้งหมดแล้ว', toastSelNoneWarn:'ยังไม่ได้เลือกเกม', toastExportSel:'ดาวน์โหลดไฟล์ {0} แล้ว ({1} เกม)',
+  toastCopySelOk:'คัดลอก PGN ที่เลือกแล้ว ✓',
   toastExportAll:'ดาวน์โหลดไฟล์ {0} แล้ว', toastCopiedAll:'คัดลอกทั้งประวัติแล้ว ✓', toastCopyPgnOk:'คัดลอก PGN เกมนี้แล้ว ✓',
   bInstall:'📲 ติดตั้งเป็นแอพ', installIosTitle:'ติดตั้งบน iPhone / iPad (Safari)',
   installIosBody:'แตะปุ่ม แชร์ (□↑) ด้านล่าง แล้วเลือก “เพิ่มไปที่หน้าจอโฮม” (Add to Home Screen)',
@@ -985,6 +1019,11 @@ const I18N={
   histNone:'— no game matches the search —',
   histStats:'View stats', histCopyPgn:'📋 Copy full-game PGN', histCopyShort:'📋 Copy PGN',
   histExportAll:'⬇ Export all history (.pgn)', histCopyAll:'📋 Copy all',
+  histSelAll:'Select all', histSelNone:'Clear selection',
+  histExportSelN:'⬇ Export selected PGN ({0})', histCopySelN:'📋 Copy selected PGN ({0})',
+  histDelAll:'🗑 Delete all history', confirmDelAllMsg:'Delete all history? (all games, permanent)',
+  toastDelAll:'All history deleted', toastSelNoneWarn:'No game selected yet', toastExportSel:'Downloaded file {0} ({1} games)',
+  toastCopySelOk:'Copied selected PGN ✓',
   toastExportAll:'Downloaded file {0}', toastCopiedAll:'Copied all history ✓', toastCopyPgnOk:'Copied this game’s PGN ✓',
   bInstall:'📲 Install as app', installIosTitle:'Install on iPhone / iPad (Safari)',
   installIosBody:'Tap the Share button (□↑) below, then choose “Add to Home Screen”',
@@ -1025,6 +1064,7 @@ function applyLang(){
   if(editOn) renderEdit();          // อัปเดตข้อความในโหมดแก้ไขกระดานตามภาษา
   if(promoPending) openPromo(promoPending.from, promoPending.to);   // อัปเดต label/aria ของแถบโปรโมทตามภาษา
   if(histOn) renderHist();          // อัปเดตข้อความในหน้าประวัติเกมตามภาษา
+  refreshSelUI();                   // ป้าย 'ส่งออก/คัดลอก PGN ที่เลือก (n)' เปลี่ยนตามภาษาเสมอ
   if(rpOn){ rpRender(); rpUpdateButtons(); rpSetEval(rpLastEval.cp, rpLastEval.mate); }   // อัปเดตข้อความในหน้าเล่นย้อนหลัง + ป้าย eval (ไม่ปิดหน้า)
   const _sv=$('statView'); if(_sv && _sv.classList.contains('show') && statGame) renderStatsBody(statGame);   // วาดกล่องสถิติที่เปิดค้างอยู่ซ้ำ ให้ทุกข้อความเปลี่ยนภาษาทันที
 }
@@ -1838,6 +1878,11 @@ document.addEventListener('keydown', (e)=>{
     if(md){ e.preventDefault(); rpSetDelay(md[1]==='0' ? 10 : +md[1]); return; }
     return;
   }
+  if(boxOpen($('confirmDelAll'))){
+    if(c==='Enter' || c==='NumpadEnter' || k==='Enter'){ e.preventDefault(); $('bDelAllYes').onclick(); return; }
+    if(c==='Escape' || k==='Escape' || k==='Esc'){ e.preventDefault(); $('bDelAllNo').onclick(); return; }
+    return;                                    // กันคีย์อื่นทำงานตอนกล่องเปิด
+  }
   if(histOn){ if(c==='Escape'||k==='Escape'||k==='Esc'){ e.preventDefault(); closeHist(); return; } return; }   // หน้าประวัติ: ESC = กลับ
   // แถบเลือกตัวหมากโปรโมท: กด q/r/b/n เพื่อเลือก (ESC = ยกเลิก ไม่เดิน)
   if(promoPending){
@@ -2404,11 +2449,19 @@ let histOn=false;                  // หน้าประวัติเปิ
 let rpOn=false;                    // หน้าเล่นย้อนหลังเปิดอยู่?
 let histSort='date_desc';          // การเรียง (date_desc|date_asc|blunder|name)
 let histQuery='';                  // คำค้นชื่อเกม
+const LSK_HISTSEL='chessHistSel';
+let histSel=new Set();             // id เกมที่ถูกติ๊กเลือก (คงอยู่เมื่อค้นหา/เรียงใหม่)
+function histSelSave(){ try{ localStorage.setItem(LSK_HISTSEL, JSON.stringify(Array.from(histSel))); }catch(e){} }
+function histSelLoad(){ try{ const raw=localStorage.getItem(LSK_HISTSEL); const a=raw?JSON.parse(raw):[]; histSel=new Set(Array.isArray(a)?a:[]); }catch(e){ histSel=new Set(); } }
 
 function histLoad(){
   try{ const raw=localStorage.getItem(LSK_HIST); const d=raw?JSON.parse(raw):[]; hist=Array.isArray(d)?d:[]; }
   catch(e){ hist=[]; }
   if(hist.length>MAX_HIST){ hist=hist.slice(0,MAX_HIST); histPersist(); }   // กันเขียนตรงเกิน 50 → ตัดเก่าออก
+  histSelLoad();
+  const ids=new Set(hist.map(g=>g.id));                                     // ตัด id ที่ไม่มีเกมอยู่แล้วออก
+  let changed=false; for(const id of Array.from(histSel)){ if(!ids.has(id)){ histSel.delete(id); changed=true; } }
+  if(changed) histSelSave();
 }
 function histSave(){
   try{ localStorage.setItem(LSK_HIST, JSON.stringify(hist)); return true; }catch(e){ return false; }
@@ -2462,12 +2515,13 @@ function gradeCounts(grades){
   const c={}; (grades||[]).forEach(g=>{ if(g) c[g]=(c[g]||0)+1; }); return c;
 }
 function openHist(){ histLoad(); histOn=true; const v=$('histView'); if(v) v.classList.add('show'); renderHist(); retroHistAll(); }
-function closeHist(){ histOn=false; const v=$('histView'); if(v) v.classList.remove('show'); cancelSession(histSession); histSession=null; setProgText('histProg',0,0); }
+function closeHist(){ histOn=false; const v=$('histView'); if(v) v.classList.remove('show'); closeConfirmDelAll(); cancelSession(histSession); histSession=null; setProgText('histProg',0,0); }
 function mkHBtn(key, cls, fn){ const b=document.createElement('button'); b.type='button';
   b.className='sm '+(cls||''); b.textContent=t(key); b.onclick=fn; return b; }
 function renderHist(){
   const list=$('histList'); if(!list) return;
   const cnt=$('histCount'); if(cnt) cnt.textContent=t('histCount', hist.length, MAX_HIST);
+  refreshSelUI();
   list.innerHTML='';
   if(!hist.length){ const e=document.createElement('div'); e.className='tiny'; e.textContent=t('histEmpty'); list.appendChild(e); return; }
   // --- กรองตามคำค้น + เรียงลำดับ ---
@@ -2481,7 +2535,14 @@ function renderHist(){
   if(!view.length){ const e=document.createElement('div'); e.className='tiny'; e.textContent=t('histNone'); list.appendChild(e); return; }
   view.forEach(gm=>{
     const item=document.createElement('div'); item.className='histItem'; item.dataset.id=gm.id;
+    if(histSel.has(gm.id)) item.classList.add('sel');
     const head=document.createElement('div'); head.className='histHead';
+    const pick=document.createElement('label'); pick.className='histpick';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.dataset.id=gm.id; cb.checked=histSel.has(gm.id);
+    cb.setAttribute('aria-label', t('histSelAll'));
+    cb.onchange=()=>{ if(cb.checked) histSel.add(gm.id); else histSel.delete(gm.id);
+      item.classList.toggle('sel', cb.checked); histSelSave(); refreshSelUI(); };
+    pick.appendChild(cb); head.appendChild(pick);
     const nm=document.createElement('div'); nm.className='histName'; nm.textContent=displayGameName(gm.name)||t('histUntitled');
     const dt=document.createElement('div'); dt.className='histDate'; dt.textContent=fmtDate(gm.savedAt);
     head.appendChild(nm); head.appendChild(dt); item.appendChild(head);
@@ -2516,13 +2577,30 @@ function renderHist(){
     list.appendChild(item);
   });
 }
+function refreshSelUI(){
+  const n=histSel.size, hasHist=hist.length>0;
+  const eb=$('histExportSel'); if(eb){ eb.textContent=t('histExportSelN', n); eb.disabled=(n===0||!hasHist); }
+  const cbx=$('histCopySel'); if(cbx){ cbx.textContent=t('histCopySelN', n); cbx.disabled=(n===0||!hasHist); }
+}
+function selectedGames(){ return (hist||[]).filter(gm=>histSel.has(gm.id)); }
+function buildSelPgn(){ return selectedGames().map(pgnBlock).join('\n\n'); }
+function histSelAll(){ hist.forEach(gm=>histSel.add(gm.id)); histSelSave(); renderHist(); }
+function histSelNone(){ histSel.clear(); histSelSave(); renderHist(); }
+function openConfirmDelAll(){ const b=$('confirmDelAll'); if(b) b.style.display='block'; }
+function closeConfirmDelAll(){ const b=$('confirmDelAll'); if(b) b.style.display='none'; }
+function deleteAllHist(){
+  hist=[]; histSel.clear(); histSelSave();
+  try{ localStorage.removeItem(LSK_HIST); }catch(e){}
+  closeConfirmDelAll(); renderHist(); toast(t('toastDelAll'), true);
+}
 function renameGame(gm){
   const n=prompt(t('histRenamePrompt'), gm.name||'');
   if(n==null) return; const v=String(n).trim(); if(!v) return;
   gm.name=v; histPersist(); renderHist(); toast(t('histRenamed'), true);
 }
 function delGame(gm){
-  hist=hist.filter(x=>x.id!==gm.id); histPersist(); renderHist(); toast(t('histDeleted'), true);
+  hist=hist.filter(x=>x.id!==gm.id); histSel.delete(gm.id); histSelSave();
+  histPersist(); renderHist(); toast(t('histDeleted'), true);
 }
 function buildPgn(gm){
   let c;
@@ -2915,6 +2993,25 @@ function wireHistReplay(){
     const txt=buildAllPgn(); const out=$('histPgnOut'); if(out) out.value=txt;
     const ok=await copyRaw(txt); toast(t(ok?'toastCopiedAll':'toastCopyFail'), true);
   };
+  // เลือกหลายเกม (เช็คบ็อกซ์) → ส่งออก/คัดลอก PGN เฉพาะที่เลือก
+  const hselall=$('histSelAll'); if(hselall) hselall.onclick=histSelAll;
+  const hselnone=$('histSelNone'); if(hselnone) hselnone.onclick=histSelNone;
+  const hexpsel=$('histExportSel'); if(hexpsel) hexpsel.onclick=()=>{
+    const sel=selectedGames(); if(!sel.length){ toast(t('toastSelNoneWarn')); return; }
+    const txt=buildSelPgn(); const out=$('histPgnOut'); if(out) out.value=txt;
+    const stamp=fmtDate(Date.now()).replace(/[^0-9]/g,'').slice(0,12);
+    const fname=downloadText('chess-selected-'+stamp+'.pgn', txt);
+    toast(t('toastExportSel', fname||'chess-selected.pgn', sel.length), true);
+  };
+  const hcopysel=$('histCopySel'); if(hcopysel) hcopysel.onclick=async()=>{
+    const sel=selectedGames(); if(!sel.length){ toast(t('toastSelNoneWarn')); return; }
+    const txt=buildSelPgn(); const out=$('histPgnOut'); if(out) out.value=txt;
+    const ok=await copyRaw(txt); toast(t(ok?'toastCopySelOk':'toastCopyFail'), true);
+  };
+  // ลบประวัติทั้งหมด (ยืนยันผ่านกล่อง .cbox)
+  const hdelall=$('histDelAll'); if(hdelall) hdelall.onclick=openConfirmDelAll;
+  const bdely=$('bDelAllYes'); if(bdely) bdely.onclick=deleteAllHist;
+  const bdeln=$('bDelAllNo'); if(bdeln) bdeln.onclick=closeConfirmDelAll;
   // จอหลัก: สถิติเกมปัจจุบัน
   const bst=$('bStats'); if(bst) bst.onclick=()=>openStats(mainGameForStats(), {apply:(i,gr)=>{ moveGrades[i]=gr; render(); saveGame(); }});
   // ปุ่ม ⚙ ตั้งค่า (อยู่ในแถวเดียวกับ แก้ไขกระดาน) เปิด/ปิดแผงตั้งค่า
@@ -2944,6 +3041,7 @@ try{ window.__dbgChess=Chess; window.__chessDbg={
   get hist(){ return hist; }, get ptr(){ return ptr; }, get ucisLen(){ return ucis.length; },
   get rpPtr(){ return rpPtr; }, get rpUcisLen(){ return rpUcis.length; }, get rpPlaying(){ return rpPlaying; },
   get rpOn(){ return rpOn; }, get histOn(){ return histOn; }, get rpDelay(){ return rpDelay; },
+  get histSel(){ return Array.from(histSel); },
   get moveGrades(){ return moveGrades.slice(); }, get ucis(){ return ucis.slice(); }, get fens(){ return fens.slice(); },
   get gradeCacheSize(){ return Object.keys(gradeCache).length; }, get gradeQueueLen(){ return gradeQueue.length; },
   get gradePendingSize(){ return gradePending.size; }, get gradeInFlight(){ return gradeInFlight; },
