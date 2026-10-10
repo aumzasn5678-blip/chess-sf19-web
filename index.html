@@ -60,8 +60,12 @@ header .sub{font-size:.86rem;color:var(--dim);margin-left:auto;text-align:right}
 .sqtag.slot3{bottom:2px;right:2px}
 .sqtag1{background:#2dd4bf} .sqtag2{background:#4ec46f} .sqtag3{background:#f5d327}
 .sqtag4{background:#f08a1e} .sqtag5{background:#e5534b}
-.coord{position:absolute;font-size:.64rem;font-weight:700;color:rgba(0,0,0,.45)}
-.coord.f{left:3px;bottom:1px}.coord.r{right:3px;top:1px;color:rgba(255,255,255,.5)}
+.coord{position:absolute;font-size:.72rem;font-weight:700;color:rgba(43,51,62,.8);
+ text-shadow:0 0 2px rgba(255,255,255,.45)}
+.coord.f{left:3px;bottom:2px}.coord.r{right:3px;top:2px}
+.sq.light .coord{color:rgba(43,51,62,.8);text-shadow:0 0 2px rgba(255,255,255,.5)}
+.sq.dark .coord{color:rgba(255,255,255,.88);text-shadow:0 0 2px rgba(0,0,0,.55)}
+body.hidehints .coord{display:none}          /* โหมดซ่อนการชี้นำ = ไม่แสดงตัวเลขพิกัดกระดาน */
 #arrows{position:absolute;inset:0;pointer-events:none;z-index:3}
 #boardWrap .ghost{position:absolute;width:12.5%;height:12.5%;object-fit:contain;z-index:6;
  pointer-events:none;transition:transform .17s ease-out;will-change:transform;
@@ -72,48 +76,76 @@ header .sub{font-size:.86rem;color:var(--dim);margin-left:auto;text-align:right}
 #evalhalf{position:absolute;inset:0}
 #evalfill{position:absolute;top:0;bottom:0;background:rgba(240,160,75,.55);transition:all .2s}
 #evalmid{position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:#0e1114;opacity:.85;z-index:3}
-#evaltxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
- font-size:1rem;font-weight:700;z-index:7;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+#evaltxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:7}
+#evalnum{background:rgba(8,11,16,.85);color:#fff;font-weight:800;font-size:1.12rem;line-height:1.2;
+ padding:2px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.2);letter-spacing:.3px;
+ font-variant-numeric:tabular-nums;text-shadow:0 1px 3px rgba(0,0,0,.75);backdrop-filter:blur(3px);
+ box-shadow:0 1px 6px rgba(0,0,0,.5)}
 #evaltag{position:absolute;left:6px;top:0;bottom:0;display:flex;align-items:center;z-index:6;font-weight:600}
 #evaltagr{position:absolute;right:6px;top:0;bottom:0;display:flex;align-items:center;z-index:6;font-weight:600}
 #evaltag,#evaltagr{background:rgba(8,11,16,.8);color:#f4f8fc!important;padding:1px 8px;border-radius:999px;
  font-size:.75rem;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(3px)}
 
+/* ---------- ธีมสีปุ่ม/แอคเซนต์ ให้เข้ากับธีมกระดาน (body.theme-*) ---------- */
+body{--acc:#4ec46f;--acc2:#34a55b;--accInk:#04170b;--accGlow:rgba(78,196,111,.3);
+     --btnBg:#1d232c;--btnBd:#2b333e;--btnAct:#333a44}
+body.theme-white{--acc:#4ea1f0;--acc2:#2f7fd0;--accInk:#04121f;--accGlow:rgba(78,161,240,.32);
+     --btnBg:linear-gradient(180deg,#222b36,#19212b);--btnBd:#38434f;--btnAct:#2c3742}
+body.theme-brown{--acc:#e0a35c;--acc2:#b5793a;--accInk:#2a1a06;--accGlow:rgba(224,163,92,.32);
+     --btnBg:linear-gradient(180deg,#332a20,#261f17);--btnBd:#4c3d2c;--btnAct:#3c3125}
+body.theme-green{--acc:#4ec46f;--acc2:#34a55b;--accInk:#04170b;--accGlow:rgba(78,196,111,.32);
+     --btnBg:linear-gradient(180deg,#1f2a22,#17201a);--btnBd:#314235;--btnAct:#28382d}
+body.theme-bw{--acc:#d7dde5;--acc2:#9aa7b4;--accInk:#0b0f14;--accGlow:rgba(215,221,229,.28);
+     --btnBg:linear-gradient(180deg,#262c34,#1b2027);--btnBd:#3b434d;--btnAct:#333b45}
+
 .row{display:flex;gap:6px;margin-top:8px}
-button{flex:1;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:12px;
+button{flex:1;background:var(--btnBg,#1d232c);color:var(--txt);border:1px solid var(--btnBd,#2b333e);border-radius:12px;
  padding:12px 6px;font-size:1rem;font-weight:600;min-width:0;letter-spacing:.2px;
  transition:transform .08s,filter .15s,background .15s}
-button:active{background:#333a44;transform:scale(.97)}
-button.pri{background:linear-gradient(180deg,#5bd07e,#34a55b);color:#04170b;border-color:#2f8b50;box-shadow:0 5px 16px rgba(78,196,111,.3)}
+button:active{background:var(--btnAct,#333a44);transform:scale(.97)}
+button.pri{background:linear-gradient(180deg,var(--acc),var(--acc2));color:var(--accInk);border-color:var(--acc2);box-shadow:0 5px 16px var(--accGlow)}
 button.on{background:linear-gradient(180deg,#f0675e,#cf3b33);color:#fff;border-color:#a52f28;box-shadow:0 5px 16px rgba(229,83,75,.3)}
 button.sm{font-size:.93rem;padding:10px 4px}
-button.tog.on2{background:linear-gradient(180deg,#5bd07e,#34a55b);color:#04170b;border-color:#2f8b50}
+button.tog.on2{background:linear-gradient(180deg,var(--acc),var(--acc2));color:var(--accInk);border-color:var(--acc2)}
 button.rec-on{background:linear-gradient(180deg,#f4b258,#cf8d2c)!important;color:#241704!important;border-color:#a97220!important}
 
-#log{margin-top:8px;height:32px;line-height:30px;border:1px solid var(--line);border-radius:12px;
- background:#0f141b;padding:0 10px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;font-size:.93rem;color:var(--dim);
+/* ปุ่มจำนวนตัวเลือก 1-5 — สีอิงตามสีลูกศรของเลขนั้น (ไม่เลือก=จาง/โปร่ง · เลือก=สีเต็ม+ขอบเด่นชัด) */
+.npv{font-weight:700;background:transparent!important;transition:background .15s,color .15s,border-color .15s,box-shadow .15s}
+.npv[data-npv="1"]{color:#2dd4bf;border-color:rgba(45,212,191,.5)}
+.npv[data-npv="2"]{color:#4ec46f;border-color:rgba(78,196,111,.5)}
+.npv[data-npv="3"]{color:#f5d327;border-color:rgba(245,211,39,.5)}
+.npv[data-npv="4"]{color:#f08a1e;border-color:rgba(240,138,30,.5)}
+.npv[data-npv="5"]{color:#e5534b;border-color:rgba(229,83,75,.5)}
+.npv.on[data-npv="1"]{background:#2dd4bf!important;color:#04211d;border-color:#2dd4bf;box-shadow:0 0 0 2px rgba(45,212,191,.45),0 0 12px rgba(45,212,191,.5)}
+.npv.on[data-npv="2"]{background:#4ec46f!important;color:#04170b;border-color:#4ec46f;box-shadow:0 0 0 2px rgba(78,196,111,.45),0 0 12px rgba(78,196,111,.5)}
+.npv.on[data-npv="3"]{background:#f5d327!important;color:#2a2200;border-color:#f5d327;box-shadow:0 0 0 2px rgba(245,211,39,.45),0 0 12px rgba(245,211,39,.5)}
+.npv.on[data-npv="4"]{background:#f08a1e!important;color:#2a1400;border-color:#f08a1e;box-shadow:0 0 0 2px rgba(240,138,30,.45),0 0 12px rgba(240,138,30,.5)}
+.npv.on[data-npv="5"]{background:#e5534b!important;color:#2a0705;border-color:#e5534b;box-shadow:0 0 0 2px rgba(229,83,75,.45),0 0 12px rgba(229,83,75,.5)}
+
+#log{margin-top:8px;height:62px;line-height:60px;border:1px solid var(--line);border-radius:12px;
+ background:#0f141b;padding:0 14px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;font-size:1.12rem;color:var(--dim);
  font-variant-numeric:tabular-nums;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
 #log::-webkit-scrollbar{display:none;height:0;width:0}
-#log b{color:var(--txt);font-weight:600}
+#log b{color:var(--acc,#4ec46f);font-weight:800;font-size:1.24rem;margin-right:2px}
 #status{font-size:.79rem;color:var(--dim);margin-top:6px;min-height:14px}
 
-/* หลอดความลึก (range) ให้มีราง+สีเติมเหมือนหลอดอื่น */
+/* หลอดความลึก (range) ให้มีราง+สีเติมตามธีม */
 #depth{-webkit-appearance:none;appearance:none;height:30px;background:transparent;flex:1;min-width:0}
 #depth::-webkit-slider-runnable-track{height:9px;border-radius:5px;border:1px solid var(--line);
- background:linear-gradient(90deg,#4ec46f 0 var(--p,60%),#39404a var(--p,60%) 100%)}
+ background:linear-gradient(90deg,var(--acc,#4ec46f) 0 var(--p,60%),#39404a var(--p,60%) 100%)}
 #depth::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-8px;border-radius:50%;
- background:#f3f6f9;border:3px solid #4ec46f;box-shadow:0 1px 4px rgba(0,0,0,.6)}
+ background:#f3f6f9;border:3px solid var(--acc,#4ec46f);box-shadow:0 1px 4px rgba(0,0,0,.6)}
 #depth::-moz-range-track{height:9px;border-radius:5px;background:#39404a}
-#depth::-moz-range-progress{height:9px;border-radius:5px;background:#4ec46f}
-#depth::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#f3f6f9;border:3px solid #4ec46f}
+#depth::-moz-range-progress{height:9px;border-radius:5px;background:var(--acc,#4ec46f)}
+#depth::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#f3f6f9;border:3px solid var(--acc,#4ec46f)}
 
-/* สีปุ่มให้สื่อความหมาย */
-#bRun{background:#2f9e5b;border-color:#268049;color:#eafff2}
-#bRun.on{background:#c0392b;border-color:#a32e22;color:#fff}
-#bBack,#bFwd{background:linear-gradient(180deg,#5aabf7,#3a80c6);color:#04121f;border-color:#2f6aa6}
-#bStart,#bEnd{background:var(--panel2);color:var(--txt);font-size:1.07rem}
-#bFlip{background:var(--panel2);color:var(--dim)}
-#bNewGame{background:linear-gradient(180deg,#f4b258,#cf8d2c);color:#241704;border-color:#a97220}
+/* สีปุ่มให้เข้าธีม (ใช้กับทุกปุ่ม) */
+#bRun{background:linear-gradient(180deg,var(--acc),var(--acc2));border-color:var(--acc2);color:var(--accInk)}
+#bRun.on{background:linear-gradient(180deg,#f0675e,#cf3b33);border-color:#a52f28;color:#fff}
+#bBack,#bFwd{background:var(--btnBg);color:var(--acc);border-color:var(--acc2)}
+#bStart,#bEnd{background:var(--btnBg);color:var(--txt);font-size:1.07rem}
+#bFlip{background:var(--btnBg);color:var(--dim)}
+#bNewGame{background:var(--btnBg);color:var(--acc);border-color:var(--acc2)}
 
 #pv{margin-top:8px;display:flex;flex-direction:column;gap:5px}
 .pvrow{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);
@@ -176,7 +208,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
   <div id="evalwrap">
     <div id="evalhalf"></div><div id="evalfill"></div><div id="evalmid"></div>
     <div id="evaltag"></div><div id="evaltagr"></div>
-    <div id="evaltxt">0.00</div>
+    <div id="evaltxt"><span id="evalnum">0.00</span></div>
   </div>
 
   <div class="tiny" id="depthinfo" style="text-align:right;margin:4px 2px 0;font-variant-numeric:tabular-nums">&nbsp;</div>
@@ -192,11 +224,12 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
     <button id="bRun" class="pri">▶ รัน</button>
     <button id="bFlip" class="sm">⇅ กลับหัว</button>
     <button id="bNewGame" class="sm" style="flex:0 0 34%">เริ่มเกมใหม่</button>
+    <button id="bTheme" class="sm" title="เปลี่ยนธีมกระดานเร็ว" style="flex:0 0 16%">🎨</button>
   </div>
   <div id="confirmNew" class="card">
     <div class="inner">
       <span style="flex:1">เริ่มเกมใหม่? (ตาที่เล่นไว้จะหาย)</span>
-      <button id="bNewYes" class="sm" style="flex:0 0 28%;background:#4ec46f;color:#06200f;border-color:#3aa35a">ยืนยัน</button>
+      <button id="bNewYes" class="sm pri" style="flex:0 0 28%">ยืนยัน</button>
       <button id="bNewNo" class="sm" style="flex:0 0 24%">ยกเลิก</button>
     </div>
   </div>
@@ -205,38 +238,26 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
   <div id="log"></div>
   <div id="status"></div>
 
-  <div class="card">
-    <div class="cardtitle">ตำแหน่ง &amp; คัดลอก</div>
-    <div class="row">
-      <input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้งตำแหน่ง">
-      <button id="bPaste" class="sm" style="flex:0 0 24%">วาง</button>
-    </div>
-    <div class="row">
-      <button id="bSet" class="sm">ตั้งตำแหน่ง</button>
-      <button id="bCopy" class="sm">คัดลอก PGN</button>
-      <button id="bCopyFen" class="sm">คัดลอก FEN</button>
-    </div>
-  </div>
-
   <details id="settings">
     <summary>⚙ ตั้งค่า</summary>
     <div class="card">
       <div class="row">
         <label style="min-width:64px">โปรไฟล์</label>
         <div id="profbtns" style="display:flex;gap:6px;flex:1">
-          <button class="sm prof" data-prof="quick">เร็ว</button>
-          <button class="sm prof" data-prof="normal">ปกติ</button>
-          <button class="sm prof" data-prof="deep">ลึก</button>
+          <button class="sm prof" data-prof="quick">คิดแบบเร็ว</button>
+          <button class="sm prof" data-prof="normal">คิดแบบปกติ</button>
+          <button class="sm prof" data-prof="deep">คิดแบบลึก</button>
         </div>
       </div>
-      <div class="tiny" id="profv">โปรไฟล์: ปกติ</div>
+      <div class="tiny" id="profv">โปรไฟล์: คิดแบบปกติ</div>
+      <div class="tiny" id="profhint">ความลึก (depth) = จำนวนชั้นที่เอนจินคิดล่วงหน้า · 1 ชั้น ≈ ครึ่งตา ⇒ ยิ่งลึกยิ่งแม่นแต่ยิ่งคิดนานขึ้น · <span class="rec">แนะนำ 20</span> สำหรับเล่นกับคน</div>
 
       <div class="row" style="margin-top:10px">
         <label style="min-width:64px">ความลึก</label>
         <input type="range" id="depth" min="1" max="30" value="20">
         <span id="depthv" style="min-width:36px;text-align:right;font-size:.93rem;color:var(--txt);font-weight:600">20</span>
       </div>
-      <div class="tiny" id="depthhint">ช่วงความลึก → เวลาคิดโดยประมาณ: 1–5 ≈1วิ · 6–10 ≈3วิ · 11–15 ≈6วิ · 16–20 ≈10วิ · 21–25 ≈18วิ · 26–30 ≈30วิ · <span class="rec">แนะนำ 20</span></div>
+      <div class="tiny" id="depthhint">ช่วงความลึก → เวลาคิดโดยประมาณ (วินาที) | 1–5 ≈1วิ | 6–10 ≈3วิ | 11–15 ≈6วิ | 16–20 ≈10วิ | 21–25 ≈18วิ | 26–30 ≈30วิ | <span class="rec">แนะนำ 20</span></div>
 
       <div class="row">
         <label style="min-width:64px">ตัวเลือก</label>
@@ -250,7 +271,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
       </div>
 
       <div class="row">
-        <label style="min-width:64px">ขนาด</label>
+        <label style="min-width:64px;font-size:12px;line-height:1.25">ขนาดของธีม, ปุ่ม</label>
         <div id="sizebtns" style="display:flex;gap:6px;flex:1">
           <button class="sm size" data-size="small">เล็ก</button>
           <button class="sm size on2" data-size="medium">กลาง</button>
@@ -262,6 +283,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
         <label style="min-width:64px">ธีม</label>
         <select id="theme">
           <option value="nibble">ขาว Nibbler</option>
+          <option value="bw">ขาว-ดำ</option>
           <option value="brown">น้ำตาลเดิม</option>
           <option value="green">เขียว</option>
         </select>
@@ -279,13 +301,29 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
       แตะหมาก = เลือก · จุดฟ้า = ที่เดินได้ · เข้าป้อม: แตะคิงแล้วแตะเรือ (กฎสากลเต็มรูปแบบ)</div>
     </div>
   </details>
+
+  <details id="posPanel">
+    <summary>📋 ตำแหน่ง &amp; คัดลอก</summary>
+    <div class="card">
+      <div class="row">
+        <input type="text" id="fen" placeholder="วาง FEN แล้วกด ตั้งตำแหน่ง">
+        <button id="bPaste" class="sm" style="flex:0 0 24%">วาง</button>
+      </div>
+      <div class="row">
+        <button id="bSet" class="sm">ตั้งตำแหน่ง</button>
+        <button id="bCopy" class="sm">คัดลอก PGN</button>
+        <button id="bCopyFen" class="sm">คัดลอก FEN</button>
+      </div>
+      <div class="tiny" id="fenhint"><b>FEN</b> = รหัสตำแหน่งกระดานปัจจุบัน (ใช้แชร์/วางต่อในโปรแกรมหมากรุกอื่น)<br><b>PGN</b> = บันทึกการเดินทั้งเกม (เอาไปให้คนอื่น/โปรแกรมวิเคราะห์ต่อได้)</div>
+    </div>
+  </details>
 </div>
 
 <script type="module">
 import { Chess } from './lib/chess.js';
 const $ = id => document.getElementById(id);
 const boardEl=$('board'), arrowsEl=$('arrows'), pvEl=$('pv'), logEl=$('log'), statusEl=$('status'), subEl=$('sub');
-const evalFill=$('evalfill'), evalHalf=$('evalhalf'), evalTxt=$('evaltxt'), evalTag=$('evaltag'), evalTagR=$('evaltagr');
+const evalFill=$('evalfill'), evalHalf=$('evalhalf'), evalTxt=$('evaltxt'), evalNum=$('evalnum'), evalTag=$('evaltag'), evalTagR=$('evaltagr');
 
 let game=new Chess();
 let flipped=false;                 // ⇅ กลับหัว (ไม่สลับเอง)
@@ -299,11 +337,13 @@ function lsGet(k,d){ try{ const v=localStorage.getItem(k); return v===null?d:v; 
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 
 /* ---------- โปรไฟล์วิเคราะห์ / ขนาด / ธีม ---------- */
-const PROFILES={ quick:{d:12,n:1,cap:3000,label:'เร็ว'}, normal:{d:20,n:3,cap:10000,label:'ปกติ'}, deep:{d:28,n:3,cap:25000,label:'ลึก'} };
+const PROFILES={ quick:{d:12,n:1,cap:3000,label:'คิดแบบเร็ว'}, normal:{d:20,n:3,cap:10000,label:'คิดแบบปกติ'}, deep:{d:28,n:3,cap:25000,label:'คิดแบบลึก'} };
 let profName='normal', profCap=10000;
 const SIZES={ small:{max:'330px',fs:'13px'}, medium:{max:'420px',fs:'14px'}, large:{max:'520px',fs:'16px'} };
 let sizeName='medium';
-const THEMES={ nibble:{lt:'#f2f3f4',dk:'#c8cbcd'}, brown:{lt:'#f0d9b5',dk:'#b58863'}, green:{lt:'#edeed1',dk:'#779556'} };
+const THEMES={ nibble:{lt:'#f2f3f4',dk:'#c8cbcd'}, bw:{lt:'#ffffff',dk:'#9aa0a6'}, brown:{lt:'#f0d9b5',dk:'#b58863'}, green:{lt:'#edeed1',dk:'#779556'} };
+const THEME_ORDER=['nibble','bw','brown','green'];              // ลำดับปุ่มเปลี่ยนธีมเร็ว
+const THEME_LABEL={ nibble:'ขาว Nibbler', bw:'ขาว-ดำ', brown:'น้ำตาลเดิม', green:'เขียว' };
 let themeName='nibble';
 let hideHints=false;
 
@@ -451,8 +491,8 @@ function setEval(cp, mate){          // cp = มุมมองขาว (centip
   evalFill.style.left = '0%';
   evalFill.style.width = pct + '%';
   evalFill.style.background = bottomWhite ? 'rgba(255,255,255,.95)' : 'rgba(5,6,8,.95)';
-  evalTxt.textContent = mate!=null ? ((mate>0?'+':'-')+'M'+Math.abs(mate)) : ((val>0?'+':'')+(val/100).toFixed(1));
-  evalTxt.style.color = Math.abs(val)>150 ? '#fff' : '#e9edf2';
+  evalNum.textContent = mate!=null ? ((mate>0?'+':'-')+'M'+Math.abs(mate)) : ((val>0?'+':'')+(val/100).toFixed(1));
+  evalNum.style.color = '#fff';                         // แคปซูลพื้นดำ ⇒ ตัวอักษรขาว อ่านชัดเสมอ
   const bl = bottom==='w' ? 'ขาว' : 'ดำ', ot = bottom==='w' ? 'ดำ' : 'ขาว';
   evalTag.textContent = bl + ' (ล่าง)'; evalTagR.textContent = ot;
   evalTag.style.color = '#f4f8fc'; evalTagR.style.color = '#f4f8fc';   // แคปซูลพื้นดำ อ่านได้เสมอ
@@ -580,8 +620,10 @@ function render(){
     if(mv) d.classList.add(mv.captured||mv.flags.includes('e')?'cap':'mv');
     if(p){ const s=document.createElement('img'); s.className='pcimg'; s.alt='';
       s.src='pieces/'+(p.color==='b'?'_':'')+p.type.toUpperCase()+'.png'; d.appendChild(s); }
-    if(r===7){ const c=document.createElement('span'); c.className='coord f'; c.textContent='abcdefgh'[file]; d.appendChild(c); }
-    if(f===0){ const c=document.createElement('span'); c.className='coord r'; c.textContent=8-rank; d.appendChild(c); }
+    if(!hideHints){
+      if(r===7){ const c=document.createElement('span'); c.className='coord f'; c.textContent='abcdefgh'[file]; d.appendChild(c); }
+      if(f===0){ const c=document.createElement('span'); c.className='coord r'; c.textContent=8-rank; d.appendChild(c); }
+    }
     d.onclick=()=>onSquare(sq);
     boardEl.appendChild(d);
   }
@@ -809,10 +851,19 @@ function applyTheme(t){
   themeName=t; const c=THEMES[t];
   document.documentElement.style.setProperty('--lt', c.lt);
   document.documentElement.style.setProperty('--dk', c.dk);
-  if($('theme')) $('theme').value=t;
+  const cls={nibble:'theme-white',bw:'theme-bw',brown:'theme-brown',green:'theme-green'}[t];
+  document.body.classList.remove('theme-white','theme-bw','theme-brown','theme-green');
+  if(cls) document.body.classList.add(cls);          // สีปุ่ม/แอคเซนต์เข้าธีม
+  if($('theme')) $('theme').value=t;                 // ซิงก์กับตัวเลือกในแผงตั้งค่า
   lsSet(LSK.theme, t);
 }
 $('theme').onchange=()=>{ applyTheme($('theme').value); };
+$('bTheme').onclick=()=>{                            // ปุ่มเปลี่ยนธีมเร็วบนจอหลัก
+  const i=THEME_ORDER.indexOf(themeName);
+  const next=THEME_ORDER[(i+1)%THEME_ORDER.length];
+  applyTheme(next);
+  toast('ธีม: '+THEME_LABEL[next], true);
+};
 
 /* ---------- ELO / อนิเมชัน / ซ่อนการชี้นำ ---------- */
 let eloN = 3190;
@@ -836,8 +887,10 @@ $('elo').oninput=()=>{
 let animOn = true;
 function refreshAnimBtn(){ const b=$('animBtn'); if(b){ b.textContent='อนิเมชันหมาก: '+(animOn?'เปิด':'ปิด'); b.classList.toggle('on2', animOn); } }
 $('animBtn').onclick=()=>{ animOn=!animOn; lsSet(LSK.anim, animOn?'1':'0'); refreshAnimBtn(); toast('อนิเมชันหมาก: '+(animOn?'เปิด':'ปิด'), true); };
-function refreshHideBtn(){ const b=$('hideBtn'); if(b){ b.textContent='ซ่อนการชี้นำ: '+(hideHints?'เปิด':'ปิด'); b.classList.toggle('on2', hideHints); } }
+function refreshHideBtn(){ const b=$('hideBtn'); if(b){ b.textContent='ซ่อนการชี้นำ: '+(hideHints?'เปิด':'ปิด'); b.classList.toggle('on2', hideHints); }
+  document.body.classList.toggle('hidehints', hideHints); }         // ซ่อนตัวเลขพิกัดบนกระดานด้วย
 $('hideBtn').onclick=()=>{ hideHints=!hideHints; lsSet(LSK.hide, hideHints?'1':'0'); refreshHideBtn();
+  render();                                                        // วาดใหม่เพื่อตัด/คืนตัวเลขพิกัด
   drawArrows(Object.keys(lines).map(Number).sort((a,b)=>a-b).slice(0,5)); markTargets();
   toast('ซ่อนการชี้นำ: '+(hideHints?'เปิด':'ปิด'), true); };
 
