@@ -427,6 +427,10 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
 /* ---------- การ์ดติดตั้งเป็นแอพ (PWA) ---------- */
 .installCard{background:linear-gradient(180deg,#1b2a33,#141f26)!important;border-color:#2e4a56!important}
 .installCard .cardtitle{color:#8fd8e6}
+/* ---------- ปุ่ม 'อัปเดตแอพ' (ล้าง SW + caches แล้วรีโหลด) — โทน accent2/น้ำเงิน เข้าธีม ---------- */
+.updbtn{background:linear-gradient(180deg,#3b82f6,#2563eb)!important;color:#f2f7ff!important;border-color:#1d4ed8!important;
+  box-shadow:0 5px 16px rgba(37,99,235,.38)!important;font-weight:700}
+.updbtn:active{background:linear-gradient(180deg,#3578e8,#1f57d6)!important;filter:brightness(.96)}
 .sortrow select{font-size:.85rem;padding:7px 6px}
 </style>
 </head>
@@ -439,8 +443,6 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
     <div class="sub" id="sub"></div>
   </header>
 
-  <div id="boardWrap"><div id="board"></div><svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg><div id="promo" role="group" aria-label="Promotion"></div></div>
-
   <div id="evalwrap">
     <div id="evalhalf"></div><div id="evalfill"></div><div id="evalmid"></div>
     <div id="evaltag"></div><div id="evaltagr"></div>
@@ -448,6 +450,9 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
   </div>
 
   <div class="tiny" id="depthinfo" style="text-align:right;margin:4px 2px 0;font-variant-numeric:tabular-nums">&nbsp;</div>
+
+  <div id="boardWrap" style="margin-top:8px"><div id="board"></div><svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"></svg><div id="promo" role="group" aria-label="Promotion"></div></div>
+
   <div id="notice"></div>
 
   <div class="row">
@@ -598,6 +603,16 @@ textarea#pgnIn{width:100%;min-height:58px;resize:vertical;background:var(--panel
     <div class="cardtitle" data-i18n="bInstall">📲 ติดตั้งเป็นแอพ</div>
     <div class="tiny" id="installBody"></div>
     <div class="row"><button id="bInstall" class="sm pri" data-i18n="installBtn" style="display:none">ติดตั้งเลย</button></div>
+  </div>
+  <div id="confirmUpdate" class="cbox cbcenter" role="dialog" aria-labelledby="confirmUpdateMsg" style="display:none">
+    <div class="cmsg" id="confirmUpdateMsg" data-i18n="confirmUpdateMsg">อัปเดตแอพ? (ล้างแคชและโหลดเวอร์ชันล่าสุด)</div>
+    <div class="cbtns">
+      <button id="bUpdateYes" class="pri cyes" data-i18n="yes">ยืนยัน</button>
+      <button id="bUpdateNo" class="cno" data-i18n="no">ยกเลิก</button>
+    </div>
+  </div>
+  <div class="row" id="updRow" style="margin-top:10px">
+    <button id="bUpdate" class="sm updbtn" data-i18n="bUpdate" style="flex:1">🔄 อัปเดตแอพ</button>
   </div>
 </div>
 
@@ -896,7 +911,7 @@ const I18N={
   histImportTitle:'นำเข้า PGN เข้าประวัติ', histImportBtn:'นำเข้า & เก็บเข้าประวัติ', histImportOpen:'เปิดเล่นย้อนหลังทันที',
   histPgnOutT:'PGN ที่ส่งออกล่าสุด', histPgnOutPh:'— ยังไม่มีการส่งออก —',
   toastHistSaved:'บันทึกเข้า ประวัติแล้ว ✓', toastHistAuto:'เก็บเกมเดิมลงประวัติอัตโนมัติแล้ว ✓',
-  toastHistTrimmed:'ประวัติเต็ม 50 เกม — ลบเกมเก่าสุด {0} เกม', toastHistFull:'พื้นที่เก็บข้อมูลเต็ม — ลบเกมเก่าไม่สำเร็จ', toastHistEmpty:'ยังไม่มีการเดิน — ยังบันทึกไม่ได้',
+  toastHistTrimmed:'ประวัติเต็ม 100 เกม — ลบเกมเก่าสุด {0} เกม', toastHistFull:'พื้นที่เก็บข้อมูลเต็ม — ลบเกมเก่าไม่สำเร็จ', toastHistEmpty:'ยังไม่มีการเดิน — ยังบันทึกไม่ได้',
   rpTitle:'⏯ เล่นย้อนหลัง', rpPlay:'▶ เล่น', rpRestart:'⟲ เริ่มใหม่',
   rpImportTitle:'นำเข้า PGN มาเล่นย้อนหลัง', rpImportBtn:'นำเข้า PGN', rpSaveChk:'เก็บเข้าประวัติด้วย',
   rpDone:'เล่นจบแล้ว ✓', rpNoGame:'ยังไม่มีเกม — นำเข้า PGN ก่อน',
@@ -923,8 +938,10 @@ const I18N={
   sideYour:'ฝั่งนี้', statYourSide:'(ฝั่งนี้)', rpYourSide:'ฝั่งนี้ (ของผู้เล่น)',
   resWin:'ชนะ', resLose:'แพ้', resDraw:'เสมอ', resUnfinished:'ยังไม่จบ',
   resNote:'ผลคำนวณจากตำแหน่งสุดท้ายที่บันทึกไว้เท่านั้น (ไม่นับการยอมแพ้/หมดเวลา)',
-  installBtn:'ติดตั้งเลย', installUnavailable:'เบราว์เซอร์นี้ยังไม่รองรับการติดตั้งอัตโนมัติ'
- },
+  installBtn:'ติดตั้งเลย', installUnavailable:'เบราว์เซอร์นี้ยังไม่รองรับการติดตั้งอัตโนมัติ',
+  bUpdate:'🔄 อัปเดตแอพ', confirmUpdateMsg:'อัปเดตแอพ? (ล้างแคชและโหลดเวอร์ชันล่าสุด)',
+  toastUpdating:'กำลังอัปเดต… โหลดเวอร์ชันล่าสุด'
+},
  en:{
   stReady:'Ready',
   langTh:'Thai', langEn:'English',
@@ -1005,7 +1022,7 @@ const I18N={
   histImportTitle:'Import PGN into history', histImportBtn:'Import & save to history', histImportOpen:'Open replay immediately',
   histPgnOutT:'Last exported PGN', histPgnOutPh:'— nothing exported yet —',
   toastHistSaved:'Saved to history ✓', toastHistAuto:'Previous game auto-saved to history ✓',
-  toastHistTrimmed:'History full (50) — removed {0} oldest', toastHistFull:'Storage full — could not prune older games', toastHistEmpty:'No moves yet — nothing to save',
+  toastHistTrimmed:'History full (100) — removed {0} oldest', toastHistFull:'Storage full — could not prune older games', toastHistEmpty:'No moves yet — nothing to save',
   rpTitle:'⏯ Replay', rpPlay:'▶ Play', rpRestart:'⟲ Restart',
   rpImportTitle:'Import PGN to replay', rpImportBtn:'Import PGN', rpSaveChk:'Also save to history',
   rpDone:'Replay finished ✓', rpNoGame:'No game yet — import a PGN first',
@@ -1032,8 +1049,10 @@ const I18N={
   sideYour:'your side', statYourSide:'(your side)', rpYourSide:'your side (player)',
   resWin:'Win', resLose:'Loss', resDraw:'Draw', resUnfinished:'Unfinished',
   resNote:'Result from the last saved position only (resign/timeout not counted)',
-  installBtn:'Install now', installUnavailable:'This browser does not support automatic installation'
- }
+  installBtn:'Install now', installUnavailable:'This browser does not support automatic installation',
+  bUpdate:'🔄 Update app', confirmUpdateMsg:'Update app? (clear cache and load the latest version)',
+  toastUpdating:'Updating… loading the latest version'
+}
 };
 function t(key){ const d=(I18N[lang]&&I18N[lang][key]); let s=(d!=null?d:(I18N.th[key]!=null?I18N.th[key]:key));
   if(arguments.length>1){ for(let i=1;i<arguments.length;i++){ s=s.split('{'+ (i-1) +'}').join(String(arguments[i])); } }
@@ -1629,15 +1648,15 @@ $('bFwd').onclick=()=>{ if(ptr<fens.length-1) navTo(ptr+1, 'navFwd'); };
 $('bEnd').onclick=()=>navTo(fens.length-1, 'navEnd');
 $('bFlip').onclick=()=>{ flipped=!flipped; render(); renderPV(); saveGame(); };
 /* ---------- กล่องยืนยัน (เริ่มเกมใหม่ / ย้อนกลับเกมก่อนหน้า) = overlay ลอย (fixed) ใช้คลาสร่วม .cbox ---------- */
-function positionConfirmBox(cn){               // ล็อกขอบบน: ไม่สูงกว่าขอบล่างหลอด HP (ไม่บังกระดาน) และไม่เลยขึ้นไปทับแถว log
+function positionConfirmBox(cn){               // ล็อกขอบบน: ให้อยู่ใต้กระดาน (ไม่บังกระดาน) และไม่เลยขึ้นไปทับแถว log
   if(!cn || cn.style.display==='none') return;
-  const ew=$('evalwrap'); if(!ew) return;
+  const bw=$('boardWrap');
   const log=$('log');
   const gap=6;
-  const eb=ew.getBoundingClientRect().bottom;                       // ขอบล่างหลอด HP
+  const eb=bw?bw.getBoundingClientRect().bottom:0;                 // ขอบล่างกระดาน (หลอด HP อยู่เหนือกระดานแล้ว)
   const lt=log?log.getBoundingClientRect().top:window.innerHeight;  // ขอบบนแถว log
   const h=cn.offsetHeight;
-  let top=eb+gap;                                                   // วางใต้หลอด HP ทันที
+  let top=eb+gap;                                                   // วางใต้กระดานทันที
   if(top+h>lt-4) top=Math.max(eb+gap, lt-4-h);                      // ถ้าจะเลย log → ขยับขึ้น แต่ยังคง >= eb+gap
   if(top<4) top=4;
   cn.style.top=Math.round(top)+'px';
@@ -1900,6 +1919,11 @@ document.addEventListener('keydown', (e)=>{
   if(boxOpen($('confirmNew'))){
     if(c==='Enter' || c==='NumpadEnter' || k==='Enter'){ e.preventDefault(); $('bNewYes').onclick(); return; }
     if(c==='Escape' || k==='Escape' || k==='Esc'){ e.preventDefault(); $('bNewNo').onclick(); return; }
+    return;                                    // กันคีย์อื่นทำงานตอนกล่องเปิด
+  }
+  if(boxOpen($('confirmUpdate'))){
+    if(c==='Enter' || c==='NumpadEnter' || k==='Enter'){ e.preventDefault(); $('bUpdateYes').onclick(); return; }
+    if(c==='Escape' || k==='Escape' || k==='Esc'){ e.preventDefault(); $('bUpdateNo').onclick(); return; }
     return;                                    // กันคีย์อื่นทำงานตอนกล่องเปิด
   }
   if(c==='ArrowLeft'){ e.preventDefault(); $('bBack').onclick(); }
@@ -2443,7 +2467,7 @@ wireEdit();
    ข้อมูลทั้งหมดอยู่ใน localStorage คีย์ 'chessHist' เท่านั้น
    ================================================================== */
 const LSK_HIST='chessHist';
-const MAX_HIST=50;
+const MAX_HIST=100;
 let hist=[];                       // อาร์เรย์เกม (ใหม่สุดก่อน)
 let histOn=false;                  // หน้าประวัติเปิดอยู่?
 let rpOn=false;                    // หน้าเล่นย้อนหลังเปิดอยู่?
@@ -2457,7 +2481,7 @@ function histSelLoad(){ try{ const raw=localStorage.getItem(LSK_HISTSEL); const 
 function histLoad(){
   try{ const raw=localStorage.getItem(LSK_HIST); const d=raw?JSON.parse(raw):[]; hist=Array.isArray(d)?d:[]; }
   catch(e){ hist=[]; }
-  if(hist.length>MAX_HIST){ hist=hist.slice(0,MAX_HIST); histPersist(); }   // กันเขียนตรงเกิน 50 → ตัดเก่าออก
+  if(hist.length>MAX_HIST){ hist=hist.slice(0,MAX_HIST); histPersist(); }   // กันเขียนตรงเกิน 100 → ตัดเก่าออก
   histSelLoad();
   const ids=new Set(hist.map(g=>g.id));                                     // ตัด id ที่ไม่มีเกมอยู่แล้วออก
   let changed=false; for(const id of Array.from(histSel)){ if(!ids.has(id)){ histSel.delete(id); changed=true; } }
@@ -2475,7 +2499,7 @@ function histPersist(){            // เขียนไม่สำเร็จ
     arr=arr.slice(0, arr.length-1);   // ตัดเก่าสุด (ตัวท้ายสุด) ทิ้ง
   }
 }
-function histTrim(){               // เกิน 50 → ตัดเก่า คืนจำนวนที่ตัด
+function histTrim(){               // เกิน 100 → ตัดเก่า คืนจำนวนที่ตัด
   if(hist.length>MAX_HIST){ const removed=hist.length-MAX_HIST; hist=hist.slice(0,MAX_HIST); return removed; }
   return 0;
 }
@@ -2972,6 +2996,31 @@ function wireInstall(){
   refreshInstallUI();
 }
 
+/* ---------- อัปเดตแอพ: ล้าง service worker + caches ทั้งหมด แล้วรีโหลดด้วย cache-buster ---------- */
+function openConfirmUpdate(){ const cn=$('confirmUpdate'); if(!cn) return; cn.style.display='block'; }
+function closeConfirmUpdate(){ const cn=$('confirmUpdate'); if(cn) cn.style.display='none'; }
+async function doUpdateApp(){                 // ยืนยันแล้ว: ยกเลิก SW + ลบ caches + โหลดใหม่ (ข้ามแคช)
+  closeConfirmUpdate();
+  try{ toast(t('toastUpdating'), true); }catch(e){}
+  try{
+    if('serviceWorker' in navigator){
+      const rs=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(rs.map(r=>r.unregister()));
+    }
+  }catch(e){}
+  try{
+    if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }
+  }catch(e){}
+  const base=location.href.split('#')[0].split('?')[0];
+  const url=base+'?v='+Date.now();
+  location.replace(url);                       // รีโหลดด้วย cache-buster ⇒ ได้โค้ดเวอร์ชันล่าสุดแน่ ๆ
+}
+function wireUpdate(){
+  const bu=$('bUpdate'); if(bu) bu.onclick=openConfirmUpdate;
+  const buy=$('bUpdateYes'); if(buy) buy.onclick=doUpdateApp;
+  const bun=$('bUpdateNo'); if(bun) bun.onclick=closeConfirmUpdate;
+}
+
 function wireHistReplay(){
   const hb=$('bHist'); if(hb) hb.onclick=openHist;
   const hs=$('bSaveHist'); if(hs) hs.onclick=()=>{ if(ucis.length<1){ toast(t('toastHistEmpty')); return; } histAddCurrent(false); };
@@ -3033,6 +3082,7 @@ function wireHistReplay(){
   const rim=$('rpImport'); if(rim) rim.onclick=rpImportPgn;
   const rdl=$('rpDelay'); if(rdl) rdl.oninput=()=>rpSetDelay(+rdl.value);
   wireInstall();
+  wireUpdate();
 }
 wireHistReplay();
 
