@@ -327,7 +327,9 @@ function setEval(cp, mate){          // cp = มุมมองขาว (centip
   const bottomWhite = (bottom==='w');
   const W_='#f3f6f9', B_='#15181c';
   evalHalf.style.background = 'linear-gradient(to right,' + (bottomWhite?W_:B_) + ' 0 50%,' + (bottomWhite?B_:W_) + ' 50% 100%)';
-  const pct = Math.max(2, Math.min(98, 50 + 48*Math.tanh(val/400)));   // % ของฝั่งล่าง
+  // สเกลพอดี ๆ: +1 ≈ 56% · +7 ≈ 72% · +50 ≈ 95% (ไม่แทบเต็มเร็ว, เผื่อคะแนนเยอะ)
+  const aAbs = Math.abs(val)/700;
+  const pct = Math.max(2, Math.min(98, 50 + 47*Math.tanh(0.5*Math.pow(aAbs,0.7))*(val<0?-1:1)));
   evalFill.style.left = '0%';
   evalFill.style.width = pct + '%';
   evalFill.style.background = bottomWhite ? 'rgba(255,255,255,.95)' : 'rgba(5,6,8,.95)';
@@ -371,7 +373,8 @@ function renderPV(){
     row.innerHTML=`<span class="n">${k}</span><span class="mv">${sans[0]||'?'}</span>
       <span class="sc ${shownCp>=0?'pos':'neg'}">${txt}</span>
       <span class="ln">${sans.slice(1).join(' ')}</span>`;
-    if(l.pv[0]){ const d2=l.pv[0].slice(2,4); sugTo[d2]=l.pv[0];
+    if(l.pv[0]){ const d2=l.pv[0].slice(2,4);
+      if(!sugTo[d2]) sugTo[d2]=l.pv[0];                 // หลายตัวเลือกชนช่องเดียวกัน = เอาอันดับดีที่สุด (เลขน้อยสุด)
       (sugRank[d2] = sugRank[d2] || []).push(k); sqTagTxt[k]=txt; row.onclick=()=>playUci(l.pv[0]); }
     pvEl.appendChild(row);
     if(k===1){ setEval(whiteCp, whiteMate);
@@ -530,8 +533,6 @@ function onSquare(sq){
   const g=new Chess(fens[ptr]);
   const p=g.get(sq);
   if(game_over(g)){ return; }
-  // แตะช่องปลายทางของคำแนะนำ = เดินทันที (ไม่ต้องเลือกหมากก่อน)
-  if(!sel && sugTo[sq]){ playUci(sugTo[sq]); return; }
   // หมากที่ขยับไม่ได้เพราะคิงจะถูกรุก — เตือนเฉพาะตอนเป็น "ตาของฝั่งนั้น" เท่านั้น (ไม่เตือนหมากฝั่งตรงข้าม)
   if(p && p.type!=='k' && p.color===g.turn() && isPinned(g, sq)){
     toast('หมากตัวนี้ขยับไม่ได้ — ขยับแล้วคิงจะถูกรุก');
@@ -564,6 +565,7 @@ function onSquare(sq){
   }
   if(p&&p.color===g.turn()){ sel=sq; legal=g.moves({square:sq,verbose:true}); render(); markTargets(); return; }
   if(sel&&legal.some(m=>m.to===sq)){ playUci(sel+sq); return; }
+  if(sugTo[sq]){ playUci(sugTo[sq]); return; }   // แตะช่องที่ลูกศรแนะนำ = เดินตามคำแนะนำที่ดีที่สุดทันที
   sel=null; legal=[]; render(); markTargets();   // แตะช่องที่ไปไม่ได้ = แค่ยกเลิกการเลือก (ไม่ล็อก ไม่ขึ้นเตือน)
 }
 function game_over(g){                       // จบเกมแล้ว? (รุกฆาต/อับ/เสมอ)
