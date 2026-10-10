@@ -102,6 +102,14 @@ button.sm{font-size:13px;padding:10px 4px}
  box-shadow:0 4px 14px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;max-width:88vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 #toast.info{background:#2b6cb0}
+#bigover{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:120;
+ background:rgba(0,0,0,.5);padding:18px}
+#bigover.show{display:flex}
+#bigover .box{padding:20px 26px;border-radius:16px;border:3px solid var(--line);font-size:21px;font-weight:700;
+ text-align:center;line-height:1.45;box-shadow:0 8px 30px rgba(0,0,0,.6);max-width:88vw}
+#bigover .box.win{border-color:#4ec46f;color:#d6ffe4;background:rgba(12,38,20,.96)}
+#bigover .box.lose{border-color:#e0402f;color:#ffe0db;background:rgba(46,12,10,.96)}
+#bigover .box .sm2{display:block;font-size:12px;font-weight:400;opacity:.75;margin-top:6px}
 details{margin-top:8px}
 summary{font-size:12px;color:var(--dim);padding:4px 2px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:6px}
@@ -115,6 +123,7 @@ select,input[type=text]{flex:1;background:var(--panel2);color:var(--txt);border:
 <body>
 <div id="app">
 <div id="toast"></div>
+<div id="bigover" onclick="this.classList.remove('show')"><div class="box" id="bigbox"></div></div>
   <header>
     <h1>♞ Chess Scan</h1>
     <div class="sub" id="sub">กำลังโหลดเอนจิน…</div>
@@ -460,6 +469,19 @@ function render(){
   if(g.inCheck()) for(const el of boardEl.children){ const p=g.get(el.dataset.sq); if(p&&p.type==='k'&&p.color===g.turn()) el.classList.add('chk','warnk'); }
   renderLog(g);
   markTargets();                       // ให้ป้ายคะแนน/ออร่าคงอยู่ทุกครั้งที่วาดกระดานใหม่
+  checkGameEnd();
+}
+function checkGameEnd(){               // รุกฆาต: เด้งกลางจอ ชนะ/แพ้ ตามฝั่งล่าง
+  const g=new Chess(fens[ptr]);
+  const over=$('bigover'), box=$('bigbox');
+  if(!over||!box) return;
+  if(!g.isCheckmate()){ over.classList.remove('show'); return; }
+  const loser = g.turn();                                 // ฝั่งที่เดินไม่ได้ = ฝั่งที่แพ้
+  const weWon = (loser !== bottomColor());
+  box.className = 'box ' + (weWon ? 'win' : 'lose');
+  if(weWon) box.innerHTML = 'รุกฆาต — ชนะแล้ว ✓<span class="sm2">ฝั่งบน (คู่แข่ง) ถูกรุกฆาต · แตะเพื่อปิด</span>';
+  else      box.innerHTML = 'โดนรุกฆาต — แพ้แล้ว ✗<span class="sm2">ฝั่งเรา (ล่าง) ถูกรุกฆาต · แตะเพื่อปิด</span>';
+  over.classList.add('show');
 }
 function renderLog(){
   const g=new Chess(); const sans=[];                      // เล่นซ้ำจากเริ่ม เพื่อแปลงเป็น SAN
